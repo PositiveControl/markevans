@@ -1,0 +1,118 @@
+# Markevans - Data Models
+
+## Overview
+
+This document describes the data models and their relationships.
+
+---
+
+## Core Models
+
+### User
+
+The primary user model, managed by Devise.
+
+**Associations:**
+- `has_many :sessions` (if using database sessions)
+
+**Key Fields:**
+- `email` - User's email address (unique)
+- `encrypted_password` - Devise-managed password
+- `role` - User role for Petergate authorization
+
+**Scopes:**
+- `active` - Users who haven't been discarded
+
+---
+
+## Adding New Models
+
+When adding a new model:
+
+1. **Generate with UUID:**
+   ```bash
+   rails g model Thing name:string user:references
+   ```
+   UUIDs are configured automatically.
+
+2. **Add soft deletes only if the table earns them** — restoration is a user-facing
+   feature, an audit obligation requires the row, or foreign keys must stay valid.
+   Otherwise `destroy`:
+   ```ruby
+   class Thing < ApplicationRecord
+     include Discard::Model
+   end
+   ```
+
+3. **Add audit trail if needed:**
+   ```ruby
+   class Thing < ApplicationRecord
+     has_paper_trail
+   end
+   ```
+
+4. **Document here** with:
+   - Purpose/description
+   - Associations
+   - Key fields and their meaning
+   - Scopes
+   - Important methods
+
+---
+
+## Model Patterns
+
+### Soft Deletes (Discard) — opt-in per table
+
+```ruby
+class Post < ApplicationRecord
+  include Discard::Model
+end
+
+# Usage:
+post.discard        # Soft delete
+post.undiscard      # Restore
+Post.kept           # Non-deleted records
+Post.discarded      # Deleted records
+Post.with_discarded # All records
+```
+
+**Never add `default_scope -> { kept }`.** Discard omits a default scope on
+purpose — default scopes are hard to escape and leak into every association,
+`unscoped` call, and join. Use `.kept` explicitly instead.
+
+Before adding Discard, check whether PaperTrail already covers it: a destroyed
+record can be restored with
+`PaperTrail::Version.where(item_type: "Post", item_id: id, event: "destroy").last.reify.save!`.
+
+### Audit Trail (PaperTrail)
+
+```ruby
+class Order < ApplicationRecord
+  has_paper_trail
+
+  # Optional: only track specific attributes
+  has_paper_trail only: [:status, :total]
+end
+
+# Usage:
+order.versions                    # All versions
+order.paper_trail.previous_version # Previous state
+order.paper_trail.originator      # Who made the change
+```
+
+### Scopes
+
+Prefer scopes over class methods:
+
+```ruby
+class Order < ApplicationRecord
+  scope :pending, -> { where(status: :pending) }
+  scope :completed, -> { where(status: :completed) }
+  scope :recent, -> { where("created_at > ?", 7.days.ago) }
+  scope :for_user, ->(user) { where(user: user) }
+
+  # Composable:
+  # Order.pending.recent.for_user(current_user)
+end
+```

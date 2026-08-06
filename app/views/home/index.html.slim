@@ -1,0 +1,30 @@
+.min-h-screen.bg-gradient-to-br.from-indigo-900.via-purple-900.to-pink-800.flex.items-center.justify-center
+  .text-center.p-8
+    / Rocket Sheep Logo
+    .text-8xl.mb-6.animate-bounce
+      span.inline-block.transform.-rotate-45 🚀
+      span.inline-block.ml-2 🐑
+
+    h1.text-5xl.font-bold.text-white.mb-2
+      | Markevans
+
+    p.text-purple-200.text-lg.mb-2
+      | Powered by Rails Rocket Sheep
+
+    p.text-purple-300.text-sm.mb-8
+      | Rails 8 • Solid Stack • Kamal Deploy
+
+    .space-x-4
+      - if respond_to?(:user_signed_in?) && user_signed_in?
+        .text-purple-200.mb-4
+          | Welcome back!
+        = link_to "Sign Out", destroy_user_session_path, data: { turbo_method: :delete }, class: "px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 backdrop-blur border border-white/20 transition"
+      - elsif respond_to?(:new_user_session_path)
+        = link_to "Sign In", new_user_session_path, class: "px-6 py-3 bg-white text-purple-900 font-semibold rounded-lg hover:bg-purple-100 transition"
+        = link_to "Sign Up", new_user_registration_path, class: "px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 backdrop-blur border border-white/20 transition"
+      - else
+        p.text-purple-200.text-sm
+          | Run <code class="font-mono">rails g devise User</code> to enable authentication
+
+    .mt-12.text-purple-400.text-sm
+      | Ready to build something amazing
