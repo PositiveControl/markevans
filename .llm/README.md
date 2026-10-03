@@ -37,7 +37,6 @@ indexed line-by-line here on purpose; the index is the index.
 How things currently work. Architecture state, not intentions.
 
 <!-- system:start -->
-- [Architecture Decision Records](../docs/system/architecture.md) — decisions taken and their consequences
 - [Models](../docs/system/models.md) — model reference
 - [Home page](../docs/system/home-page.md) — the single-page personal site: content registry, sections, motion, theme
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
