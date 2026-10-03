@@ -118,4 +118,9 @@
   --container-step-bay: 132px;     /* Bay */
   --container-step-status: 96px;
   --container-row-key: 260px;      /* detail row key */
+
+  /* Reading measures: max-w-measure and so on */
+  --container-measure: 66ch;       /* a serif paragraph */
+  --container-artifact: 80ch;      /* an artifact block */
+  --container-detail: 880px;       /* a group of detail rows */
 }

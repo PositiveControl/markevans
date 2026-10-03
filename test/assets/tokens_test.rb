@@ -53,6 +53,7 @@ class TokensTest < ActiveSupport::TestCase
     { "step-number" => "44px", "step-control" => "92px", "step-bay" => "132px",
       "step-status" => "96px", "row-key" => "260px" }.each { |name, value| assert_token "--container-#{name}", value }
     assert_token "--spacing-strip-gap", "20px"
+    { "measure" => "66ch", "artifact" => "80ch", "detail" => "880px" }.each { |name, value| assert_token "--container-#{name}", value }
   end
 
   test "the app stylesheet imports the tokens and defines no palette of its own" do
