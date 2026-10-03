@@ -37,7 +37,7 @@ export default class extends Controller {
     this.touched = false
     this.connected = true
     this.resetClock()
-    this.render()
+    this.settle()
     this.watchForThread()
   }
 
@@ -171,6 +171,16 @@ export default class extends Controller {
     } else {
       this.stepValue = step
     }
+  }
+
+  // The first render closes every body but the active one. That is the page
+  // taking its starting state, not a change of state, so it must not animate
+  // (docs/rules/motion-budget.md): data-settling turns transitions off until
+  // the browser has drawn it.
+  settle() {
+    this.element.toggleAttribute("data-settling", true)
+    this.render()
+    requestAnimationFrame(() => requestAnimationFrame(() => this.element.removeAttribute("data-settling")))
   }
 
   // Starts playing the first time the thread scrolls into view, unless the

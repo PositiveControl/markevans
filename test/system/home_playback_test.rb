@@ -26,6 +26,13 @@ class HomePlaybackTest < ApplicationSystemTestCase
     end
   end
 
+  test "page loads: the first render settles at once, and only a change of state animates" do
+    visit root_path
+    assert_selector "[aria-label=Restart]"
+
+    assert_equal 0, evaluate_script("document.getAnimations().filter(a => a instanceof CSSTransition).length")
+  end
+
   test "thread first scrolls into view: it starts playing on step 1" do
     resize_to(400) do
       visit root_path

@@ -54,7 +54,8 @@ class ChartCellComponent < ApplicationComponent
   # Playback writes data-state on the row (docs/system/home-thread-playback.md).
   # An upcoming row's graph dims; its words do not, since text at 35 percent
   # fails contrast. Without scripts nothing is set and every row is full.
-  GRAPH = "absolute inset-0 transition-opacity duration-150 ease-out in-data-[state=pending]:opacity-35"
+  GRAPH = "absolute inset-0 transition-opacity duration-150 ease-out in-data-settling:transition-none " \
+    "in-data-[state=pending]:opacity-35"
 
   FIX = "var(--spacing-fix)"
   ELBOW = "var(--spacing-elbow)"
