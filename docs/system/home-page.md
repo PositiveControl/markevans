@@ -64,14 +64,15 @@ file redraws the graph.
 Lines are 2 px borders placed absolutely. Their positions come from the chart
 tokens in `tokens.css`: `--spacing-lane-main`, `-feature` and `-side` (44, 150
 and 256 px), `--spacing-fix` (34 px, the fix's centre), `--spacing-elbow`
-(14 px), `--spacing-loop-inset` (10 px) and `--spacing-chart-label` (20 px).
+(14 px), `--spacing-loop-inset` (10 px), `--spacing-chart-label` (20 px) and
+`--spacing-line-half` (1 px, which centres an elbow's 2 px arm on the fix).
 They are combined in each line's inline `style` with `var()` and `calc()`.
 Tops and bottoms hang off the row's edges, so the lines stretch when a row
 grows. The sector's dashed edge is its own line rather than the cell's border,
 so main runs unbroken from row to row. Each piece carries a `data-chart` name
-(`main`, `through`, `branch`, `elbow`, `loop`, `fix`, `label`, `sector`), and
-the cell carries `data-git-event`. Tests and the walkthrough select on these
-names.
+(`main`, `through`, `branch`, `elbow`, `loop`, `fix`, `label`, `sector`,
+`sector-edge`), and the cell carries `data-git-event`. Tests and the
+walkthrough select on these names.
 
 ## Design system
 

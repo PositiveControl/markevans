@@ -129,6 +129,7 @@
   --spacing-elbow: 14px;           /* fork and merge corner radius */
   --spacing-loop-inset: 10px;      /* a loop's bracket, from top and bottom */
   --spacing-chart-label: 20px;     /* a branch label from its fix: right; on a merge, down too */
+  --spacing-line-half: 1px;        /* half a 2 px line: centres an elbow's arm on the fix */
 
   /* Reading measures: max-w-measure and so on */
   --container-measure: 66ch;       /* a serif paragraph */

@@ -45,11 +45,14 @@ class ChartCellComponent < ApplicationComponent
   FIX = "var(--spacing-fix)"
   ELBOW = "var(--spacing-elbow)"
   INSET = "var(--spacing-loop-inset)"
+  # An elbow box's top: its bottom border, 2 px tall, is centred on the fix.
+  ELBOW_TOP = "calc(#{FIX} - #{ELBOW} + var(--spacing-line-half))"
 
   VERTICAL = "absolute -translate-x-1/2 border-l-2"
-  # Offset by the line's half-width so each elbow's leg sits on its lane.
-  FORK_ELBOW = "absolute -translate-x-px -translate-y-px border-b-2 border-l-2"
-  MERGE_ELBOW = "absolute translate-x-px -translate-y-px border-r-2 border-b-2"
+  # Offset by the line's half-width so each elbow's leg sits on its lane;
+  # ELBOW_TOP does the same for its arm and the fix.
+  FORK_ELBOW = "absolute -translate-x-px border-b-2 border-l-2"
+  MERGE_ELBOW = "absolute translate-x-px border-r-2 border-b-2"
   BRACKET = "absolute translate-x-px border-2 border-l-0 border-dashed"
 
   # @param cell [DeliveryThread::Cell]
@@ -87,7 +90,7 @@ class ChartCellComponent < ApplicationComponent
       [ elbow(FORK_ELBOW, git.from, git.on, git.on, "border-bottom-left-radius"),
         vertical("branch", git.on, top: FIX, bottom: "0") ]
     when "merge"
-      [ vertical("branch", git.from, top: "0", height: "calc(#{FIX} - #{ELBOW})"),
+      [ vertical("branch", git.from, top: "0", height: ELBOW_TOP),
         elbow(MERGE_ELBOW, git.on, git.from, git.from, "border-bottom-right-radius") ]
     when "loop"
       [ Piece.new("loop", "#{BRACKET} #{LINES.fetch('side')}",
@@ -104,7 +107,7 @@ class ChartCellComponent < ApplicationComponent
   # A corner from the left lane to the right one, meeting the fix's row.
   def elbow(classes, left, right, branch, corner)
     Piece.new("elbow", "#{classes} #{LINES.fetch(branch)}",
-      position(left: lane(left), width: span(left, right), top: "calc(#{FIX} - #{ELBOW})", height: ELBOW, corner => ELBOW))
+      position(left: lane(left), width: span(left, right), top: ELBOW_TOP, height: ELBOW, corner => ELBOW))
   end
 
   def lane(branch) = LANES.fetch(branch)

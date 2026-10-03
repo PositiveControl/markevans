@@ -11,6 +11,8 @@ class ChartCellComponentTest < ViewComponent::TestCase
   FEATURE = "var(--spacing-lane-feature)"
   SIDE = "var(--spacing-lane-side)"
   FIX = "var(--spacing-fix)"
+  # The elbow box's top, set so its 2 px arm is centred on the fix.
+  ELBOW_TOP = "calc(#{FIX} - var(--spacing-elbow) + var(--spacing-line-half))"
 
   test "the cell is decoration: hidden from assistive technology" do
     render_cell "build"
@@ -37,6 +39,7 @@ class ChartCellComponentTest < ViewComponent::TestCase
     assert_includes elbow[:style], "left: #{MAIN}"
     assert_includes elbow[:style], "width: calc(#{FEATURE} - #{MAIN})"
     assert_includes elbow[:style], "height: var(--spacing-elbow)"
+    assert_includes elbow[:style], "top: #{ELBOW_TOP}"
     assert_includes elbow[:style], "border-bottom-left-radius: var(--spacing-elbow)"
     assert_includes elbow[:class], "border-command"
     assert_line "branch", left: FEATURE, top: FIX, bottom: "0"
@@ -47,11 +50,12 @@ class ChartCellComponentTest < ViewComponent::TestCase
     render_cell "land"
 
     assert_selector "div[data-git-event=merge]"
-    assert_line "branch", left: FEATURE, top: "0", height: "calc(#{FIX} - var(--spacing-elbow))"
+    assert_line "branch", left: FEATURE, top: "0", height: ELBOW_TOP
     elbow = piece("elbow")
     assert_includes elbow[:style], "left: #{MAIN}"
     assert_includes elbow[:style], "width: calc(#{FEATURE} - #{MAIN})"
     assert_includes elbow[:style], "border-bottom-right-radius: var(--spacing-elbow)"
+    assert_includes elbow[:style], "top: #{ELBOW_TOP}"
     assert_includes elbow[:class], "border-command"
     assert_no_selector "[data-chart=through]"
     assert_fix_on MAIN
