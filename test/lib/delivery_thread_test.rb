@@ -40,6 +40,17 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_nil step.seconds
   end
 
+  test "a cached thread is served without listing the directory again" do
+    DeliveryThread.fetch(:home)
+
+    root = DeliveryThread::ROOT
+    root.define_singleton_method(:glob) { |*| raise "listed content/threads on a cache hit" }
+
+    assert_equal "home", DeliveryThread.fetch(:home).id
+  ensure
+    root.singleton_class.remove_method(:glob)
+  end
+
   test "an unknown thread raises KeyError" do
     assert_raises(KeyError) { DeliveryThread.fetch(:nope) }
   end

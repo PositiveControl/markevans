@@ -43,12 +43,16 @@ module DeliveryThread
     # @raise [Invalid] when the file breaks the schema
     # The id is matched against the files that exist, never joined into a
     # path, so an id like "../../config/database" names no thread.
+    # Outside development a thread is read once, and a cache hit touches no
+    # file at all.
     def fetch(id)
+      return cache[id.to_s] if cache.key?(id.to_s) && !Rails.env.development?
+
       path = ROOT.glob("*.yml").find { |file| file.basename(".yml").to_s == id.to_s }
       raise KeyError, "no thread #{id} in #{ROOT}" unless path
       return load(path) if Rails.env.development?
 
-      cache[path.to_s] ||= load(path)
+      cache[id.to_s] = load(path)
     end
 
     def all = ROOT.glob("*.yml").sort.map { |path| fetch(path.basename(".yml")) }
