@@ -41,11 +41,11 @@ steps:
     groups:
       - title: "Produces"
         rows:
-          - k: "docs/plans/[slug]-design.md"
+          - k: "docs/plans/<slug>-design.md"
             v: "The design doc, with the slice list."
           - k: "Status: Draft placeholders"
             v: "Stubs for the system and procedure docs this feature will need."
-          - k: "feature/[slug]"
+          - k: "feature/<slug>"
             v: "The feature branch name, written into the doc when there is more than one slice."
       - title: "Valves, off the chain"
         rows:
@@ -112,15 +112,15 @@ steps:
       on: feature
       event: fork
       from: main
-      label: "feature/[slug]"
+      label: "feature/<slug>"
     groups:
       - title: "Produces"
         rows:
-          - k: ".llm/tasks/[n]_[slug].md"
+          - k: ".llm/tasks/<n>_<slug>.md"
             v: "The task file. Any fresh session can resume from it."
-          - k: "prefix/[n]/[slug]"
+          - k: "prefix/<n>/<slug>"
             v: "The branch."
-          - k: "Base: feature/[slug]"
+          - k: "Base: feature/<slug>"
             v: "Recorded so every later command diffs against the right base."
           - k: "draft PR to main"
             v: "Opened with the first slice, so CI runs on the feature from day one."

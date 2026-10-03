@@ -1,0 +1,95 @@
+/* ---------------------------------------------------------------------------
+   Home thread design tokens — docs/plans/2026-10-03-home-thread-design.md,
+   section 3. The only file allowed to hold a literal color (bin/gates,
+   docs/rules/tokens-only.md). Each color is a role, not a shade: see
+   docs/rules/color-means-role.md before reaching for one.
+
+   Tailwind's own palette, faces, sizes, radii, shadows and widths are cleared, so a
+   utility either names a token here or does not exist. Spacing is one 6 px
+   unit: p-1 is 6, p-2 12, p-3 18, p-4 24, p-6 36, p-8 48, p-16 96.
+
+   No dark theme is designed. Do not add one.
+   --------------------------------------------------------------------------- */
+
+/* Newsreader, latin, fixed optical size. The variable optical-size cut is
+   132 kB on its own, over the whole 120 kB font budget (design doc, section
+   7). SIL Open Font License, self-hosted from Google Fonts. */
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("newsreader-roman.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("newsreader-italic.woff2") format("woff2");
+}
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --container-*: initial;
+
+  /* Grounds */
+  --color-paper: #F7F6F0;          /* page */
+  --color-scope: #EFEEE6;          /* scope face; optional-step strip */
+  --color-card: #FDFDFB;           /* artifact block */
+
+  /* Ink */
+  --color-ink: #1B2428;            /* text, main line, active outline */
+  --color-quiet: #4A5763;          /* labels, pending text, side thread, optional */
+
+  /* Roles: command, human gate, automated gate */
+  --color-command: #0F7480;        /* command fix, feature branch, links */
+  --color-command-tint: #E4EEF0;   /* command strip, active or done */
+  --color-human: #A6651A;          /* human gate */
+  --color-human-tint: #F6E9D8;
+  --color-machine: #3E7C4F;        /* automated gate */
+  --color-machine-tint: #E3EFE6;
+
+  /* Lines and bands */
+  --color-rule: rgba(27, 36, 40, 0.3);         /* hairlines */
+  --color-rule-strong: rgba(27, 36, 40, 0.55); /* active or done strip */
+  --color-rule-faint: rgba(27, 36, 40, 0.15);  /* scope crosshair */
+  --color-sector-1: rgba(27, 36, 40, 0.05);    /* In Progress, Done */
+  --color-sector-2: rgba(27, 36, 40, 0.1);     /* Up for Review */
+
+  /* Faces: serif is a person explaining, mono is the machine
+     (docs/rules/typeface-means-speaker.md) */
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale, named for the role. Never a color's name: text-* reads both. */
+  --text-headline: 40px;
+  --text-headline--line-height: 48px;
+  --text-headline--letter-spacing: -0.01em;
+  --text-prose: 18px;              /* body, step text, italic notes */
+  --text-prose--line-height: 30px;
+  --text-strip: 16px;              /* strip command name, mono 500 */
+  --text-strip--line-height: 24px;
+  --text-key: 14px;                /* detail row key */
+  --text-key--line-height: 30px;
+  --text-artifact: 14px;
+  --text-artifact--line-height: 24px;
+  --text-label: 12px;              /* labels, controls, log, legend */
+  --text-label--line-height: 18px;
+  --text-label--letter-spacing: 0.04em;
+  --text-cell: 11px;               /* Ctl, Bay, Rmk, uppercase */
+  --text-cell--line-height: 16px;
+
+  /* Space and shape */
+  --spacing: 6px;
+  --radius-box: 2px;
+  --container-page: 1320px;        /* content max width */
+  --container-column: 400px;       /* scope column, chart cell */
+}

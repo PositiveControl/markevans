@@ -142,6 +142,30 @@ def singular(word)
   end
 end
 
+# --- literal colors ----------------------------------------------------------
+# docs/rules/tokens-only.md: a color is a token, so a hex value
+# or a CSS color function (rgb, hsl, hwb, lab, lch, oklab, oklch) appears in the
+# token file and nowhere else in components, views, helpers, styles or scripts.
+# Generated builds are skipped. A hex is 3, 4, 6 or 8 digits standing alone, so
+# an anchor like "#work" is not one. One spelled only in hex letters, "#feed",
+# is: a known false positive, accepted because it fails closed.
+
+COLOR_DIRS = %w[app/components app/views app/helpers app/assets app/javascript].freeze
+TOKEN_FILE = "app/assets/tailwind/tokens.css"
+# The old portfolio page's palette, until #21 deletes that page with it.
+LITERAL_COLOR_ALLOWED = %w[app/assets/tailwind/application.css].freeze
+LITERAL_COLOR = /(?<![\w&])#(?:\h{8}|\h{6}|\h{3,4})\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(/
+
+def literal_colors
+  files = COLOR_DIRS.flat_map { |dir| Dir.glob("#{dir}/**/*.{css,js,rb,slim,erb}") }
+  files -= [ TOKEN_FILE, *LITERAL_COLOR_ALLOWED ]
+  files.reject { |file| file.start_with?("app/assets/builds/") }.sort.flat_map do |file|
+    File.foreach(file).with_index(1).flat_map do |line, number|
+      line.scan(LITERAL_COLOR).map { |match| "#{file}:#{number}: #{match}" }
+    end
+  end
+end
+
 # --- runner ------------------------------------------------------------------
 
 CHECKS = [
@@ -152,7 +176,9 @@ CHECKS = [
   ["Command mirror", :command_mirror, "AGENTS.md",
    "Copy the newer file over the older one; the two directories are one set of commands."],
   ["Unindexed foreign keys", :unindexed_foreign_keys, "docs/rules/database-conventions.md",
-   "Add an index led by the column, in a migration that follows docs/rules/safe-migrations.md."]
+   "Add an index led by the column, in a migration that follows docs/rules/safe-migrations.md."],
+  ["Literal colors", :literal_colors, "docs/rules/tokens-only.md",
+   "Use a token from #{TOKEN_FILE} (text-command, bg-paper, …), or add the token there first. An anchor or id spelled only in hex letters (#feed, #faq) reads as a color: rename the anchor."]
 ].freeze
 
 failed = false

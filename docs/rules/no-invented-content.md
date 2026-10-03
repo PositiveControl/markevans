@@ -5,8 +5,8 @@ applies_to: ["content/**"]
 triggers: ["numbers", "metrics", "quotes", "ledger", "placeholder", "TBD"]
 see_also: ["content-is-files"]
 modes: [ web ]
-tokens: 260
-current_state: diverges
+tokens: 270
+current_state: matches
 ---
 
 # no-invented-content
@@ -31,8 +31,4 @@ added_lines: "[n]"   # until read from the PR
 
 ## Enforcement
 
-Gated: the placeholder gate fails a production build on any square-bracket placeholder or "TBD".
-
-## Where this app is
-
-The placeholder gate does not exist yet, so nothing stops a `[placeholder]` or TBD reaching production. Slice 1 adds it. `home.yml` holds bracket placeholders on purpose until the example feature is chosen.
+Gated: `bin/rails content:placeholders`, part of `content:check`, fails a production build (it runs ahead of `assets:precompile` when `RAILS_ENV=production`) on any square-bracket placeholder or "TBD". It does not run on push or in CI, where placeholders are expected while content is written. Markdown's own brackets pass: links, reference links, checkboxes.

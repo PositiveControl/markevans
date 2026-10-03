@@ -73,7 +73,7 @@ Procedures somebody will need to repeat.
 - [Set up the beads tracker tier](../docs/sop/beads-setup.md) — only if `/workflow_setup` chose tier `beads`
 - [Find slow tests](../docs/sop/find-slow-tests.md) — read the Slowpoke report and act on it
 - [Update from the template](../docs/sop/update-from-the-template.md) — three-way merge the alignment layer against a newer template
-- [Edit the home thread](../docs/sop/edit-the-home-thread.md) — change a step in content/threads/home.yml and what the gates check (Draft, #14)
+- [Edit the home thread](../docs/sop/edit-the-home-thread.md) — change a step in content/threads/home.yml, the git block rules, and what the schema, placeholder and literal-color checks catch
 <!-- sop:end -->
 
 ## QA — `docs/qa/`

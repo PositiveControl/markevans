@@ -57,7 +57,7 @@ spamsandwich is. Square brackets in content mark these.
 
 ## 3. Tokens
 
-CSS custom properties on `:root`; only these are exposed to Tailwind.
+CSS custom properties on `:root`; only these are exposed to Tailwind. They live in `app/assets/tailwind/tokens.css` as Tailwind theme variables, so each name below carries its namespace there (`--paper` is `--color-paper`, giving `bg-paper`), and the type roles are `--text-headline`, `--text-prose`, `--text-strip`, `--text-key`, `--text-artifact`, `--text-label` and `--text-cell`.
 
 | Token | Value | Role |
 | --- | --- | --- |
