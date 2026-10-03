@@ -39,10 +39,13 @@ module DeliveryThread
     # (docs/rules/topology-from-data.md).
     def cells
       open = []
-      steps.each_cons(2).with_object([ Cell.new(step: steps.first, through: [].freeze, sector: steps.first.bay) ]) do |(above, step), cells|
-        open << above.git.on if above.git.event == "fork"
+      above = nil
+      steps.map do |step|
         open.delete(step.git.from) if step.git.event == "merge"
-        cells << Cell.new(step:, through: open.dup.freeze, sector: (step.bay unless step.bay == above.bay))
+        cell = Cell.new(step:, through: open.dup.freeze, sector: (step.bay unless step.bay == above&.bay))
+        open << step.git.on if step.git.event == "fork"
+        above = step
+        cell
       end.freeze
     end
   end

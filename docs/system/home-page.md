@@ -102,10 +102,10 @@ alert's variant named in words.
 | Piece | Slice |
 |---|---|
 | Playback, strip states, roll-up, controls, the scope | 3 (`docs/system/home-thread-playback.md`) |
+| Upcoming rows dimmed, the active ring on the fix | 3 |
 | Strip bay, controller filter, log; the budget gate | 4 |
 | Follow, yield, docked bar, step hash, keyboard | 5 |
 | Narrow screens (84 px gutter, chart labels hidden) | 6 |
-| Upcoming rows dimmed, the active ring on the fix | 3 |
 | Work, Workflow, Background, Contact; header nav; Person JSON-LD | 7 |
 
 ## Tests
