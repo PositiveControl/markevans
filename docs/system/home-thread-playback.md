@@ -56,7 +56,8 @@ A row's seconds come from the server as `style="--seconds: N"` (`Step#duration`,
 ## The step clock
 
 The active step plays for its seconds × `pace` ms. Pausing keeps what is left,
-and so does selecting the step that is already active. A new step, a restart or
+and so does going to the step that is already active: selecting it again, or
+back on the first step and forward on the last. A new step, a restart or
 a pace change starts it full. When it runs out, the
 next step becomes active. On the last step it stops, and Play reads Replay.
 
@@ -81,6 +82,7 @@ rewinds the line's animation.
 | Reader scrolls by wheel, touch or keys | Pauses | #18 |
 | Tab becomes hidden | Pauses. Does not resume by itself | #16 |
 | Restart | Step 1, reopened strips cleared, paused | #16 |
+| Page restored from Turbo's cache | Comes back on the step it left, paused, and does not start on view: the values persist in data attributes, so `connect()` sets playing false and counts rows that already carry a `data-state` as a page the reader has been on | #16 |
 | Page loads with a step hash | That step active, paused, scrolled into view | #18 |
 
 ## Without scripts
@@ -96,6 +98,11 @@ fall back to the document reading (design doc, section 6):
   the strips.
 
 ## Motion
+
+The first render is the page taking its starting state, not a change, so it
+does not animate. `connect()` holds `data-settling` on `main` until the browser
+has drawn it, and the roll-up, the row dimming and the leader are
+`in-data-settling:transition-none`.
 
 Roll-up, 200 ms. Leader, 300 ms. Row dimming, 150 ms. All ease out
 (`docs/rules/motion-budget.md`). The sweep turns once every 6 s while playing,
