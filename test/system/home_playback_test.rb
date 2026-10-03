@@ -85,6 +85,17 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_equal root_path, URI(current_url).request_uri, "a jump moves no hash"
   end
 
+  test "the active step selected: pauses, keeping the time it has left" do
+    open_thread
+    sleep 0.5 # let the clock run
+
+    target(0).click
+
+    assert_not playing?
+    assert_step 0, status: "paused"
+    assert_operator line_time(0), :>=, 400, "the line was rewound"
+  end
+
   test "a pending strip selected: jumps there and pauses" do
     open_thread
 
@@ -250,6 +261,10 @@ class HomePlaybackTest < ApplicationSystemTestCase
     key = @steps[index].key
     assert_selector "##{key}#{"[data-state=#{state}]" if state}#{"[data-open=#{open}]" if open}"
     assert_selector "##{key} [data-playback-target=status]", text: status.upcase if status
+  end
+
+  def line_time(index)
+    evaluate_script("document.querySelector('##{@steps[index].key} [data-playback-target=line]').getAnimations()[0].currentTime")
   end
 
   def line_state(index)

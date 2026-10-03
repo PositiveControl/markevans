@@ -88,6 +88,7 @@ export default class extends Controller {
     this.touched = true
     this.playingValue = false
     this.openValue = []
+    if (this.stepValue === 0) this.resetClock()
     this.go(0)
   }
 
@@ -163,14 +164,11 @@ export default class extends Controller {
     this.go(index)
   }
 
+  // A new step starts its clock full (stepValueChanged). Going to the step
+  // already active keeps what it has left.
   go(index) {
     const step = Math.max(0, Math.min(this.rowTargets.length - 1, index))
-    if (step === this.stepValue) {
-      this.resetClock()
-      this.render()
-    } else {
-      this.stepValue = step
-    }
+    step === this.stepValue ? this.render() : (this.stepValue = step)
   }
 
   // The first render closes every body but the active one. That is the page

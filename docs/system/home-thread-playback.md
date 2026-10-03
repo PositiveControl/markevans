@@ -55,8 +55,9 @@ A row's seconds come from the server as `style="--seconds: N"` (`Step#duration`,
 
 ## The step clock
 
-The active step plays for its seconds × `pace` ms. Pausing keeps what is left.
-A new step, a restart or a pace change starts it full. When it runs out, the
+The active step plays for its seconds × `pace` ms. Pausing keeps what is left,
+and so does selecting the step that is already active. A new step, a restart or
+a pace change starts it full. When it runs out, the
 next step becomes active. On the last step it stops, and Play reads Replay.
 
 The remaining-time line is the same clock drawn in CSS: `animate-remaining` in
