@@ -59,6 +59,20 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: git.event "rebase"/) { |data| data["steps"][1]["git"]["event"] = "rebase" }
   end
 
+  test "step keys are unique" do
+    assert_invalid(/two: key used by more than one step/) { |data| data["steps"][1]["key"] = "two"; data["steps"][2]["key"] = "two" }
+  end
+
+  test "the id matches the filename" do
+    data = minimal.merge("id" => "home")
+    error = Dir.mktmpdir do |dir|
+      File.write(File.join(dir, "broken.yml"), data.to_yaml)
+      assert_raises(DeliveryThread::Invalid) { DeliveryThread.load(File.join(dir, "broken.yml")) }
+    end
+
+    assert_match(/id "home" does not match the filename/, error.message)
+  end
+
   test "a thread needs exactly one start and one end" do
     assert_invalid(/exactly one start, found 0/) { |data| data["steps"][0]["git"].delete("event") }
     assert_invalid(/exactly one end, found 2/) { |data| data["steps"][1]["git"]["event"] = "end" }

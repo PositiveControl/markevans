@@ -54,7 +54,7 @@ module DeliveryThread
     # @raise [Invalid] naming the file and step for every problem found
     def load(path)
       data = YAML.safe_load_file(path)
-      errors = Schema.new(data).errors
+      errors = Schema.new(data, id: File.basename(path, ".yml")).errors
       raise Invalid, errors.map { |error| "#{File.basename(path)}: #{error}" }.join("\n") if errors.any?
 
       build(data)
@@ -86,18 +86,29 @@ module DeliveryThread
 
   # Every problem in one pass, so a broken file is fixed in one edit.
   class Schema
-    def initialize(data)
+    def initialize(data, id:)
       @data = data
+      @id = id
     end
 
     def errors
       return [ "top level must be a mapping with id, title and steps" ] unless @data.is_a?(Hash) && @data["steps"].is_a?(Array)
 
       steps = @data["steps"]
-      steps.each_with_index.flat_map { |step, index| step_errors(step, index) } + topology_errors(steps)
+      id_errors + steps.each_with_index.flat_map { |step, index| step_errors(step, index) } +
+        duplicate_key_errors(steps) + topology_errors(steps)
     end
 
     private
+
+    def id_errors
+      @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
+    end
+
+    def duplicate_key_errors(steps)
+      keys = steps.filter_map { |step| step["key"] if step.is_a?(Hash) }
+      keys.tally.select { |_, count| count > 1 }.keys.map { |key| "#{key}: key used by more than one step" }
+    end
 
     def step_errors(step, index)
       return [ "step #{index + 1}: must be a mapping" ] unless step.is_a?(Hash)
