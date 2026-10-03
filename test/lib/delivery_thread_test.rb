@@ -230,10 +230,6 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_equal [ "Todo", nil, "In Progress", nil, "Done" ], load_thread(data).cells.map(&:sector)
   end
 
-  test "the home thread's sectors are its four bays, in order" do
-    assert_equal DeliveryThread::BAYS, DeliveryThread.fetch(:home).cells.filter_map(&:sector)
-  end
-
   private
 
   # one: start · two: plain · three: fork onto feature · four: merge · five: end

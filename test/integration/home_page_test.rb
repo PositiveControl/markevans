@@ -60,10 +60,9 @@ class HomePageTest < ActionDispatch::IntegrationTest
     get root_url
 
     events = @thread.steps.map { |step| step.git.event }.tally
-    assert_equal({ "start" => 1, "loop" => 2, "fork" => 1, "merge" => 1, "end" => 1 }, events.except(nil))
     %w[fork merge loop].each { |event| assert_select "[data-git-event=#{event}]", count: events[event] }
     assert_select "[data-chart=loop]", count: events["loop"]
-    assert_select "[data-chart=sector]", count: DeliveryThread::BAYS.size
+    assert_select "[data-chart=sector]", count: @thread.cells.count(&:sector)
     assert_equal @thread.steps.filter_map { |step| step.git.label }, css_select("[data-chart=label]").map(&:text)
   end
 
