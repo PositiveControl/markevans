@@ -1,0 +1,15 @@
+div class=classes data-kind=step.kind
+  span class="flex w-step-number shrink-0 items-center justify-center self-stretch border-r border-rule text-label text-quiet" = number
+  h3 class="min-w-0 flex-1 px-2 py-1.5 text-strip font-medium wrap-anywhere" = step.name
+  div class="flex w-step-control shrink-0 flex-col justify-center self-stretch border-l border-rule px-2 text-cell uppercase"
+    span> class="text-quiet" Ctl
+    span = lane
+  div class="flex w-step-bay shrink-0 flex-col justify-center self-stretch border-l border-rule px-2 text-cell uppercase"
+    span> class="text-quiet" Bay
+    span = step.bay
+  span class="w-step-status shrink-0 self-stretch border-l border-rule" aria-hidden="true"
+  p class="flex basis-full border-t border-rule py-0.5"
+    span class="w-step-number shrink-0" aria-hidden="true"
+    span class="px-2"
+      span> class="text-cell uppercase text-quiet" Rmk
+      = step.outcome
