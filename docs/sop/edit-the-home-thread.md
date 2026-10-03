@@ -14,6 +14,8 @@ change a step, and what checks the change before it ships.
 ```yaml
 id: home                  # must match the filename
 title: "…"
+headline: "…"             # optional: the page's h1, above the thread
+intro: "…"                # optional: the paragraph under the headline
 steps:
   - key: task_plan        # unique and stable: code and links refer to it
     name: "/task_plan"    # shown on the strip, in mono

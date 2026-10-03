@@ -2,6 +2,8 @@
 # Square brackets mark content still to be supplied; the placeholder gate fails a production build on them.
 id: home
 title: "[example TBD]"
+headline: "I build web products with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
+intro: "Positive control is an air traffic term. No aircraft moves without explicit clearance. Here, no change ships without one. One feature is on the scope now, flying the whole route. Pause it and step through at your own pace."
 steps:
   - key: pick
     name: "/pick"
