@@ -13,9 +13,6 @@ module Markevans
       g.orm :active_record, primary_key_type: :uuid
     end
 
-    # Autoload app/lib for registries and game config
-    config.autoload_paths << Rails.root.join("app/lib")
-
     # ViewComponent: generate a sidecar directory so a component's class,
     # template, and any component-scoped Stimulus controller sit together.
     # Template engine follows config.generators.template_engine, which
@@ -23,7 +20,7 @@ module Markevans
     config.view_component.generate.sidecar = true
 
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 8.0
+    config.load_defaults 8.1
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
