@@ -81,6 +81,14 @@ class GatesLiteralColorTest < Minitest::Test
     assert_equal 0, run_gates.last.exitstatus
   end
 
+  def test_the_app_stylesheet_is_not_exempt
+    write "app/assets/tailwind/application.css", "@theme { --color-ink: #0a0a0b; }\n"
+
+    _, err, status = run_gates
+    assert_equal 1, status.exitstatus
+    assert_includes err, "application.css:1: #0a0a0b"
+  end
+
   def test_generated_builds_are_ignored
     write "app/assets/builds/tailwind.css", "a { color: #000; }\n"
 

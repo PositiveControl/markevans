@@ -152,13 +152,11 @@ end
 
 COLOR_DIRS = %w[app/components app/views app/helpers app/assets app/javascript].freeze
 TOKEN_FILE = "app/assets/tailwind/tokens.css"
-# The old portfolio page's palette, until #21 deletes that page with it.
-LITERAL_COLOR_ALLOWED = %w[app/assets/tailwind/application.css].freeze
 LITERAL_COLOR = /(?<![\w&])#(?:\h{8}|\h{6}|\h{3,4})\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(/
 
 def literal_colors
   files = COLOR_DIRS.flat_map { |dir| Dir.glob("#{dir}/**/*.{css,js,rb,slim,erb}") }
-  files -= [ TOKEN_FILE, *LITERAL_COLOR_ALLOWED ]
+  files -= [ TOKEN_FILE ]
   files.reject { |file| file.start_with?("app/assets/builds/") }.sort.flat_map do |file|
     File.foreach(file).with_index(1).flat_map do |line, number|
       line.scan(LITERAL_COLOR).map { |match| "#{file}:#{number}: #{match}" }

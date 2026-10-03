@@ -1,5 +1,6 @@
 class HomeController < ApplicationController
   def index
+    @thread = DeliveryThread.fetch(:home)
   end
 
   def sitemap

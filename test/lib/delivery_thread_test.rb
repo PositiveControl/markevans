@@ -111,6 +111,29 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/missing title/) { |data| data.delete("title") }
   end
 
+  test "the home thread carries the page's headline and intro" do
+    thread = DeliveryThread.fetch(:home)
+
+    assert_match(/positive control/, thread.headline)
+    assert_match(/air traffic term/, thread.intro)
+  end
+
+  test "headline and intro are optional" do
+    thread = load_thread(minimal)
+
+    assert_nil thread.headline
+    assert_nil thread.intro
+  end
+
+  test "headline and intro must be text" do
+    assert_invalid(/headline must be text/) { |data| data["headline"] = [ "a" ] }
+    assert_invalid(/intro must be text/) { |data| data["intro"] = { "a" => "b" } }
+  end
+
+  test "an unknown top-level key is rejected" do
+    assert_invalid(/unknown top-level key subtitle/) { |data| data["subtitle"] = "x" }
+  end
+
   test "step keys are unique" do
     assert_invalid(/two: key used by more than one step/) { |data| data["steps"][1]["key"] = "two"; data["steps"][2]["key"] = "two" }
   end

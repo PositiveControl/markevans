@@ -1,34 +1,27 @@
-- profile = Portfolio.profile
-- projects = Portfolio.projects
-- page_title = "#{profile.name} — #{profile.role}"
-- content_for :title, page_title
-- content_for :meta_description, profile.summary.truncate(155)
+/ The home thread without scripts: every strip open, in order (design doc,
+/ sections 4 and 6). Every word of copy comes from content/threads/home.yml.
+/ The chart cell is empty until ChartCellComponent (slice 2); the scope,
+/ controls and log arrive with playback.
+- content_for :title, "Mark Evans"
+- content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
-- content_for :head do
-  ruby:
-    person = {
-      "@context" => "https://schema.org",
-      "@type" => "Person",
-      "name" => profile.name,
-      "jobTitle" => profile.role,
-      "email" => "mailto:#{profile.email}",
-      "url" => root_url,
-      "address" => { "@type" => "PostalAddress", "addressLocality" => "Phoenix", "addressRegion" => "AZ" },
-      "sameAs" => [ profile.github, profile.linkedin ],
-      "knowsAbout" => Portfolio.skill_groups.flat_map(&:items).first(12)
-    }
-  = jsonld_tag(person)
+header class="border-b border-rule"
+  div class="mx-auto flex min-h-10 max-w-page items-center px-8"
+    a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
-/ The nav's ⌘K button and the palette dialog share one controller element.
-/ keydown@window is how the shortcut is heard wherever the caret happens to be.
-div data-controller="palette" data-action="keydown@window->palette#hotkey" data-palette-active-class="bg-raised border-amber text-fg"
-  = render "home/nav", profile: profile
-  = render "home/palette", profile: profile, projects: projects
+main class="mx-auto max-w-page px-8"
+  div class="flex items-start gap-x-8 pt-6"
+    aside class="w-column shrink-0"
+      = render LegendComponent.new
+    section class="min-w-0 flex-1 pt-6"
+      h1 class="text-headline" = @thread.headline
+      p class="mt-4 max-w-measure" = @thread.intro
 
-main
-  = render "home/hero", profile: profile
-  = render "home/metrics", metrics: Portfolio.metrics
-  = render "home/work", roles: Portfolio.roles
-  = render "home/projects", projects: projects
-  = render "home/skills", groups: Portfolio.skill_groups
-  = render "home/contact", profile: profile
+  section class="pt-4 pb-16" aria-labelledby="thread-heading"
+    h2#thread-heading class="sr-only" The thread
+    - @thread.steps.each.with_index(1) do |step, number|
+      div class="flex" id=step.key
+        div class="w-column shrink-0" aria-hidden="true"
+        div class="min-w-0 flex-1 py-1 pl-strip-gap"
+          = render StripComponent.new(step:, number:)
+          = render StepBodyComponent.new(step:)

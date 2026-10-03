@@ -5,8 +5,8 @@ applies_to: ["app/components/**", "content/**"]
 triggers: ["serif", "mono", "font", "typeface", "Newsreader", "Plex"]
 see_also: ["tokens-only"]
 modes: [ web ]
-tokens: 250
-current_state: diverges
+tokens: 190
+current_state: matches
 ---
 
 # typeface-means-speaker
@@ -32,7 +32,3 @@ A command name set in serif inside a sentence heading.
 ## Enforcement
 
 Prose only.
-
-## Where this app is
-
-Newsreader is self-hosted and `--font-serif` / `--font-mono` are tokens, but no strips exist yet and the old page still sets everything in IBM Plex. #21 builds the static strips and step bodies.

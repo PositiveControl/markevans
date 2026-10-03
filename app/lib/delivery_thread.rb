@@ -27,10 +27,13 @@ module DeliveryThread
   REQUIRED = %w[key name kind lane bay outcome body git groups].freeze
   OPTIONAL = %w[artifact note seconds].freeze
   GIT_KEYS = %w[on event from label].freeze
+  # headline and intro are the page copy around the thread: the h1 and the
+  # paragraph beneath it.
+  TOP_KEYS = %w[id title headline intro steps].freeze
 
   Invalid = Class.new(StandardError)
 
-  Sequence = Data.define(:id, :title, :steps)
+  Sequence = Data.define(:id, :title, :headline, :intro, :steps)
 
   Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds)
 
@@ -82,7 +85,7 @@ module DeliveryThread
           note: step["note"], seconds: step["seconds"]
         )
       end
-      Sequence.new(id: data["id"], title: data["title"], steps: steps.freeze)
+      Sequence.new(id: data["id"], title: data["title"], headline: data["headline"], intro: data["intro"], steps: steps.freeze)
     end
   end
 
@@ -111,7 +114,10 @@ module DeliveryThread
     def header_errors
       errors = @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
       errors << "missing title" if missing?(@data["title"])
-      errors
+      errors += (@data.keys - TOP_KEYS).map { |key| "unknown top-level key #{key}" }
+      errors + %w[headline intro].filter_map do |key|
+        "#{key} must be text" if @data.key?(key) && !@data[key].is_a?(String)
+      end
     end
 
     def duplicate_key_errors(steps)

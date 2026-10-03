@@ -56,11 +56,6 @@ group :development do
   gem "web-console"
 end
 
-group :test do
-  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
-  gem "selenium-webdriver"
-end
 gem "tailwindcss-rails"
 gem "devise"
 gem "petergate"
@@ -76,6 +71,9 @@ group :development do
 end
 
 group :development, :test do
+  # System tests, and a headed browser for reviewer walkthroughs (bin/qa-walkthrough)
+  gem "capybara"
+  gem "selenium-webdriver"
   gem "pry"
   gem "pry-rails"
   gem "bullet"

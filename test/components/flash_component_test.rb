@@ -17,10 +17,10 @@ class FlashComponentTest < ViewComponent::TestCase
     assert_selector "[role=alert]", text: "Careful"
   end
 
-  test "maps alert to the danger variant" do
+  test "maps alert to the error variant" do
     render_inline(FlashComponent.new(flash: { "alert" => "Nope" }))
 
-    assert_selector "[role=alert].bg-red-50", text: "Nope"
+    assert_selector "[role=alert]", text: "Error Nope"
   end
 
   test "ignores non-string flash values gems stash there" do

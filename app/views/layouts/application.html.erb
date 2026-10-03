@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title><%= content_for(:title) || "Markevans" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,12 +10,6 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%# Scroll-reveal animations only apply when JS can undo them. Set before
-        first paint so there is no flash of hidden content. %>
-    <%= javascript_tag nonce: true do %>
-      document.documentElement.classList.add("js")
-    <% end %>
-
     <%= yield :head %>
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
@@ -25,9 +19,9 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# The three faces above the fold. The remaining weights load with the
-        stylesheet — swapping them in late is not noticeable. %>
-    <% %w[plex-mono-400.woff2 plex-mono-600.woff2 plex-sans-400.woff2].each do |font| %>
+    <%# The three faces above the fold: the serif prose and the two mono
+        weights on the strips. Newsreader italic loads with the stylesheet. %>
+    <% %w[newsreader-roman.woff2 plex-mono-400.woff2 plex-mono-500.woff2].each do |font| %>
       <%= tag.link rel: "preload", as: "font", type: "font/woff2", href: asset_path(font), crossorigin: "anonymous" %>
     <% end %>
 
@@ -39,7 +33,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-ink text-fg font-sans antialiased selection:bg-amber selection:text-ink">
+  <body class="bg-paper text-ink font-serif text-prose antialiased">
     <%= render FlashComponent.new(flash: flash) %>
     <%= yield %>
   </body>

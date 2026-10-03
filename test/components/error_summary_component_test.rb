@@ -27,6 +27,7 @@ class ErrorSummaryComponentTest < ViewComponent::TestCase
 
     assert_selector "[role=alert] li", text: "Email can't be blank"
     assert_selector "h2", text: "1 error prevented this from being saved"
+    assert_selector "[role=alert].bg-card.border-rule"
   end
 
   test "accepts a custom title" do

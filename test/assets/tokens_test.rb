@@ -48,6 +48,28 @@ class TokensTest < ActiveSupport::TestCase
     assert_token "--container-column", "400px"
   end
 
+  # Design doc, section 4: the strip's ruled cells and the detail row key.
+  test "the strip anatomy widths are named" do
+    { "step-number" => "44px", "step-control" => "92px", "step-bay" => "132px",
+      "step-status" => "96px", "row-key" => "260px" }.each { |name, value| assert_token "--container-#{name}", value }
+    assert_token "--spacing-strip-gap", "20px"
+    { "measure" => "66ch", "artifact" => "80ch", "detail" => "880px" }.each { |name, value| assert_token "--container-#{name}", value }
+  end
+
+  test "the app stylesheet imports the tokens and defines no palette of its own" do
+    app = Rails.root.join("app/assets/tailwind/application.css").read
+
+    assert_match(/@import\s+"\.\/tokens\.css";/, app)
+    assert_no_match(/--color-[\w-]+:|@font-face/, app)
+  end
+
+  test "every font file on disk is declared, and every declared font is on disk" do
+    on_disk = Rails.root.join("app/assets/fonts").glob("*.woff2").map { |path| path.basename.to_s }.sort
+    declared = TOKENS.scan(/url\("([\w-]+\.woff2)"\)/).flatten.sort
+
+    assert_equal on_disk, declared
+  end
+
   test "Tailwind's default palette, faces, sizes, radii, shadows and widths are cleared" do
     %w[color font text radius shadow inset-shadow drop-shadow container].each { |namespace| assert_token "--#{namespace}-*", "initial" }
   end
