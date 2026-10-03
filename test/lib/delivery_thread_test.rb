@@ -121,6 +121,10 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_match(/id "home" does not match the filename/, error.message)
   end
 
+  test "a YAML boolean is not an allowed value" do
+    assert_invalid(/two: kind false/) { |data| data["steps"][1]["kind"] = false }
+  end
+
   test "a thread needs exactly one start and one end" do
     assert_invalid(/exactly one start, found 0/) { |data| data["steps"][0]["git"].delete("event") }
     assert_invalid(/exactly one end, found 2/) { |data| data["steps"][1]["git"]["event"] = "end" }

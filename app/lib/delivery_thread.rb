@@ -112,7 +112,7 @@ module DeliveryThread
     end
 
     def duplicate_key_errors(steps)
-      keys = steps.filter_map { |step| step["key"] if step.is_a?(Hash) }
+      keys = steps.filter_map { |step| step["key"].presence if step.is_a?(Hash) }
       keys.tally.select { |_, count| count > 1 }.keys.map { |key| "#{key}: key used by more than one step" }
     end
 
@@ -159,7 +159,7 @@ module DeliveryThread
     end
 
     def allowed(field, value, values)
-      "#{field} #{value.inspect} is not one of #{values.join(', ')}" if value && !values.include?(value)
+      "#{field} #{value.inspect} is not one of #{values.join(', ')}" unless value.nil? || values.include?(value)
     end
 
     def topology_errors(steps)
