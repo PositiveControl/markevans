@@ -45,7 +45,8 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_equal @thread.steps.map(&:key), keys
 
     @thread.steps.each do |step|
-      assert_select "##{step.key} h3", text: step.name
+      assert_select "##{step.key} h3 button", text: /\A0?#{@thread.steps.index(step) + 1} #{Regexp.escape(step.name)} Ctl/
+      assert_select "##{step.key}-body"
       assert_includes response.body, ERB::Util.html_escape(step.body)
     end
   end
@@ -72,10 +73,13 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "aside [aria-label=Legend] li", count: 8
   end
 
-  test "the thread has no controls until playback exists" do
+  test "without scripts each strip is a disabled button with no status word, its body open" do
     get root_url
 
-    assert_select "section[aria-labelledby=thread-heading] button", count: 0
+    assert_select "[data-playback-target=strip][disabled][aria-expanded=true]", count: @thread.steps.size
+    assert_select "[data-playback-target=strip]:not([disabled])", count: 0
+    assert_select "[data-playback-target=status]", text: "", count: @thread.steps.size
+    assert_select "[data-open], [data-state]", count: 0
   end
 
   test "self-hosted fonts are preloaded, not fetched from a third party" do

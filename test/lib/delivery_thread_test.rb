@@ -40,6 +40,13 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_nil step.seconds
   end
 
+  test "a step plays for its own seconds, or six" do
+    step = DeliveryThread.fetch(:home).steps.first
+
+    assert_equal 6, step.duration
+    assert_equal 9, step.with(seconds: 9).duration
+  end
+
   test "a cached thread is served without listing the directory again" do
     DeliveryThread.fetch(:home)
 

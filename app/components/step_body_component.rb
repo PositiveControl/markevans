@@ -18,4 +18,7 @@ class StepBodyComponent < ApplicationComponent
   private
 
   attr_reader :step
+
+  # The strip's aria-controls names this.
+  def body_id = "#{step.key}-body"
 end

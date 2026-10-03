@@ -17,3 +17,16 @@
     color: var(--color-command);
   }
 }
+
+/* The active strip's remaining time: a line that empties left to right over
+   the step's seconds (--seconds, set per row) at the playback pace (--pace,
+   ms per second, set by the playback controller). A var() inside a theme
+   token resolves at :root, where neither is set, so this is a utility. */
+@utility animate-remaining {
+  animation: remaining calc(var(--seconds) * var(--pace) * 1ms) linear forwards;
+}
+
+@keyframes remaining {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}

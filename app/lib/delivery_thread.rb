@@ -55,7 +55,12 @@ module DeliveryThread
   # continues the one above).
   Cell = Data.define(:step, :through, :sector)
 
-  Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds)
+  # Seconds a step plays for when it sets none (design doc, section 6).
+  SECONDS = 6
+
+  Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds) do
+    def duration = seconds || SECONDS
+  end
 
   Git = Data.define(:on, :event, :from, :label)
   Group = Data.define(:title, :rows)
