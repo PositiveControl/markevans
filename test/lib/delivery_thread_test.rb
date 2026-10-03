@@ -179,6 +179,9 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: loop from feature, which is not open here/) do |data|
       data["steps"][1]["git"] = { "on" => "side", "event" => "loop", "from" => "feature" }
     end
+    assert_invalid(/two: a loop must be on side, not main/) do |data|
+      data["steps"][1]["git"] = { "on" => "main", "event" => "loop", "from" => "main" }
+    end
   end
 
   test "the home thread's own topology passes" do

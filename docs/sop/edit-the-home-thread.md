@@ -58,8 +58,8 @@ The chart is drawn from these alone, never from a step's position
 - A step may sit `on` a branch only while it is open: not before its fork,
   not after its merge.
 - **loop** is a side thread that leaves and rejoins within one row:
-  `on: side, event: loop, from: <a line open at that row>`. `on: side` is
-  only ever a loop, and it needs no merge.
+  `on: side, event: loop, from: <a line open at that row>`. `on: side` holds
+  only loops, a loop sits only `on: side`, and a loop needs no merge.
 - `fork`, `merge` and `loop` need `from`. A step with no `event` continues the
   line it is `on`.
 - The block takes `on`, `event`, `from` and `label`, nothing else, so a typo
