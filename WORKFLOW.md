@@ -352,3 +352,8 @@ A feature with more than one slice lands on a feature branch, not on `main`. Eac
 - `.llm/README.md` indexes **committed docs only**; `.llm/tasks/` and `.llm/threads/` are local scratch (gitignored)
 - Doc updates happen at defined points only: `/feature_plan` creates placeholders, `/pr_submit` completes-or-deletes them (+ index dupe/dead-link check) — at the feature PR for a multi-slice feature, `/update_docs` for deep passes
 - Never merge a PR to `main` leaving a Draft placeholder behind
+- The Stop hook (`bin/hooks/session_end`) holds a turn while drafts are open: on
+  a slice branch only that slice's, on `main` all of them. It is quiet on
+  `feature/*` and a detached HEAD, where the feature's drafts are meant to stay
+  open until the feature PR. `SKIP_DRAFT_CHECK=1` in `.claude/settings.local.json`
+  silences it locally
