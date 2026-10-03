@@ -5,8 +5,8 @@ applies_to: ["app/components/**", "app/views/**", "app/helpers/**", "app/assets/
 triggers: ["color", "hex", "rgb", "font-size", "radius", "spacing"]
 see_also: ["color-means-role", "tailwind"]
 modes: [ web ]
-tokens: 400
-current_state: diverges
+tokens: 290
+current_state: matches
 ---
 
 # tokens-only
@@ -32,7 +32,3 @@ div class="text-command rounded-box"
 ## Enforcement
 
 Gated: `bin/gates` (pre-push and CI) fails on a hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in `app/components`, `app/views`, `app/helpers`, `app/assets` or `app/javascript` outside `app/assets/tailwind/tokens.css`.
-
-## Where this app is
-
-`app/assets/tailwind/tokens.css` holds the tokens and `bin/gates` fails on a literal color anywhere else, but nothing uses the tokens yet: `application.css` does not import the file, because the old portfolio page's own `@theme` defines `--color-ink` and `--color-rule` for its dark palette. That file is allow-listed in the gate by name. #21 deletes the old page, imports the tokens and removes the allow-list.

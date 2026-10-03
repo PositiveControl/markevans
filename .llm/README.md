@@ -38,7 +38,7 @@ How things currently work. Architecture state, not intentions.
 
 <!-- system:start -->
 - [Models](../docs/system/models.md) — model reference
-- [Home page](../docs/system/home-page.md) — the single-page personal site: content registry, sections, motion, theme
+- [Home page](../docs/system/home-page.md) — `/` as the home thread: content from content/threads/home.yml, the strip, step body and legend components, the tokens
 - [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its state and the event table (Draft, #16)
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
 - [QA walkthroughs](../docs/system/qa_walkthrough.md) — the reviewer script per change, and how to run one
