@@ -16,6 +16,20 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=description][content=?]", @thread.headline
   end
 
+  test "a long headline is cut to a search snippet's length in the meta description" do
+    long = @thread.with(headline: "word " * 60)
+    original = DeliveryThread.method(:fetch)
+    DeliveryThread.define_singleton_method(:fetch) { |*| long }
+
+    get root_url
+
+    content = css_select("meta[name=description]").first["content"]
+    assert_operator content.length, :<=, 155
+    assert content.end_with?("...")
+  ensure
+    DeliveryThread.define_singleton_method(:fetch, original)
+  end
+
   test "the header names the site and links home, and nothing else yet" do
     get root_url
 
