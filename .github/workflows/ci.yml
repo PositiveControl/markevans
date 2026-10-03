@@ -88,7 +88,12 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          # config/database.yml reads these for every database. DATABASE_URL
+          # alone reaches only the primary, so queue, cache and cable would
+          # connect as the runner user with no password.
+          DB_HOST: localhost
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test test:system
 
