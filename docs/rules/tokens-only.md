@@ -1,11 +1,11 @@
 ---
 id: tokens-only
 title: "Color, size, spacing and radius come from the design tokens; no literal values outside the token file"
-applies_to: ["app/components/**", "app/assets/**", "app/javascript/**"]
+applies_to: ["app/components/**", "app/views/**", "app/helpers/**", "app/assets/**", "app/javascript/**"]
 triggers: ["color", "hex", "rgb", "font-size", "radius", "spacing"]
 see_also: ["color-means-role", "tailwind"]
 modes: [ web ]
-tokens: 390
+tokens: 400
 current_state: diverges
 ---
 
@@ -31,7 +31,7 @@ div class="text-command rounded-box"
 
 ## Enforcement
 
-Gated: `bin/gates` (pre-push and CI) fails on a hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in `app/components`, `app/assets` or `app/javascript` outside `app/assets/tailwind/tokens.css`.
+Gated: `bin/gates` (pre-push and CI) fails on a hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in `app/components`, `app/views`, `app/helpers`, `app/assets` or `app/javascript` outside `app/assets/tailwind/tokens.css`.
 
 ## Where this app is
 

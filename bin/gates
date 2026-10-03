@@ -145,11 +145,12 @@ end
 # --- literal colors ----------------------------------------------------------
 # docs/rules/tokens-only.md: a color is a token, so a hex value
 # or a CSS color function (rgb, hsl, hwb, lab, lch, oklab, oklch) appears in the
-# token file and nowhere else in components, styles or scripts.
+# token file and nowhere else in components, views, helpers, styles or scripts.
 # Generated builds are skipped. A hex is 3, 4, 6 or 8 digits standing alone, so
-# an anchor like "#work" is not one.
+# an anchor like "#work" is not one. One spelled only in hex letters, "#feed",
+# is: a known false positive, accepted because it fails closed.
 
-COLOR_DIRS = %w[app/components app/assets app/javascript].freeze
+COLOR_DIRS = %w[app/components app/views app/helpers app/assets app/javascript].freeze
 TOKEN_FILE = "app/assets/tailwind/tokens.css"
 # The old portfolio page's palette, until #21 deletes that page with it.
 LITERAL_COLOR_ALLOWED = %w[app/assets/tailwind/application.css].freeze
@@ -177,7 +178,7 @@ CHECKS = [
   ["Unindexed foreign keys", :unindexed_foreign_keys, "docs/rules/database-conventions.md",
    "Add an index led by the column, in a migration that follows docs/rules/safe-migrations.md."],
   ["Literal colors", :literal_colors, "docs/rules/tokens-only.md",
-   "Use a token from #{TOKEN_FILE} (text-command, bg-paper, …), or add the token there first."]
+   "Use a token from #{TOKEN_FILE} (text-command, bg-paper, …), or add the token there first. An anchor or id spelled only in hex letters (#feed, #faq) reads as a color: rename the anchor."]
 ].freeze
 
 failed = false

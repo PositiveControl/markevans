@@ -55,6 +55,26 @@ class GatesLiteralColorTest < Minitest::Test
     assert_includes err, "playback_controller.js:1: #fff"
   end
 
+  def test_hex_in_a_view_or_helper_fails
+    write "app/views/home/show.html.slim", %(div class="text-[#0F7480]"\n)
+    write "app/helpers/strip_helper.rb", %(COLOR = "rgb(1, 2, 3)"\n)
+
+    _, err, = run_gates
+    assert_includes err, "app/views/home/show.html.slim:1: #0F7480"
+    assert_includes err, "app/helpers/strip_helper.rb:1: rgb("
+  end
+
+  # Known false positive, accepted: an anchor spelled only in hex letters reads
+  # as a color. It fails closed, and the fix message says to rename the anchor.
+  def test_an_anchor_spelled_in_hex_letters_is_flagged
+    write "app/components/nav_component.rb", %(link_to "Feed", "#feed"\n)
+
+    _, err, status = run_gates
+    assert_equal 1, status.exitstatus
+    assert_includes err, "nav_component.rb:1: #feed"
+    assert_includes err, "rename the anchor"
+  end
+
   def test_the_token_file_may_hold_literals
     write "app/assets/tailwind/tokens.css", "--color-ink: #1B2428;\n--color-rule: rgba(27,36,40,0.3);\n"
 
