@@ -5,8 +5,8 @@ applies_to: ["app/components/chart_cell_component*"]
 triggers: ["git", "fork", "merge", "loop", "branch", "lane", "spine"]
 see_also: ["content-is-files"]
 modes: [ web ]
-tokens: 250
-current_state: diverges
+tokens: 280
+current_state: matches
 ---
 
 # topology-from-data
@@ -31,8 +31,5 @@ if step.git.event == "fork" then draw_fork(from: step.git.from)
 
 ## Enforcement
 
-Component tests for fork, merge and loop; the schema gate checks every fork has a merge.
+`test/components/chart_cell_component_test.rb` covers fork, merge and loop from fixture threads, and shows that reordering a thread redraws the graph. The schema gate checks every fork has a merge. The context a git block cannot carry (the lines running through a row, where a sector starts) comes from `DeliveryThread::Sequence#cells`, so the component never needs a neighbour or a position.
 
-## Where this app is
-
-There is no `ChartCellComponent` yet. Slice 2 adds it with component tests for fork, merge and loop; slice 1's schema gate checks every fork has a merge.

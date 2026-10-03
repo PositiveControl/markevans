@@ -8,8 +8,8 @@ command palette, scroll reveals), which was deleted in #21.
 
 What renders now is the page as it reads **without scripts** (design doc,
 section 6): every strip open, in order, with no status word and no controls.
-Playback, the scope and the chart arrive in later slices of the feature; the
-table at the end says which.
+Beside each strip the chart cell draws that row of the git graph. Playback and
+the scope arrive in later slices of the feature; the table at the end says which.
 
 ## Where the content lives
 
@@ -37,17 +37,41 @@ it out in one `max-w-page` (1320 px) container:
 | Header | The site name, linking to `/`. Nav links arrive with their pages | the view |
 | Top row, left (`w-column`, 400 px) | The legend. The scope goes above it with playback | `LegendComponent` |
 | Top row, right | Headline and intro | the thread file |
-| Thread | Per step: an empty `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key | `StripComponent`, `StepBodyComponent` |
+| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
 
 | Component | Renders |
 |---|---|
 | `LegendComponent` | The four fix symbols, then the three line styles and the scope target, each named in words |
+| `FixMarkComponent` | One fix triangle by step kind: filled for a gate, open for a command, open and dashed for an optional step. Drawn by the legend and the chart |
+| `ChartCellComponent` | One row of the git graph from the step's `git` block and its `DeliveryThread::Cell`: main, the branches running through, the fork or merge elbow, the loop bracket, the fix, the branch label, and the sector band, with a dashed edge and label where the bay changes |
 | `StripComponent` | Number, command name (`h3`), Ctl (lane), Bay, an empty status cell, and the Rmk line with the outcome. Ground by kind; dashed border for an optional step. A heading, not a button, until playback |
 | `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value, then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note |
 
 Components take a `DeliveryThread::Step` and hold no copy. Their tests build
 steps inline rather than reading `home.yml`, so they show every word comes from
 the data.
+
+### The chart
+
+A step's `git` block describes only its own row. `Sequence#cells` walks the
+steps once and pairs each with what its neighbours decide: `through`, the
+branches other than main that run the row's full height (the feature line
+between its fork and merge), and `sector`, the bay when it differs from the row
+above. `ChartCellComponent` reads only the step and that cell, never a row
+index or a step key (`docs/rules/topology-from-data.md`), so reordering the
+file redraws the graph.
+
+Lines are 2 px borders placed absolutely. Their positions come from the chart
+tokens in `tokens.css`: `--spacing-lane-main`, `-feature` and `-side` (44, 150
+and 256 px), `--spacing-fix` (34 px, the fix's centre), `--spacing-elbow`
+(14 px), `--spacing-loop-inset` (10 px) and `--spacing-chart-label` (20 px).
+They are combined in each line's inline `style` with `var()` and `calc()`.
+Tops and bottoms hang off the row's edges, so the lines stretch when a row
+grows. The sector's dashed edge is its own line rather than the cell's border,
+so main runs unbroken from row to row. Each piece carries a `data-chart` name
+(`main`, `through`, `branch`, `elbow`, `loop`, `fix`, `label`, `sector`), and
+the cell carries `data-git-event`. Tests and the walkthrough select on these
+names.
 
 ## Design system
 
@@ -77,20 +101,21 @@ alert's variant named in words.
 
 | Piece | Slice |
 |---|---|
-| The chart cell: lanes, fork, merge, loop, sectors | 2 |
 | Playback, strip states, roll-up, controls, the scope | 3 (`docs/system/home-thread-playback.md`) |
 | Strip bay, controller filter, log; the budget gate | 4 |
 | Follow, yield, docked bar, step hash, keyboard | 5 |
-| Narrow screens (84 px gutter) | 6 |
+| Narrow screens (84 px gutter, chart labels hidden) | 6 |
+| Upcoming rows dimmed, the active ring on the fix | 3 |
 | Work, Workflow, Background, Contact; header nav; Person JSON-LD | 7 |
 
 ## Tests
 
 | File | Covers |
 |---|---|
-| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, empty chart cells, legend, no controls, self-hosted fonts, nothing of the old page |
-| `test/components/{strip,step_body,legend}_component_test.rb` | Each component from inline steps |
-| `test/lib/delivery_thread_test.rb` | The loader and the schema |
+| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, no controls, self-hosted fonts, nothing of the old page |
+| `test/components/{strip,step_body,legend,fix_mark}_component_test.rb` | Each component from inline steps |
+| `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
+| `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |
 | `test/assets/tokens_test.rb` | The tokens match the design doc; fonts on disk match those declared |
 | `test/integration/seo_test.rb` | Meta description, canonical URL, WebSite JSON-LD |
 
