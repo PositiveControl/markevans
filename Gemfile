@@ -68,7 +68,7 @@ gem "discard"
 gem "paper_trail"
 gem "pagy", "~> 43.6"
 gem "slim-rails"
-gem "view_component", "~> 4.0"
+gem "view_component", "~> 4.15"
 gem "resend", "~> 1.7"
 
 group :development do
