@@ -1,0 +1,17 @@
+div class="relative aspect-square w-full overflow-hidden rounded-full border border-rule-strong bg-scope font-mono text-label" role="group" aria-label="Scope"
+  / Route ring at 76 percent, and the crosshair.
+  span class="absolute inset-[12%] rounded-full border border-dashed border-rule-strong" aria-hidden="true"
+  span class="absolute inset-y-0 left-1/2 border-l border-rule-faint" aria-hidden="true"
+  span class="absolute inset-x-0 top-1/2 border-t border-rule-faint" aria-hidden="true"
+  span class="absolute top-1/2 left-1/2 w-1/2 origin-left animate-sweep border-t border-rule [animation-play-state:paused] in-data-playing:[animation-play-state:running] motion-reduce:hidden" hidden=true aria-hidden="true" data-scope="sweep" data-playback-target="live"
+  span class="absolute top-1/2 left-1/2 w-[38%] origin-left rotate-(--leader-angle) border-t border-ink transition-transform duration-300 ease-out motion-reduce:transition-none in-data-settling:transition-none" hidden=true aria-hidden="true" data-scope="leader" data-playback-target="live"
+  - targets.each do |target|
+    - step = target.step
+    a class="absolute flex size-target -translate-1/2 items-center justify-center" style=target.style href="##{step.key}" aria-label="Go to step #{target.number.to_i}: #{step.name}" data-playback-target="target" data-action="playback#jump" data-angle=target.angle data-number=target.number data-name=step.name data-detail=detail(step) data-kind=step.kind
+      span class=mark_classes(step) aria-hidden="true"
+  div class="absolute top-1/2 left-1/2 max-w-1/2 -translate-1/2 border border-rule-strong bg-paper px-2 py-1 text-center" hidden=true data-scope="readout" data-playback-target="live"
+    p class="font-medium wrap-anywhere" data-playback-target="readoutName"
+    p class="uppercase text-quiet" data-playback-target="readoutDetail"
+    p class="font-medium uppercase data-[kind=command]:text-command data-[kind=human]:text-human data-[kind=machine]:text-machine data-[kind=optional]:text-quiet" data-playback-target="readoutStatus"
+  div class="absolute bottom-[8%] left-1/2 -translate-x-1/2"
+    = render ControlsComponent.new

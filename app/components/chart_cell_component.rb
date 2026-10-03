@@ -14,7 +14,8 @@
 # the chart tokens in tokens.css with var() and calc(), so no pixel value lives
 # here (docs/rules/tokens-only.md). Tops and bottoms are set from the row's
 # edges, so every line stretches when the row grows. Decoration only: the
-# strip beside it says everything in words.
+# strip beside it says everything in words. While playback runs, an upcoming
+# row's lines and fix dim, and the active step's fix wears a ring.
 class ChartCellComponent < ApplicationComponent
   # One positioned line: what it is, its classes, its inline position.
   Piece = Data.define(:part, :classes, :style)
@@ -41,6 +42,20 @@ class ChartCellComponent < ApplicationComponent
     "Up for Review" => "bg-sector-2",
     "Done" => "bg-sector-1"
   }.freeze
+
+  # The active step's ring, in its kind's color (design doc, section 3).
+  RINGS = {
+    "command" => "border-command",
+    "human" => "border-human",
+    "machine" => "border-machine",
+    "optional" => "border-quiet"
+  }.freeze
+
+  # Playback writes data-state on the row (docs/system/home-thread-playback.md).
+  # An upcoming row's graph dims; its words do not, since text at 35 percent
+  # fails contrast. Without scripts nothing is set and every row is full.
+  GRAPH = "absolute inset-0 transition-opacity duration-150 ease-out in-data-settling:transition-none " \
+    "in-data-[state=pending]:opacity-35"
 
   FIX = "var(--spacing-fix)"
   ELBOW = "var(--spacing-elbow)"
@@ -123,6 +138,11 @@ class ChartCellComponent < ApplicationComponent
   def label_style
     top = git.event == "merge" ? "calc(#{FIX} + var(--spacing-chart-label))" : FIX
     position(left: "calc(#{lane(git.on)} + var(--spacing-chart-label))", top:)
+  end
+
+  def ring_classes
+    class_names("absolute hidden size-ring -translate-1/2 rounded-full border-2 bg-paper in-data-[state=active]:block",
+      RINGS.fetch(step.kind))
   end
 
   def label_classes = "absolute -translate-y-1/2 whitespace-nowrap font-mono text-label #{LABELS.fetch(git.on)}"

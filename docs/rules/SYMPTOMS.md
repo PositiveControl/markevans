@@ -108,22 +108,22 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [forms-ui](forms-ui.md) | 370 | `form_with`, error summary, field errors |
 | [empty-states](empty-states.md) | 260 | The state everyone forgets |
 | [accessibility](accessibility.md) | 300 | Semantic HTML, contrast, keyboard, focus |
-| [testing](testing.md) | 1150 | Minitest + fixtures, which layer tests what, VCR |
+| [testing](testing.md) | 1210 | Minitest + fixtures, which layer tests what, VCR |
 | [tokens-only](tokens-only.md) | 290 | Home thread: design tokens only, no literal values |
-| [color-means-role](color-means-role.md) | 290 | Home thread: each color has one role |
-| [never-color-alone](never-color-alone.md) | 270 | Home thread: color plus a shape or a word |
+| [color-means-role](color-means-role.md) | 230 | Home thread: each color has one role |
+| [never-color-alone](never-color-alone.md) | 210 | Home thread: color plus a shape or a word |
 | [typeface-means-speaker](typeface-means-speaker.md) | 190 | Home thread: serif explains, mono is machine |
-| [every-element-answers](every-element-answers.md) | 230 | Home thread: no decoration that states nothing |
+| [every-element-answers](every-element-answers.md) | 200 | Home thread: no decoration that states nothing |
 | [content-is-files](content-is-files.md) | 210 | Thread copy and topology live in `content/threads/` |
 | [no-invented-content](no-invented-content.md) | 270 | Unknowns stay in brackets; the placeholder gate |
 | [topology-from-data](topology-from-data.md) | 280 | The chart draws from each step's `git` block |
-| [real-controls](real-controls.md) | 240 | Buttons and links, named, 44 px, ARIA state |
-| [motion-budget](motion-budget.md) | 260 | Motion on state change only, 150–300 ms |
-| [one-playback-state](one-playback-state.md) | 270 | One controller owns step, playing, reopened |
-| [playback-yields](playback-yields.md) | 250 | Reader input wins; nothing auto-resumes |
+| [real-controls](real-controls.md) | 270 | Buttons and links, named, 44 px, ARIA state |
+| [motion-budget](motion-budget.md) | 310 | Motion on state change only, 150–300 ms |
+| [one-playback-state](one-playback-state.md) | 220 | One controller owns step, playing, reopened |
+| [playback-yields](playback-yields.md) | 310 | Reader input wins; nothing auto-resumes |
 
 **Total corpus:** ~26,260 tokens across 51 rules. Typical read: this index (~3000)
-plus one or two rules (190–1150). Reading the whole corpus is a bug, not thoroughness.
+plus one or two rules (190–1210). Reading the whole corpus is a bug, not thoroughness.
 
 These figures are generated from the files by `bin/doc-tokens`, not typed by hand —
 a hand-typed one is stale the next time a rule is edited, and a budget nobody can

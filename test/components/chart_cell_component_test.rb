@@ -151,6 +151,25 @@ class ChartCellComponentTest < ViewComponent::TestCase
     assert_selector "[data-chart=fix] svg.text-quiet polygon[stroke-dasharray]"
   end
 
+  test "the ring marks the active step's fix, in its kind's color, behind the fix" do
+    render_cell "gate"
+
+    ring = page.find("[data-chart=ring]", visible: :all)
+    assert_equal piece("fix")[:style], ring[:style]
+    assert_includes ring[:class].split, "border-human"
+    assert_includes ring[:class].split, "size-ring"
+    assert_includes ring[:class].split, "in-data-[state=active]:block"
+    assert_selector "[data-chart=ring] ~ [data-chart=fix]", visible: :all
+  end
+
+  test "an upcoming row's lines and fix dim to 35 percent; its words stay legible" do
+    render_cell "plan"
+
+    assert_selector "[data-chart=graph].in-data-\\[state\\=pending\\]\\:opacity-35 [data-chart=fix]"
+    assert_selector "[data-chart=graph] [data-chart=main]"
+    assert_no_selector "[data-chart=graph] [data-chart=label]"
+  end
+
   test "reordering the file redraws the graph: the loop off main follows its step, not its row" do
     small = rows("small")
     reordered = rows("reordered")

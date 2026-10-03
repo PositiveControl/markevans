@@ -5,8 +5,8 @@ applies_to: ["app/components/**"]
 triggers: ["decoration", "animation", "icon", "flourish", "radar", "sweep"]
 see_also: ["motion-budget", "color-means-role"]
 modes: [ web ]
-tokens: 230
-current_state: diverges
+tokens: 200
+current_state: matches
 ---
 
 # every-element-answers
@@ -32,7 +32,3 @@ One sweep line: turning means playing, still means paused.
 ## Enforcement
 
 Prose only.
-
-## Where this app is
-
-No thread components exist yet. Slices 1–3 build them; flip to `matches` once the scope and chart ship.

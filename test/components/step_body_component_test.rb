@@ -44,6 +44,24 @@ class StepBodyComponentTest < ViewComponent::TestCase
     assert_no_selector "dl"
   end
 
+  test "the body is the region its strip controls, open until playback closes it" do
+    render_inline(StepBodyComponent.new(step: step))
+
+    body = page.find("#pick-body")
+    assert_includes body[:class], "grid-rows-[1fr]"
+    assert_includes body[:class], "in-data-[open=false]:grid-rows-[0fr]"
+    assert_includes body[:class], "in-data-[open=false]:invisible"
+  end
+
+  test "it rolls up in 200 ms, easing out, and at once under reduced motion" do
+    render_inline(StepBodyComponent.new(step: step))
+
+    classes = page.find("#pick-body")[:class].split
+    assert_includes classes, "duration-200"
+    assert_includes classes, "ease-out"
+    assert_includes classes, "motion-reduce:transition-none"
+  end
+
   private
 
   def group(title, rows)

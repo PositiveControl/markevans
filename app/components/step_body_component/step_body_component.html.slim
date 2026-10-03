@@ -1,16 +1,20 @@
-div class="flex flex-col gap-4 px-2 pt-3 pb-5"
-  p class="max-w-measure font-serif" = step.body
-  - step.groups.each do |group|
-    div class="flex max-w-detail flex-col gap-1"
-      h4 class="border-b border-rule pb-1 font-mono text-label uppercase text-quiet" = group.title
-      dl
-        - group.rows.each do |row|
-          div class="flex flex-wrap gap-x-4"
-            dt class="w-row-key max-w-full shrink-0 font-mono text-key wrap-anywhere" = row.key
-            dd class="min-w-0 flex-1 font-serif" = row.value
-  - if step.artifact
-    div class="max-w-artifact rounded-box border border-rule bg-card font-mono text-artifact"
-      div class="border-b border-rule px-2 py-1 text-label text-quiet wrap-anywhere" = step.artifact.source
-      pre class="overflow-x-auto p-2 font-mono whitespace-pre-wrap" = step.artifact.body
-  - if step.note
-    p class="max-w-measure font-serif italic" = step.note
+/ The roll-up (design doc, section 6): grid rows ease between 1fr and 0fr, and
+/ a closed body is invisible, so it leaves the tab order. Open without scripts.
+div id=body_id class="grid grid-rows-[1fr] transition-[grid-template-rows,visibility] duration-200 ease-out motion-reduce:transition-none in-data-settling:transition-none in-data-[open=false]:invisible in-data-[open=false]:grid-rows-[0fr]"
+  div class="min-h-0 overflow-hidden"
+    div class="flex flex-col gap-4 px-2 pt-3 pb-5"
+      p class="max-w-measure font-serif" = step.body
+      - step.groups.each do |group|
+        div class="flex max-w-detail flex-col gap-1"
+          h4 class="border-b border-rule pb-1 font-mono text-label uppercase text-quiet" = group.title
+          dl
+            - group.rows.each do |row|
+              div class="flex flex-wrap gap-x-4"
+                dt class="w-row-key max-w-full shrink-0 font-mono text-key wrap-anywhere" = row.key
+                dd class="min-w-0 flex-1 font-serif" = row.value
+      - if step.artifact
+        div class="max-w-artifact rounded-box border border-rule bg-card font-mono text-artifact"
+          div class="border-b border-rule px-2 py-1 text-label text-quiet wrap-anywhere" = step.artifact.source
+          pre class="overflow-x-auto p-2 font-mono whitespace-pre-wrap" = step.artifact.body
+      - if step.note
+        p class="max-w-measure font-serif italic" = step.note

@@ -6,10 +6,12 @@ design is `docs/plans/2026-10-03-home-thread-design.md`; this doc is how it is
 built today. It replaced a single-page portfolio (registry `Portfolio`, a
 command palette, scroll reveals), which was deleted in #21.
 
-What renders now is the page as it reads **without scripts** (design doc,
-section 6): every strip open, in order, with no status word and no controls.
-Beside each strip the chart cell draws that row of the git graph. Playback and
-the scope arrive in later slices of the feature; the table at the end says which.
+Without scripts the page reads as a document (design doc, section 6): every
+strip open, in order, with no status word and no controls. With scripts the
+`playback` controller plays it from the scope, one step at a time. How that
+works is `docs/system/home-thread-playback.md`. Beside each strip the chart
+cell draws that row of the git graph. What later slices add is in the table at
+the end.
 
 ## Where the content lives
 
@@ -30,22 +32,25 @@ Every word on the page except the site name comes from
 ## Structure
 
 `HomeController#index` sets `@thread`; `app/views/home/index.html.slim` lays
-it out in one `max-w-page` (1320 px) container:
+it out in one `max-w-page` (1320 px) container. The container is `main`, which
+carries the `playback` controller:
 
 | Region | What | From |
 |---|---|---|
 | Header | The site name, linking to `/`. Nav links arrive with their pages | the view |
-| Top row, left (`w-column`, 400 px) | The legend. The scope goes above it with playback | `LegendComponent` |
+| Top row, left (`w-column`, 400 px) | The scope, with the controls in its lower gap, then the legend | `ScopeComponent`, `ControlsComponent`, `LegendComponent` |
 | Top row, right | Headline and intro | the thread file |
-| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
+| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key; it is a playback `row` target and carries `--seconds` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
 
 | Component | Renders |
 |---|---|
 | `LegendComponent` | The four fix symbols, then the three line styles and the scope target, each named in words |
 | `FixMarkComponent` | One fix triangle by step kind: filled for a gate, open for a command, open and dashed for an optional step. Drawn by the legend and the chart |
-| `ChartCellComponent` | One row of the git graph from the step's `git` block and its `DeliveryThread::Cell`: main, the branches running through, the fork or merge elbow, the loop bracket, the fix, the branch label, and the sector band, with a dashed edge and label where the bay changes |
-| `StripComponent` | Number, command name (`h3`), Ctl (lane), Bay, an empty status cell, and the Rmk line with the outcome. Ground by kind; dashed border for an optional step. A heading, not a button, until playback |
-| `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value, then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note |
+| `ChartCellComponent` | One row of the git graph from the step's `git` block and its `DeliveryThread::Cell`: main, the branches running through, the fork or merge elbow, the loop bracket, the fix, the branch label, and the sector band, with a dashed edge and label where the bay changes. While playing, an upcoming row's graph dims and the active fix wears a ring |
+| `StripComponent` | An `h3` holding the strip as a button: number, command name, Ctl (lane), Bay, the status cell, the Rmk line with the outcome, and the remaining-time line. Ground by kind; dashed border for an optional step. Disabled until playback connects; pending, active and done looks come from the row's `data-state` |
+| `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value, then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note. Rolls up when its row's `data-open` is false |
+| `ScopeComponent` | The radar scope: route ring, crosshair, one target per step on a 270 degree arc (a link to the step), the leader, the centre block, the sweep. All but the ring, crosshair and targets render hidden until playback connects |
+| `ControlsComponent` | Restart, step back, play or pause, step forward: 44 px round icon buttons, hidden until playback connects |
 
 Components take a `DeliveryThread::Step` and hold no copy. Their tests build
 steps inline rather than reading `home.yml`, so they show every word comes from
@@ -102,8 +107,6 @@ alert's variant named in words.
 
 | Piece | Slice |
 |---|---|
-| Playback, strip states, roll-up, controls, the scope | 3 (`docs/system/home-thread-playback.md`) |
-| Upcoming rows dimmed, the active ring on the fix | 3 |
 | Strip bay, controller filter, log; the budget gate | 4 |
 | Follow, yield, docked bar, step hash, keyboard | 5 |
 | Narrow screens (84 px gutter, chart labels hidden) | 6 |
@@ -113,8 +116,10 @@ alert's variant named in words.
 
 | File | Covers |
 |---|---|
-| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, no controls, self-hosted fonts, nothing of the old page |
-| `test/components/{strip,step_body,legend,fix_mark}_component_test.rb` | Each component from inline steps |
+| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, targets as links), each row's seconds, self-hosted fonts, nothing of the old page |
+| `test/system/home_playback_test.rb` | Playback in a browser, and axe while playing, paused and without scripts (`bin/rails test:system`; see `home-thread-playback.md`) |
+| `test/components/{strip,step_body,legend,fix_mark,controls}_component_test.rb` | Each component from inline steps |
+| `test/components/scope_component_test.rb` | Targets, arc and marks from a fixture thread |
 | `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
 | `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |
 | `test/assets/tokens_test.rb` | The tokens match the design doc; fonts on disk match those declared |

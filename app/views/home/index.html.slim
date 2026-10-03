@@ -1,7 +1,9 @@
-/ The home thread without scripts: every strip open, in order (design doc,
-/ sections 4 and 6). Every word of copy comes from content/threads/home.yml.
+/ The home thread (design doc, sections 4 and 6). Every word of copy comes from
+/ content/threads/home.yml. Without scripts it reads as a document: every strip
+/ open, in order. With them the playback controller on main plays it, writing
+/ data-state and data-open on each row (docs/system/home-thread-playback.md).
 / Each row's chart cell draws its piece of the git graph from the step's git
-/ block; the scope, controls and log arrive with playback.
+/ block; the bay, filter and log arrive in a later slice.
 - content_for :title, "Mark Evans"
 - content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
@@ -9,19 +11,20 @@ header class="border-b border-rule"
   div class="mx-auto flex min-h-10 max-w-page items-center px-8"
     a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
-main class="mx-auto max-w-page px-8"
+main class="mx-auto max-w-page px-8" data-controller="playback" data-action="visibilitychange@document->playback#hide"
   div class="flex items-start gap-x-8 pt-6"
-    aside class="w-column shrink-0"
+    aside class="flex w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
+      = render ScopeComponent.new(steps: @thread.steps)
       = render LegendComponent.new
     section class="min-w-0 flex-1 pt-6"
       h1 class="text-headline" = @thread.headline
       p class="mt-4 max-w-measure" = @thread.intro
 
-  section class="pt-4 pb-16" aria-labelledby="thread-heading"
+  section class="pt-4 pb-16" aria-labelledby="thread-heading" data-playback-target="thread"
     h2#thread-heading class="sr-only" The thread
     - @thread.cells.each.with_index(1) do |cell, number|
       - step = cell.step
-      div class="flex" id=step.key
+      div class="flex" id=step.key style="--seconds: #{step.duration}" data-playback-target="row"
         = render ChartCellComponent.new(cell:)
         div class="min-w-0 flex-1 py-1 pl-strip-gap"
           = render StripComponent.new(step:, number:)

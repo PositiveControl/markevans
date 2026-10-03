@@ -5,8 +5,8 @@ applies_to: ["app/components/**"]
 triggers: ["button", "click", "aria", "focus", "keyboard", "touch target"]
 see_also: ["never-color-alone", "accessibility"]
 modes: [ web ]
-tokens: 240
-current_state: diverges
+tokens: 270
+current_state: matches
 ---
 
 # real-controls
@@ -31,8 +31,4 @@ button type="button" aria-expanded="true" data-action="playback#toggle"
 
 ## Enforcement
 
-Gated: axe in system tests.
-
-## Where this app is
-
-No thread controls exist yet, and the axe gate does not exist. Slice 3 adds the controls, strips-as-buttons and axe in system tests.
+Gated: axe in system tests (`assert_accessible` in `test/application_system_test_case.rb`), run in `test/system/home_playback_test.rb` while playing, paused and without scripts, plus a check that every visible control is at least 44 px. System tests run locally (`bin/rails test:system`), not in CI.

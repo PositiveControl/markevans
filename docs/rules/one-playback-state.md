@@ -5,8 +5,8 @@ applies_to: ["app/javascript/**"]
 triggers: ["stimulus", "controller", "state", "step index", "playing"]
 see_also: ["playback-yields", "stimulus"]
 modes: [ web ]
-tokens: 270
-current_state: diverges
+tokens: 220
+current_state: matches
 ---
 
 # one-playback-state
@@ -32,7 +32,3 @@ The scope reading stepValue from the playback controller via an outlet or event.
 ## Enforcement
 
 Prose only; covered by the system tests for the event table.
-
-## Where this app is
-
-There is no `playback` controller yet. Slice 3 adds it with the event table as system tests; slice 5 adds the docked bar as a second view of the same state.
