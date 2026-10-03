@@ -16,7 +16,7 @@ Every command ends by naming the next one — the workflow self-navigates. `/pic
 
 ## 1. Lifecycle master map
 
-The filled node at top is the entry: every session starts at `/pick`. `/feature_plan` feeds new sub-issues back to it. `/segue` is the escape valve off planning and implementation — an isolated discussion thread whose findings merge back without polluting the workstream.
+The filled node at top is the entry: every session starts at `/pick`. `/feature_plan` feeds new sub-issues back to it. `/segue` is the escape valve off planning and implementation — an isolated discussion thread whose findings merge back without polluting the workstream. `/grill` and `/diagnose` are the other two off-chain valves: one sharpens a design before a gate, the other hunts a bug behind a loop that goes red. On a multi-slice feature the bottom row runs once per slice into the feature branch, with `/pr_review` from a fresh session standing in for a second reader, and once more for the feature PR into `main`, where the reader is a person (*Feature branches*).
 
 ```mermaid
 flowchart TB
@@ -37,7 +37,7 @@ flowchart TB
   PK -- "sized Todo issue" --> TP
   subgraph R2 [" "]
     direction LR
-    IM["/implement — code + tests — commit per logical unit"]
+    IM["/implement — code + tests — commit per logical unit — fresh-eyes review"]
     G3{"G3 — suite green"}
     PS["/pr_submit — local suite + docs resolved — PR with Closes #35;n"]
     RV["review — /pr_review · /pr_qa · /pr_comment_resolver"]
@@ -53,13 +53,18 @@ flowchart TB
   end
   SG1["/segue thread (planning valve)"]
   SG2["/segue thread (implementation valve)"]
+  GR["/grill — sharpen the design before the gate"]
+  DG["/diagnose — loop-first bug hunt"]
 
   G2 --> IM
   MG --> AUTO
   PK -. "In Progress: resume" .-> IM
   TP -. blocked on a decision .-> SG1 -. findings merge .-> TP
   IM -. rabbit hole .-> SG2 -. findings merge .-> IM
-  IM -. "scope escape: forecast &gt;600 lines" .-> FP
+  IM -. "scope escape: forecast &gt;1,500 lines" .-> FP
+  FP -. "assumption unsettled" .-> GR -. "decisions settled" .-> FP
+  TP -. "assumption unsettled" .-> GR
+  IM -. "bug with no failing test" .-> DG -. "cause found" .-> IM
 
   style E fill:#0F7480,stroke:#0F7480
   style PK fill:#0F7480,stroke:#0B3A40,color:#FFFFFF
@@ -77,6 +82,8 @@ flowchart TB
   style RV fill:#E3F0F1,stroke:#0F7480,color:#0B3A40
   style SG1 fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
   style SG2 fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
+  style GR fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
+  style DG fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
   style R1 fill:none,stroke:none
   style R2 fill:none,stroke:none
   style R3 fill:none,stroke:none
@@ -120,7 +127,7 @@ stateDiagram-v2
 
 ## 3. Swimlanes and gates
 
-Human touches are few and high-leverage: two approvals, one review, one merge click. Everything crossing into the human lane is a gate.
+Human touches are few and high-leverage: two approvals, one review, one merge click per PR. On a slice the review is `/pr_review` run by you from a fresh session — the reading is the agent's, the click is still yours. Everything crossing into the human lane is a gate.
 
 ```mermaid
 flowchart TB
@@ -176,6 +183,7 @@ flowchart LR
   BD["board item — status = lifecycle state"]
   DOC["doc placeholders — docs/sop · docs/system"]
   DD["design doc — docs/plans/ (via parent)"]
+  FB["feature branch — feature/&lt;slug&gt; (via design doc, multi-slice only)"]
 
   ID --> TF
   ID --> BR
@@ -184,6 +192,7 @@ flowchart LR
   ID --> BD
   ID --> DOC
   ID --> DD
+  ID --> FB
 
   style ID fill:#0F7480,stroke:#0B3A40,color:#FFFFFF
 ```
@@ -203,6 +212,10 @@ Inclusion principle: a tool earns a core spot only if a lifecycle gate or transi
 
 ## Contract slots
 
+Terms used throughout this document (thread ID, tier, gate, contract slot, bead,
+segue, sizing) are defined once in [`docs/system/vocabulary.md`](docs/system/vocabulary.md).
+
+
 Exactly one owner per slot. Ambient tooling a team runs (memory systems, indexers, personas, background agents) must not claim authority over any of them — silence competing instructions or don't run the tool.
 
 | Slot | Owner |
@@ -218,7 +231,7 @@ Exactly one owner per slot. Ambient tooling a team runs (memory systems, indexer
 | G1 | Design doc approved | `/feature_plan` | Human | Issue creation — issues are commitment, the doc is a proposal |
 | G2 | Implementation plan approved | `/task_plan` | Human | Any code |
 | G3 | Local suite green | `/pr_submit` | Automated | Push / PR creation |
-| G4 | Review comments resolved | `/pr_submit` + review | Human | Merge |
+| G4 | Review comments resolved | `/pr_submit` + review | Human | Merge — on a slice the comments are a fresh session's `/pr_review`, on the feature PR a person's |
 
 Soft vs hard: gates are prompt-enforced unless backed by repo settings. Branch protection with required CI turns G3/G4 hard.
 
@@ -229,19 +242,86 @@ Soft vs hard: gates are prompt-enforced unless backed by repo settings. Branch p
 - `labels`: `Closes #N` in every PR body. The five `status:*` labels exist (`/workflow_setup` creates them).
 - `beads`: `bd` on PATH with a reachable database, which needs a running `dolt sql-server` — see `docs/sop/beads-setup.md`. PR bodies must **not** carry `Closes #N`.
 
+## Who invokes what
+
+A command is a markdown file. Anyone who can read it can follow it: you by typing
+`/name`, or an agent already in a session that decides the situation fits. That
+second case is useful for some of these commands and wrong for others, so the
+split is stated rather than left to judgment.
+
+**The criterion.** An agent may reach for a command that reads the repo and edits
+files locally. A command that writes somewhere other people see, or that stands at
+a gate, is yours to invoke. Posting a review, moving a board item, opening a PR,
+resolving a conversation, and approving a plan are all decisions with an audience,
+and an agent choosing its own moment to do them removes the checkpoint the gate
+exists to create.
+
+| Command | Invoked by | Why |
+|---|---|---|
+| `/pick` | You | Chooses what to work on next; that is the session's premise, not a step in it |
+| `/feature_plan` | You | Ends at G1, and creates issues, which are commitment |
+| `/task_plan` | You | Ends at G2, and G2 is the approval that lets code start |
+| `/implement` | You | Starts from an approved plan; the approval is the entry condition |
+| `/pr_submit` | You | Opens a PR, moves the board, and carries G3 and G4 |
+| `/pr_review` | You | Posts review comments — on someone else's PR, or on your own slice from a fresh session. Either way you chose the moment |
+| `/pr_comment_resolver` | You | Replies to and resolves conversations other people are reading |
+| `/pr_qa` | You | Guides a human through a manual pass; there is no pass without the human |
+| `/update_docs` | You | Rewrites and deletes across the doc tree; scope is a judgment call |
+| `/workflow_setup` | You | Interactive, once, and writes the config every other command reads |
+| `/segue`, `/segue_resume`, `/segue_close`, `/segue_merge`, `/segue_kill` | You | The point is that *you* decided to stop the workstream |
+| `/grill` | Either | Asks questions and writes nothing. An agent may open one when a decision is missing; the decisions stay yours, and so does the gate the grilling feeds |
+| `/research` | Either | Reads primary sources and writes one doc locally. Nothing is posted, and nothing is committed until you commit it |
+| `/domain_model` | Either | Challenges a term and writes what you settle. An agent may open one on a word doing two jobs; the definitions are still yours to agree |
+| `/diagnose` | Either | Builds a loop, probes locally, fixes what the loop proves. Same bounded shape as `/test_fix` |
+| `/resolve_conflicts` | Either | The merge is already stopped on your machine; resolving and committing is local. Pushing the result is yours |
+| `/run_lint` | Either | Reads the diff, runs RuboCop and `bin/flay`, fixes locally. Nothing leaves the machine |
+| `/test_fix` | Either | The suite is already red; triage and a local fix are bounded work |
+| `/rails_code_review` | Either | Reads the branch and reports. It posts nothing |
+| `/qa_walkthrough` | Either | Writes a script locally and runs it against your own server. Nothing leaves the machine; `/pr_submit` decides whether it was needed |
+| `/pr_fix_ci` | Either, up to a point | Reading a failed run and fixing locally is fair game; pushing the fix is yours |
+
+**Either** means an agent may follow the file when the situation calls for it, and
+that you can still type it. It does not mean the agent should run it speculatively:
+`/test_fix` when the suite is red, not on a hunch.
+
+### A command cannot invoke a command
+
+Each command ends by naming what runs next, and that chain is what makes the
+workflow navigable. The naming is an instruction to **you**, not automation: there
+is no mechanism by which one of these files invokes another. `/pick` routing an
+epic to `/feature_plan` means it tells you to run `/feature_plan`.
+
+This matters when writing one. A step that reads "then run `/task_plan`" will not
+happen on its own. Either the step does the work inline, or the command ends and
+says what to type. Where a real handoff is wanted rather than a suggestion, the
+mechanism is a subagent definition under `.claude/agents/`, which this template
+does not ship yet.
+
 ## Sizing
 
-Grounded in analysis of 100 merged PRs: under 300 added lines merged in a median of 1 day; 600+ took 3. An issue fits when its acceptance criteria fit in ≤5 testable bullets — more is an epic; decompose.
+The bound is what one review pass can hold in context with every changed file read in full, not how long a human takes to merge. Past it a review goes shallow by the reviewer's own admission. An issue fits when its acceptance criteria fit in ≤5 testable bullets — more is an epic; decompose.
 
 | Size | Added lines | Guidance |
 |---|---|---|
-| XS | <100 | Fine as-is; consider batching with related work |
-| S | 100–300 | Ideal — merges in ~1 day |
-| M | 300–600 | Healthy upper bound |
-| L | 600–1,200 | Split if possible; expect ~3-day review |
-| XL | 1,200+ | Must split, or accept slow and shallower review |
+| XS | <200 | Fine as-is; consider batching with related work |
+| S | 200–600 | Ideal |
+| M | 600–1,000 | Healthy |
+| L | 1,000–1,500 | Upper bound; expect a third review pass |
+| XL | 1,500+ | Must split |
 
-**Scope-escape rule:** mid-implementation forecast passes 600 added lines or new acceptance criteria appear → stop, split a sub-issue, land the current slice clean.
+**Scope-escape rule:** mid-implementation forecast passes 1,500 added lines or 25 files, or new acceptance criteria appear → stop, split a sub-issue, land the current slice clean.
+
+## Feature branches
+
+A feature with more than one slice lands on a feature branch, not on `main`. Each slice is its own PR into that branch, and the feature reaches `main` as one PR once every slice has landed. A single-slice feature skips all of this: one issue, one PR against `main`.
+
+- **Name.** `feature/<slug>`, where `<slug>` is the design doc's — `docs/plans/2026-03-01-returns-design.md` gives `feature/returns`. `/feature_plan` writes the name into the design doc header and into every sub-issue body, so any tier can find it. `labels` has no parent issue to hang it off, and the design doc is the one artifact all three tiers share.
+- **Created by** `/task_plan` for whichever slice is planned first: branched from `main`, pushed, and opened as a **draft PR to `main`** so CI runs on it from day one and there is somewhere to watch the feature grow.
+- **Base.** Each slice branches from the feature branch and its PR targets it. `/task_plan` records `Base: feature/<slug>` in the task file, and every command that diffs, lints, or opens a PR reads that line instead of assuming `main`.
+- **Closing issues.** GitHub's `Closes #n` fires only on a merge to the default branch, so a slice PR carries no `Closes` line. The feature PR body carries `Closes #<sub>` for every slice that has landed plus `Closes #<parent>`, and is regenerated on each slice merge. Done therefore still means *in `main`*, on every tier: a slice sits in Up for Review from its merge into the feature branch until the feature merges. `/pick` reconciles `beads` and `labels` only against PRs whose base was `main`.
+- **Docs.** Placeholders belong to the feature. A slice completes the ones its work fills in and leaves the rest; the "no `Status: Draft` left behind" rule is enforced on the feature PR.
+- **Staying current.** After each slice merges, merge `origin/main` into the feature branch so the final merge is small. Conflicts there are `/resolve_conflicts`.
+- **Review.** Each slice PR is reviewed by `/pr_review` run from a **fresh session** — a new context per pass, two passes at most, the second reviewing only the first's fixes — and you merge it from that session on the strength of those passes. The feature PR is reviewed by a human as an acceptance-criteria walk over the design doc's slice list, reading the posted passes rather than re-reading the whole diff. Why the line sits there: `docs/adr/0014-slices-merge-on-the-agents-review-features-on-a-humans.md`.
 
 ## Command inventory
 
@@ -250,19 +330,25 @@ Grounded in analysis of 100 merged PRs: under 300 added lines merged in a median
 | `/pick` | Core | Entry door: prioritized ready work + context trees; routes epic/unshaped → `/feature_plan`, sized Todo → `/task_plan`, In Progress → `/implement`, Blocked → show blocker. Enforces sizing at the door |
 | `/feature_plan` | Core | Explore → design doc (G1) → sized sub-issues + doc placeholders → board Todo |
 | `/task_plan` | Core | Read design doc → task file + plan (G2) → branch → In Progress |
-| `/implement` | Core | Idempotent resume: load task file, orient, execute, commit per logical unit |
-| `/pr_submit` | Core | Suite (G3) → docs complete-or-delete → PR with `Closes #n` → stack footer (`bin/pr-stack`) → comments (G4) |
-| `/pr_review` | Core | Reviewer side: full-context diff review |
+| `/implement` | Core | Idempotent resume: load task file, orient, execute, commit per logical unit; ends with a fresh-context `/pr_review --local`, two rounds at most |
+| `/pr_submit` | Core | Suite (G3) → docs complete-or-delete → PR with `Closes #n` → comments (G4) |
+| `/pr_review` | Core | Full-context diff review; also the self-review pass on a slice, from a fresh session, and `--local` before a PR exists |
 | `/pr_qa` | Core | Guided manual QA pass, structured report |
 | `/update_docs` | Core | On-demand deep doc pass; keeps the index honest |
+| `/grill` | Optional | Interview a design in rounds; empty frontier before a gate, not a substitute for it |
+| `/research` | Optional | Primary sources → one cited write-up in the doc canon |
+| `/domain_model` | Optional | Sharpen one term or decision; writes `docs/system/vocabulary.md` and `docs/adr/` |
+| `/diagnose` | Optional | Hard bug or slow path: tight loop first, then repro, ranked theories, fix, cleanup |
+| `/resolve_conflicts` | Optional | Finish a conflicted merge or rebase; regenerate what must not be hand-merged |
 | `/segue`, `/segue_resume`, `/segue_close`, `/segue_merge` | Optional | Isolated discussion thread; findings-only merge-back |
 | `/segue_kill` | Optional | Abandon a dead-end segue: record why it died, skip the merge |
+| `/rails_code_review` | Optional | Rails-specific review of a branch against this stack's conventions |
 | `/pr_comment_resolver`, `/pr_fix_ci`, `/test_fix`, `/run_lint` | Optional | Utilities called by core commands |
 | `/workflow_setup` | Setup | One-time wizard: parameters, conventions, token fill, automation checks |
 
 ## Documentation rules
 
-- Doc canon: `docs/rules` (one convention per file + `INDEX.md`), `docs/plans` (design docs), `docs/system` (architecture state), `docs/sop` (procedures), `docs/qa` (manual test guides)
+- Doc canon: `docs/rules` (one convention per file + `INDEX.md`), `docs/plans` (design docs), `docs/adr` (one decision per file, numbered), `docs/system` (architecture state), `docs/sop` (procedures), `docs/qa` (manual test guides)
 - `.llm/README.md` indexes **committed docs only**; `.llm/tasks/` and `.llm/threads/` are local scratch (gitignored)
-- Doc updates happen at defined points only: `/feature_plan` creates placeholders, `/pr_submit` completes-or-deletes them (+ index dupe/dead-link check), `/update_docs` for deep passes
-- Never merge a PR leaving a Draft placeholder behind
+- Doc updates happen at defined points only: `/feature_plan` creates placeholders, `/pr_submit` completes-or-deletes them (+ index dupe/dead-link check) — at the feature PR for a multi-slice feature, `/update_docs` for deep passes
+- Never merge a PR to `main` leaving a Draft placeholder behind

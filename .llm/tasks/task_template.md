@@ -2,6 +2,7 @@
 
 # Task: [Short Task Name]
 **Issue:** #[NUMBER]
+**Base:** [main | feature/<slug> — the branch this slice's PR targets]
 **Start Date:** [YYYY-MM-DD]
 **Owner:** [Name]
 **Status:** [Not Started | In Progress | Blocked | Complete]
@@ -30,6 +31,7 @@ Follow `CLAUDE.md` for the non-negotiables and `docs/rules/INDEX.md` to find the
 ## Next Actions
 <!-- Concrete implementation steps from /task_plan: files to modify, approach, test strategy. /implement works through these in order. -->
 1. [ ] [Step — files touched]
+2. [ ] QA walkthrough: [steps added to script/qa/<feature>.rb, run twice unattended] — or [skipped: no user-facing change / developer's call]
 
 ## Progress Log
 <!-- One dated bullet per logical unit landed or decision made. Commits are truth; this is orientation for the next session. -->

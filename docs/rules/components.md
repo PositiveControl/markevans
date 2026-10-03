@@ -4,7 +4,9 @@ title: ViewComponent — shape, slots, variants, tests
 applies_to: ["app/components/**/*.rb", "app/components/**/*.slim", "test/components/**/*.rb"]
 triggers: ["ViewComponent", "component", "ApplicationComponent", "render_inline", "renders_one", "renders_many", "slots", "render?", "sidecar", "generate component", "AlertComponent", "variants"]
 see_also: ["view-code-placement", "partials", "tailwind-build", "registries"]
-tokens: 560
+modes: [ web ]
+tokens: 1120
+current_state: matches
 ---
 
 # ViewComponent
@@ -124,4 +126,4 @@ A one-off block of markup used once on one page. Write it inline. Components pay
 for themselves through reuse and testing; a component with one caller and no logic
 is a [partial](partials.md) that costs three files.
 
-Rationale and consequences: ADR-006 in [`../system/architecture.md`](../system/architecture.md).
+Rationale and consequences: [ADR 0006](../adr/0006-viewcomponent-for-ui-units.md).

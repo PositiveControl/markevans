@@ -4,7 +4,9 @@ title: Jobs are thin wrappers over services, idempotent, ID-only
 applies_to: ["app/jobs/**/*.rb", "config/queue.yml", "test/jobs/**/*.rb"]
 triggers: ["job", "ApplicationJob", "perform_later", "Solid Queue", "retry", "DeserializationError", "GlobalID", "queue_as", "background work", "idempotent"]
 see_also: ["service-objects", "callbacks"]
-tokens: 380
+modes: [ web, api ]
+tokens: 600
+current_state: matches
 ---
 
 # Jobs
@@ -59,3 +61,9 @@ ChargeOrderJob.perform_later(order.id)
 **Queue names are a capacity decision.** `:default` for user-facing work, `:low`
 for backfills and reports. Configure the split in `config/queue.yml` before you
 need it, not during the incident.
+
+**The cost is measured.** In an audited app with no rule here, 12 of the 37 jobs
+taking a positional argument took a record rather than an id — `batch` four times,
+`bulk_upload` and `form` twice each. Every one of them retries into
+`DeserializationError` if the row goes away, and the queue is exactly where rows go
+away.
