@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/hooks/post_edit"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bin/hooks/post_edit"
           }
         ]
       }
@@ -78,7 +78,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/hooks/session_end"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bin/hooks/session_end"
           }
         ]
       }
