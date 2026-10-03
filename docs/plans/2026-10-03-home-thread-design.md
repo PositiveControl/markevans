@@ -223,7 +223,8 @@ that makes it true.
 
 | # | Slice | Done when | Rules made true | Size |
 | --- | --- | --- | --- | --- |
-| 1 | Tokens and static thread | Token file, Newsreader self-hosted, thread loader and schema gate, placeholder and literal-color gates, the old home page removed, and `/` rendering every strip open with step bodies, header, top row and legend, no scripts. The chart column is an empty 400 px cell | tokens-only, content-is-files, no-invented-content, typeface-means-speaker | ~1,300 |
+| 1a | Tokens, thread loader and gates (#14) | Token file, Newsreader self-hosted, `DeliveryThread` loader and schema check, placeholder and literal-color gates. No page changes | no-invented-content | ~900 |
+| 1b | Static thread page (#21) | The old home page removed, and `/` rendering every strip open with step bodies, header, top row and legend, no scripts. The chart column is an empty 400 px cell. `bin/qa-walkthrough` installed | tokens-only, content-is-files, typeface-means-speaker | ~900 |
 | 2 | Chart cell | `ChartCellComponent` draws lanes, fork, merge, loop, sectors and branch labels from each step's `git` block; reordering steps in the YAML redraws the graph; component tests for fork, merge and loop | topology-from-data | ~600 |
 | 3 | Playback core | `playback` controller, step timer and remaining-time line, strip states, roll-up, controls, the scope with targets and sweep; the event table rows for play, pause, step, jump, restart, done-strip toggle and tab hidden pass as system tests; axe runs in playing, paused and no-script states | one-playback-state, real-controls, never-color-alone, motion-budget, color-means-role, every-element-answers | ~1,400 |
 | 4 | Bay, filter and log | `StripBayComponent`, `ControllerFilterComponent`, `LogComponent` render from playback state; the budget gate (JS under 60 kB gzipped, fonts under 120 kB, no third-party requests) | — | ~600 |
@@ -235,7 +236,7 @@ that makes it true.
 
 | Doc | Change | Slice |
 | --- | --- | --- |
-| `docs/system/home-page.md` | Rewritten: the old portfolio page is replaced by the thread | 1 |
-| `docs/sop/edit-the-home-thread.md` | New: change a step, its copy or its git block, and what the gates check | 1 |
+| `docs/system/home-page.md` | Rewritten: the old portfolio page is replaced by the thread | 1b |
+| `docs/sop/edit-the-home-thread.md` | New: change a step, its copy or its git block, and what the gates check | 1a |
 | `docs/system/home-thread-playback.md` | New: the playback controller, its state and the event table | 3, completed in 5 |
 | `docs/sop/add-seo-to-a-page.md` | Updated if the new pages change the procedure | 7 |
