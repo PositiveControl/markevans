@@ -53,7 +53,7 @@ class ScopeComponent < ApplicationComponent
     format("left: %.2f%%; top: %.2f%%", 50 + RADIUS * Math.cos(radians), 50 + RADIUS * Math.sin(radians))
   end
 
-  def detail(step) = "#{StripComponent::LANES.fetch(step.lane)} · #{step.bay}"
+  def detail(step) = "#{DeliveryThread::LANE_NAMES.fetch(step.lane)} · #{step.bay}"
 
   def mark_classes(step) = class_names("size-1.5 border bg-scope", MARKS.fetch(step.kind))
 end

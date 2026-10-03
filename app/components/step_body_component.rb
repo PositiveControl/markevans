@@ -10,6 +10,9 @@
 # labels, row keys and the artifact are the machine, in mono. Every word comes
 # from the step.
 class StepBodyComponent < ApplicationComponent
+  # The body's id, which its strip's aria-controls names.
+  def self.id_for(step) = "#{step.key}-body"
+
   # @param step [DeliveryThread::Step]
   def initialize(step:)
     @step = step
@@ -19,6 +22,5 @@ class StepBodyComponent < ApplicationComponent
 
   attr_reader :step
 
-  # The strip's aria-controls names this.
-  def body_id = "#{step.key}-body"
+  def body_id = self.class.id_for(step)
 end

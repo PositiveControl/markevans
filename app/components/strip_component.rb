@@ -38,8 +38,6 @@ class StripComponent < ApplicationComponent
     "in-data-[state=pending]:text-quiet in-data-[state=active]:outline-2 " \
     "in-data-[state=active]:outline-ink in-data-[state=active]:-outline-offset-1"
 
-  LANES = { "human" => "Human", "agent" => "Agent", "ci" => "CI" }.freeze
-
   # @param step [DeliveryThread::Step]
   # @param number [Integer] the step's position, from 1
   def initialize(step:, number:)
@@ -53,9 +51,9 @@ class StripComponent < ApplicationComponent
 
   def number = format("%02d", @number)
 
-  def lane = LANES.fetch(step.lane)
+  def lane = DeliveryThread::LANE_NAMES.fetch(step.lane)
 
-  def body_id = "#{step.key}-body"
+  def body_id = StepBodyComponent.id_for(step)
 
   def classes
     class_names("relative flex w-full min-h-9 flex-wrap items-center rounded-box border border-rule-strong",

@@ -20,6 +20,8 @@ module DeliveryThread
 
   KINDS = %w[command human machine optional].freeze
   LANES = %w[human agent ci].freeze
+  # A lane as the strip's Ctl cell and the scope's centre block name it.
+  LANE_NAMES = { "human" => "Human", "agent" => "Agent", "ci" => "CI" }.freeze
   BAYS = [ "Todo", "In Progress", "Up for Review", "Done" ].freeze
   BRANCHES = %w[main feature side].freeze
   EVENTS = %w[start fork merge loop end].freeze
