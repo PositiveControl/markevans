@@ -203,6 +203,37 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_equal "main", thread.steps.first.git.on
   end
 
+  test "cells pair each step with the lines that run through its row" do
+    cells = load_thread(minimal).cells
+
+    assert_equal %w[one two three four five], cells.map { |cell| cell.step.key }
+    assert_equal [ [], [], [], [], [] ], cells.map(&:through), "a fork and its merge draw their own half-lines"
+  end
+
+  test "a branch runs through every row between its fork and its merge" do
+    data = minimal.tap do |thread|
+      thread["steps"].insert(3, thread["steps"][1].deep_dup.merge("key" => "build", "git" => { "on" => "feature" }))
+      thread["steps"].insert(4, thread["steps"][1].deep_dup.merge("key" => "aside", "git" => { "on" => "side", "event" => "loop", "from" => "main" }))
+    end
+    through = load_thread(data).cells.to_h { |cell| [ cell.step.key, cell.through ] }
+
+    assert_equal({ "one" => [], "two" => [], "three" => [], "build" => [ "feature" ], "aside" => [ "feature" ], "four" => [], "five" => [] }, through)
+  end
+
+  test "a cell starts a sector where the bay differs from the row above" do
+    data = minimal.tap do |thread|
+      thread["steps"][2]["bay"] = "In Progress"
+      thread["steps"][3]["bay"] = "In Progress"
+      thread["steps"][4]["bay"] = "Done"
+    end
+
+    assert_equal [ "Todo", nil, "In Progress", nil, "Done" ], load_thread(data).cells.map(&:sector)
+  end
+
+  test "the home thread's sectors are its four bays, in order" do
+    assert_equal DeliveryThread::BAYS, DeliveryThread.fetch(:home).cells.filter_map(&:sector)
+  end
+
   private
 
   # one: start · two: plain · three: fork onto feature · four: merge · five: end

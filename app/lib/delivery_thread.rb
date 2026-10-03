@@ -33,7 +33,24 @@ module DeliveryThread
 
   Invalid = Class.new(StandardError)
 
-  Sequence = Data.define(:id, :title, :headline, :intro, :steps)
+  Sequence = Data.define(:id, :title, :headline, :intro, :steps) do
+    # Each step with what its own git block cannot say about its row in the
+    # chart, so the chart is drawn from data and never from a row's position
+    # (docs/rules/topology-from-data.md).
+    def cells
+      open = []
+      steps.each_cons(2).with_object([ Cell.new(step: steps.first, through: [].freeze, sector: steps.first.bay) ]) do |(above, step), cells|
+        open << above.git.on if above.git.event == "fork"
+        open.delete(step.git.from) if step.git.event == "merge"
+        cells << Cell.new(step:, through: open.dup.freeze, sector: (step.bay unless step.bay == above.bay))
+      end.freeze
+    end
+  end
+
+  # One row of the chart: the step, the branches other than main that run its
+  # full height, and its bay when the row starts a sector (nil when it
+  # continues the one above).
+  Cell = Data.define(:step, :through, :sector)
 
   Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds)
 
