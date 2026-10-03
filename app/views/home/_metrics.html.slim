@@ -1,0 +1,15 @@
+/# locals: (metrics:)
+section#impact class="border-t border-rule-soft px-6 py-20" data-controller="reveal" data-reveal-visible-class="reveal-in" aria-labelledby="impact-heading"
+  .mx-auto.max-w-5xl
+    = render "home/section_heading", id: "impact", label: "Impact", count: "#{metrics.size} entries"
+    dl class="mt-8"
+      - metrics.each_with_index do |metric, index|
+        - delay = "--reveal-delay: #{index * 60}ms"
+        div class="reveal grid gap-x-8 gap-y-1 border-b border-rule-soft py-6 sm:grid-cols-[10rem_1fr]" data-reveal-target="item" style=delay
+          dt class="font-mono text-2xl font-semibold tracking-tight text-amber sm:text-3xl"
+            = metric.value
+          dd
+            p class="font-mono text-sm text-fg"
+              = metric.label
+            p class="mt-2 max-w-2xl text-sm leading-6 text-dim"
+              = metric.detail

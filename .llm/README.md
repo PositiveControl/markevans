@@ -39,6 +39,7 @@ How things currently work. Architecture state, not intentions.
 <!-- system:start -->
 - [Architecture Decision Records](../docs/system/architecture.md) — decisions taken and their consequences
 - [Models](../docs/system/models.md) — model reference
+- [Home page](../docs/system/home-page.md) — the single-page personal site: content registry, sections, motion, theme
 <!-- system:end -->
 
 ## SOP — `docs/sop/`

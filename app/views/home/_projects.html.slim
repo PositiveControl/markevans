@@ -1,0 +1,30 @@
+/# locals: (projects:)
+section#projects class="border-t border-rule-soft px-6 py-20" data-controller="reveal" data-reveal-visible-class="reveal-in" aria-labelledby="projects-heading"
+  .mx-auto.max-w-5xl
+    = render "home/section_heading", id: "projects", label: "Projects", count: "#{projects.size} entries", note: "Live products and public repos. Each one has tests and a deploy story."
+    / gap-px over a ruled background draws the grid as hairlines instead of
+    / giving every card its own border.
+    div class="mt-8 grid gap-px border border-rule-soft bg-rule-soft lg:grid-cols-2"
+      - projects.each_with_index do |project, index|
+        - delay = "--reveal-delay: #{index * 50}ms"
+        article class="reveal flex flex-col bg-ink p-7 transition-colors hover:bg-raised" data-reveal-target="item" style=delay
+          .flex.flex-wrap.items-baseline.justify-between.gap-x-4.gap-y-1
+            h3 class="font-mono text-lg font-semibold tracking-tight text-fg"
+              = project.name
+            p class="font-mono text-xs text-dim"
+              = project.kind
+          p class="mt-4 text-sm leading-6 text-mid"
+            = project.blurb
+          ul class="mt-5 space-y-2.5"
+            - project.points.each do |point|
+              li class="flex gap-4 text-sm leading-6 text-dim"
+                span class="mt-3 h-px w-3 shrink-0 bg-amber-soft" aria-hidden="true"
+                span = point
+          ul class="mt-6 flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-xs text-dim"
+            - project.stack.each do |tool|
+              li = tool
+          / mt-auto keeps the link on the bottom edge of every cell, whatever the
+          / blurb length, so the grid reads as a table rather than ragged cards.
+          a class="mt-auto inline-flex items-baseline gap-2 self-start pt-6 font-mono text-sm text-amber underline decoration-amber-soft underline-offset-4 transition-colors hover:decoration-amber" href=project.url rel="noopener" target="_blank"
+            = project.link_label
+            span aria-hidden="true" ↗

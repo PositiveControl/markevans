@@ -1,30 +1,34 @@
-.min-h-screen.bg-gradient-to-br.from-indigo-900.via-purple-900.to-pink-800.flex.items-center.justify-center
-  .text-center.p-8
-    / Rocket Sheep Logo
-    .text-8xl.mb-6.animate-bounce
-      span.inline-block.transform.-rotate-45 🚀
-      span.inline-block.ml-2 🐑
+- profile = Portfolio.profile
+- projects = Portfolio.projects
+- page_title = "#{profile.name} — #{profile.role}"
+- content_for :title, page_title
+- content_for :meta_description, profile.summary.truncate(155)
 
-    h1.text-5xl.font-bold.text-white.mb-2
-      | Markevans
+- content_for :head do
+  ruby:
+    person = {
+      "@context" => "https://schema.org",
+      "@type" => "Person",
+      "name" => profile.name,
+      "jobTitle" => profile.role,
+      "email" => "mailto:#{profile.email}",
+      "url" => root_url,
+      "address" => { "@type" => "PostalAddress", "addressLocality" => "Phoenix", "addressRegion" => "AZ" },
+      "sameAs" => [ profile.github, profile.linkedin ],
+      "knowsAbout" => Portfolio.skill_groups.flat_map(&:items).first(12)
+    }
+  = jsonld_tag(person)
 
-    p.text-purple-200.text-lg.mb-2
-      | Powered by Rails Rocket Sheep
+/ The nav's ⌘K button and the palette dialog share one controller element.
+/ keydown@window is how the shortcut is heard wherever the caret happens to be.
+div data-controller="palette" data-action="keydown@window->palette#hotkey" data-palette-active-class="bg-raised border-amber text-fg"
+  = render "home/nav", profile: profile
+  = render "home/palette", profile: profile, projects: projects
 
-    p.text-purple-300.text-sm.mb-8
-      | Rails 8 • Solid Stack • Kamal Deploy
-
-    .space-x-4
-      - if respond_to?(:user_signed_in?) && user_signed_in?
-        .text-purple-200.mb-4
-          | Welcome back!
-        = link_to "Sign Out", destroy_user_session_path, data: { turbo_method: :delete }, class: "px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 backdrop-blur border border-white/20 transition"
-      - elsif respond_to?(:new_user_session_path)
-        = link_to "Sign In", new_user_session_path, class: "px-6 py-3 bg-white text-purple-900 font-semibold rounded-lg hover:bg-purple-100 transition"
-        = link_to "Sign Up", new_user_registration_path, class: "px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 backdrop-blur border border-white/20 transition"
-      - else
-        p.text-purple-200.text-sm
-          | Run <code class="font-mono">rails g devise User</code> to enable authentication
-
-    .mt-12.text-purple-400.text-sm
-      | Ready to build something amazing
+main
+  = render "home/hero", profile: profile
+  = render "home/metrics", metrics: Portfolio.metrics
+  = render "home/work", roles: Portfolio.roles
+  = render "home/projects", projects: projects
+  = render "home/skills", groups: Portfolio.skill_groups
+  = render "home/contact", profile: profile

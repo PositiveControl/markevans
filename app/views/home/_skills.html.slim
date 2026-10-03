@@ -1,0 +1,17 @@
+/# locals: (groups:)
+section#skills class="border-t border-rule-soft px-6 py-20" data-controller="reveal" data-reveal-visible-class="reveal-in" aria-labelledby="skills-heading"
+  .mx-auto.max-w-5xl
+    = render "home/section_heading", id: "skills", label: "Skills", count: "#{groups.size} groups", note: "Listed by real proficiency. The gaps get named in conversation."
+    dl class="mt-8"
+      - groups.each_with_index do |group, index|
+        - delay = "--reveal-delay: #{index * 50}ms"
+        div class="reveal grid gap-x-8 gap-y-3 border-t border-rule-soft py-7 lg:grid-cols-[14rem_1fr]" data-reveal-target="item" style=delay
+          dt class="font-mono text-sm text-fg"
+            = group.title
+          dd
+            / A leading hairline per item, so multi-word entries sitting next to
+            / each other still read as separate tokens without adding glyphs.
+            ul class="flex flex-wrap gap-x-4 gap-y-2.5 font-mono text-sm text-mid"
+              - group.items.each do |item|
+                li class="border-l border-rule pl-3"
+                  = item

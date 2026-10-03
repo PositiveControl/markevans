@@ -10,6 +10,12 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# Scroll-reveal animations only apply when JS can undo them. Set before
+        first paint so there is no flash of hidden content. %>
+    <%= javascript_tag nonce: true do %>
+      document.documentElement.classList.add("js")
+    <% end %>
+
     <%= yield :head %>
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
@@ -19,15 +25,21 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%# The three faces above the fold. The remaining weights load with the
+        stylesheet — swapping them in late is not noticeable. %>
+    <% %w[plex-mono-400.woff2 plex-mono-600.woff2 plex-sans-400.woff2].each do |font| %>
+      <%= tag.link rel: "preload", as: "font", type: "font/woff2", href: asset_path(font), crossorigin: "anonymous" %>
+    <% end %>
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebSite","name":"Markevans","url":"<%= root_url %>"}
+    {"@context":"https://schema.org","@type":"WebSite","name":"Mark Evans","url":"<%= root_url %>"}
     </script>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="bg-ink text-fg font-sans antialiased selection:bg-amber selection:text-ink">
     <%= render FlashComponent.new(flash: flash) %>
     <%= yield %>
   </body>

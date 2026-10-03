@@ -1,0 +1,26 @@
+/# locals: (roles:)
+section#work class="border-t border-rule-soft px-6 py-20" data-controller="reveal" data-reveal-visible-class="reveal-in" aria-labelledby="work-heading"
+  .mx-auto.max-w-5xl
+    = render "home/section_heading", id: "work", label: "Work", count: "#{roles.size} entries", note: "Marketplaces, payments, authentication, fulfillment, and vehicle telemetry, plus the on-call hours that come with owning them."
+    ol class="mt-8"
+      - roles.each_with_index do |role, index|
+        - delay = "--reveal-delay: #{index * 60}ms"
+        - number = format("%02d", index + 1)
+        li class="reveal grid gap-x-8 gap-y-4 border-t border-rule-soft py-9 lg:grid-cols-[4rem_1fr]" data-reveal-target="item" style=delay
+          p class="font-mono text-sm text-dim"
+            = number
+          div
+            .flex.flex-wrap.items-baseline.justify-between.gap-x-6.gap-y-1
+              h3 class="font-mono text-xl font-semibold tracking-tight text-fg"
+                = role.company
+              p class="shrink-0 font-mono text-sm text-dim"
+                = role.period
+            p class="mt-1.5 font-mono text-sm text-amber"
+              = role.title
+            p class="mt-4 max-w-3xl text-sm leading-6 text-mid"
+              = role.context
+            ul class="mt-6 max-w-3xl space-y-3"
+              - role.highlights.each do |highlight|
+                li class="flex gap-4 text-sm leading-6 text-mid"
+                  span class="mt-3 h-px w-3 shrink-0 bg-amber-soft" aria-hidden="true"
+                  span = highlight
