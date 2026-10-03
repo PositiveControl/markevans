@@ -115,7 +115,12 @@ class ChartCellComponent < ApplicationComponent
 
   def fix_style = position(left: lane(git.on), top: FIX)
 
-  def label_style = position(left: "calc(#{lane(git.on)} + var(--spacing-chart-label))", top: FIX)
+  # Beside the fix, except on a merge, where the elbow crosses at the fix's
+  # height: there the label drops below it, by the same offset.
+  def label_style
+    top = git.event == "merge" ? "calc(#{FIX} + var(--spacing-chart-label))" : FIX
+    position(left: "calc(#{lane(git.on)} + var(--spacing-chart-label))", top:)
+  end
 
   def label_classes = "absolute -translate-y-1/2 whitespace-nowrap font-mono text-label #{LABELS.fetch(git.on)}"
 end

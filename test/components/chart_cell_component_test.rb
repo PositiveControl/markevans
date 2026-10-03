@@ -99,6 +99,17 @@ class ChartCellComponentTest < ViewComponent::TestCase
     assert_no_selector "[data-chart=label]"
   end
 
+  test "on a merge the label drops below the fix, clear of the elbow that runs across at its height" do
+    render_cell "land"
+    label = piece("label")
+    assert_equal "merge to main", label.text
+    assert_includes label[:style], "left: calc(#{MAIN} + var(--spacing-chart-label))"
+    assert_includes label[:style], "top: calc(#{FIX} + var(--spacing-chart-label))"
+
+    render_cell "plan"
+    assert_includes piece("label")[:style], "top: #{FIX}"
+  end
+
   test "a row that starts a sector carries its label and a dashed top border; the next does not" do
     render_cell "build"
     assert_selector "div[aria-hidden].bg-sector-1"
