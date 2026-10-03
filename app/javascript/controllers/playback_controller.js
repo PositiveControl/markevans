@@ -34,10 +34,12 @@ export default class extends Controller {
   connect() {
     this.liveTargets.forEach(element => { element.hidden = false })
     this.stripTargets.forEach(strip => { strip.disabled = false })
-    this.touched = false
     // Values live in data attributes, so a page Turbo restores from its cache
     // comes back saying it was playing. It must not resume by itself
-    // (docs/rules/playback-yields.md).
+    // (docs/rules/playback-yields.md): it comes back paused, and rows that
+    // already carry a state (only render() writes one) mark it as a page the
+    // reader has been on, so it does not start again on view either.
+    this.touched = this.rowTargets.some(row => row.dataset.state)
     this.playingValue = false
     this.connected = true
     this.resetClock()
@@ -169,10 +171,15 @@ export default class extends Controller {
   }
 
   // A new step starts its clock full (stepValueChanged). Going to the step
-  // already active keeps what it has left.
+  // already active keeps what it has left: selecting it again, or back on the
+  // first step and forward on the last, which clamp to it.
   go(index) {
     const step = Math.max(0, Math.min(this.rowTargets.length - 1, index))
-    step === this.stepValue ? this.render() : (this.stepValue = step)
+    if (step === this.stepValue) {
+      this.render()
+    } else {
+      this.stepValue = step
+    }
   }
 
   // The first render closes every body but the active one. That is the page

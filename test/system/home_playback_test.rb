@@ -31,6 +31,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Restart]"
 
     assert_equal 0, evaluate_script("document.getAnimations().filter(a => a instanceof CSSTransition).length")
+    assert_no_selector "main[data-settling]"
   end
 
   test "thread first scrolls into view: it starts playing on step 1" do
@@ -156,17 +157,22 @@ class HomePlaybackTest < ApplicationSystemTestCase
       click_control "Play"
       assert_selector "main[data-playing]"
 
-      # What a cache restore does: the controller reconnects to markup whose
-      # value attributes say it was playing.
-      execute_script(<<~JS)
-        const main = document.querySelector("main")
-        main.removeAttribute("data-controller")
-        setTimeout(() => main.setAttribute("data-controller", "playback"), 50)
-      JS
+      restore_from_cache
 
       assert_no_selector "main[data-playing]"
       assert_selector "[aria-label=Play]"
     end
+  end
+
+  test "a restored page the reader had paused stays paused with the thread in view" do
+    open_thread
+    click_control "Pause"
+
+    restore_from_cache
+    sleep 0.5 # the reconnect, and the first view it would have taken for a fresh load
+
+    assert_not playing?
+    assert_step 0, status: "paused"
   end
 
   test "step timer ends: next step active, previous strip rolls up" do
@@ -255,6 +261,16 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Sets the playback pace. The controller restarts the current step's clock.
   def pace(ms)
     execute_script("document.querySelector('[data-controller=playback]').dataset.playbackPaceValue = #{ms}")
+  end
+
+  # What a cache restore does: the controller reconnects to markup that an
+  # earlier render wrote, value attributes included.
+  def restore_from_cache
+    execute_script(<<~JS)
+      const main = document.querySelector("main")
+      main.removeAttribute("data-controller")
+      setTimeout(() => main.setAttribute("data-controller", "playback"), 50)
+    JS
   end
 
   def playing? = has_selector?("main[data-playing]", wait: 0)
