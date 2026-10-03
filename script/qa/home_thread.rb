@@ -1,19 +1,22 @@
 # frozen_string_literal: true
 
-# The home thread as it reads without scripts (#21): headline and intro, the
-# legend, and every strip open with its body, with the git graph drawn beside
-# the strips (#15).
+# The home thread (#21): headline and intro, the legend, every strip with its
+# body, the git graph drawn beside the strips (#15), and playback from the
+# scope (#16). The page starts playing as the thread comes into view, so the
+# walk pauses it first and the reading steps run on a still page.
 #
 # Builds no data: everything shown comes from content/threads/home.yml, read
 # here through DeliveryThread so the captions follow the file. Steps are picked
 # by what they are (the first, a loop, a fork, a sector change, a human gate, a
 # merge, the last), never by key. Spotlights use text, the step's row id (its
-# key, from the file), an ARIA label, or the chart's data-git-event and
-# data-chart names: hooks that survive a restyle, never utility classes.
+# key, from the file), an ARIA label, data-state, or the chart's data-git-event
+# and data-chart names: hooks that survive a restyle, never utility classes.
+# Clicks are the change being shown: a control, a target, a strip.
 #
-# Not walked, because it is not built yet: playback, the scope and strip
-# states (3), the bay, filter and log (4), follow and the docked bar (5),
-# narrow screens (6), and the other pages (7).
+# Not walked: the page without scripts (the system tests cover it, axe
+# included), the step timer running out (it would make the walk wait), and
+# what is not built yet: the bay, filter and log (4), follow and the docked
+# bar (5), narrow screens (6), and the other pages (7).
 require Rails.root.join("lib/qa_walkthrough")
 
 thread = DeliveryThread.fetch(:home)
@@ -31,12 +34,23 @@ QaWalkthrough.run("home_thread") do
     spotlight text: thread.headline, note: "headline and intro in content/threads/home.yml"
   end
 
-  step "The legend names every symbol the chart and scope will draw" do
+  step "As the thread comes into view it plays: the sweep turns and step 1 is outlined" do
+    spotlight "##{first.key}"
+    find("main[data-playing]")
+    spotlight "[aria-label=Scope]", note: "the centre block names the active step; the leader points at its target"
+  end
+
+  step "Pause: the sweep and step 1's remaining-time line freeze, and its status reads paused" do
+    find("[aria-label=Pause]").click
+    spotlight "##{first.key} [data-playback-target=status]", note: "the 2 px line along the strip's bottom edge is the time left"
+  end
+
+  step "The legend names every symbol the chart and scope draw" do
     spotlight "[aria-label=Legend]", note: "four fix symbols, then three lines and the scope target"
   end
 
-  step "Step 1, #{first.name}: the strip, then its body, open without scripts" do
-    spotlight "##{first.key}", note: "#{first.groups.size} detail groups; no status word until playback"
+  step "Step 1, #{first.name}: the strip, then its body, open because it is the active step" do
+    spotlight "##{first.key}", note: "#{first.groups.size} detail groups; later strips are pending, their bodies rolled up"
   end
 
   step "Beside it, main starts at the first fix, labelled #{first.git.label}" do
@@ -51,13 +65,20 @@ QaWalkthrough.run("home_thread") do
     spotlight "##{fork.key} [data-git-event=fork]", note: "labelled #{fork.git.label}"
   end
 
-  step "#{fork.name}'s artifact is mono on the card ground" do
+  step "Selecting #{fork.name}'s target on the scope jumps there and pauses; its artifact is mono on the card ground" do
+    find("[data-playback-target=target][href='##{fork.key}']").click
     spotlight "##{fork.key}"
-    spotlight text: fork.artifact.source, note: "artifact source and body from the step" if fork.artifact
+    spotlight text: fork.artifact.source, note: "the rows above it are done, and the chart below it dims" if fork.artifact
   end
 
-  step "#{gate.name} is a human gate: amber tint, controller #{gate.lane}" do
-    spotlight text: gate.name, exact: true, note: "the strip's ground is set by its kind"
+  step "Step forward: #{fork.name}'s strip rolls up and shows its outcome on the Rmk line" do
+    find("[aria-label='Step forward']").click
+    spotlight "##{fork.key}[data-state=done] h3", note: "status: done; the next step is active and paused"
+  end
+
+  step "#{gate.name} is a human gate: amber tint, controller #{gate.lane}; its target is a rotated square" do
+    find("[data-playback-target=target][href='##{gate.key}']").click
+    spotlight "##{gate.key}", note: "the leader swings to its target; the status reads paused, and hold while playing"
   end
 
   step "#{sector.step.name} opens the #{sector.sector} sector: a dashed edge and a darker band" do
@@ -70,5 +91,15 @@ QaWalkthrough.run("home_thread") do
 
   step "The last step, #{last.name}, closes the thread (#{thread.steps.size} steps)" do
     spotlight "##{last.key}"
+  end
+
+  step "Selecting a done strip reopens it; playback does not move" do
+    find("##{first.key} h3 button").click
+    spotlight "##{first.key}[data-open=true]", note: "the active step is still #{gate.name}, paused"
+  end
+
+  step "Restart: step 1, reopened strips closed, paused" do
+    find("[aria-label=Restart]").click
+    spotlight "##{first.key}[data-state=active]", note: "press Play to run the thread from the top"
   end
 end
