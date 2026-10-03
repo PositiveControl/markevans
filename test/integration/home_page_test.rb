@@ -18,6 +18,7 @@ class HomePageTest < ActionDispatch::IntegrationTest
 
   test "a long headline is cut to a search snippet's length in the meta description" do
     long = @thread.with(headline: "word " * 60)
+    # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
     original = DeliveryThread.method(:fetch)
     DeliveryThread.define_singleton_method(:fetch) { |*| long }
 

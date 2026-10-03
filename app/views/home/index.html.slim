@@ -3,7 +3,7 @@
 / The chart cell is empty until ChartCellComponent (slice 2); the scope,
 / controls and log arrive with playback.
 - content_for :title, "Mark Evans"
-- content_for :meta_description, @thread.headline.truncate(155)
+- content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
 header class="border-b border-rule"
   div class="mx-auto flex min-h-10 max-w-page items-center px-8"
