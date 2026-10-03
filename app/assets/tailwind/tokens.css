@@ -128,7 +128,7 @@
   --spacing-fix: 34px;             /* the fix's centre, from the row top */
   --spacing-elbow: 14px;           /* fork and merge corner radius */
   --spacing-loop-inset: 10px;      /* a loop's bracket, from top and bottom */
-  --spacing-chart-label: 20px;     /* a branch label, right of its fix */
+  --spacing-chart-label: 20px;     /* a branch label from its fix: right; on a merge, down too */
 
   /* Reading measures: max-w-measure and so on */
   --container-measure: 66ch;       /* a serif paragraph */
