@@ -5,7 +5,7 @@ applies_to: ["app/components/**", "content/**"]
 triggers: ["serif", "mono", "font", "typeface", "Newsreader", "Plex"]
 see_also: ["tokens-only"]
 modes: [ web ]
-tokens: 230
+tokens: 250
 current_state: diverges
 ---
 
@@ -35,4 +35,4 @@ Prose only.
 
 ## Where this app is
 
-Newsreader is not self-hosted yet (only IBM Plex is in `app/assets/fonts/`), and no strips exist. Slice 1 adds the font and the static strips.
+Newsreader is self-hosted and `--font-serif` / `--font-mono` are tokens, but no strips exist yet and the old page still sets everything in IBM Plex. #21 builds the static strips and step bodies.

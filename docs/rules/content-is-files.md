@@ -5,7 +5,7 @@ applies_to: ["content/**", "app/components/**", "app/views/**"]
 triggers: ["copy", "step text", "thread", "yaml"]
 see_also: ["no-invented-content", "topology-from-data"]
 modes: [ web ]
-tokens: 270
+tokens: 310
 current_state: diverges
 ---
 
@@ -31,8 +31,8 @@ p = step.body
 
 ## Enforcement
 
-Gated: the thread schema gate validates every thread file.
+Gated: `DeliveryThread` validates a thread file as it loads it, and `test/lib/delivery_thread_test.rb` loads every file in `content/threads/`.
 
 ## Where this app is
 
-`content/threads/home.yml` exists but nothing reads it, and the thread schema gate does not exist. The current home page keeps its copy in `app/lib/portfolio.rb` and the `app/views/home/` partials. Slice 1 adds the schema gate and renders the thread from the file.
+`DeliveryThread` reads `content/threads/home.yml` and is the schema gate (`test/lib/delivery_thread_test.rb` loads every thread file), but no page renders from it yet. The current home page keeps its copy in `app/lib/portfolio.rb` and the `app/views/home/` partials. #21 renders the thread from the file and deletes those.

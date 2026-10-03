@@ -109,12 +109,12 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [empty-states](empty-states.md) | 260 | The state everyone forgets |
 | [accessibility](accessibility.md) | 300 | Semantic HTML, contrast, keyboard, focus |
 | [testing](testing.md) | 1150 | Minitest + fixtures, which layer tests what, VCR |
-| [tokens-only](tokens-only.md) | 300 | Home thread: design tokens only, no literal values |
+| [tokens-only](tokens-only.md) | 380 | Home thread: design tokens only, no literal values |
 | [color-means-role](color-means-role.md) | 290 | Home thread: each color has one role |
 | [never-color-alone](never-color-alone.md) | 270 | Home thread: color plus a shape or a word |
-| [typeface-means-speaker](typeface-means-speaker.md) | 230 | Home thread: serif explains, mono is machine |
+| [typeface-means-speaker](typeface-means-speaker.md) | 250 | Home thread: serif explains, mono is machine |
 | [every-element-answers](every-element-answers.md) | 230 | Home thread: no decoration that states nothing |
-| [content-is-files](content-is-files.md) | 270 | Thread copy and topology live in `content/threads/` |
+| [content-is-files](content-is-files.md) | 310 | Thread copy and topology live in `content/threads/` |
 | [no-invented-content](no-invented-content.md) | 260 | Unknowns stay in brackets; the placeholder gate |
 | [topology-from-data](topology-from-data.md) | 250 | The chart draws from each step's `git` block |
 | [real-controls](real-controls.md) | 240 | Buttons and links, named, 44 px, ARIA state |
@@ -122,7 +122,7 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [one-playback-state](one-playback-state.md) | 270 | One controller owns step, playing, reopened |
 | [playback-yields](playback-yields.md) | 250 | Reader input wins; nothing auto-resumes |
 
-**Total corpus:** ~26,220 tokens across 51 rules. Typical read: this index (~3000)
+**Total corpus:** ~26,360 tokens across 51 rules. Typical read: this index (~3000)
 plus one or two rules (230–1150). Reading the whole corpus is a bug, not thoroughness.
 
 These figures are generated from the files by `bin/doc-tokens`, not typed by hand —

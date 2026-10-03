@@ -5,13 +5,13 @@ applies_to: ["app/components/**", "app/assets/**", "app/javascript/**"]
 triggers: ["color", "hex", "rgb", "font-size", "radius", "spacing"]
 see_also: ["color-means-role", "tailwind"]
 modes: [ web ]
-tokens: 300
+tokens: 380
 current_state: diverges
 ---
 
 # tokens-only
 
-Color, size, spacing and radius come from the tokens in the design doc (section 2). No literal value appears outside the token file.
+Color, size, spacing and radius come from the tokens in `app/assets/tailwind/tokens.css`, which is section 3 of the design doc. No literal value appears outside that file.
 
 ## Why
 
@@ -31,8 +31,8 @@ div class="text-command rounded-box"
 
 ## Enforcement
 
-Gated: the literal-color gate greps for hex and rgb( outside the token file.
+Gated: `bin/gates` (pre-push and CI) fails on a hex value or `rgb(` in `app/components`, `app/assets` or `app/javascript` outside `app/assets/tailwind/tokens.css`.
 
 ## Where this app is
 
-There is no token file and no literal-color gate. `app/assets/tailwind/application.css` holds the current page's own hex and rgb values. Slice 1 adds the token file (design doc, section 3), replaces those values, and adds the gate.
+`app/assets/tailwind/tokens.css` holds the tokens and `bin/gates` fails on a literal color anywhere else, but nothing uses the tokens yet: `application.css` does not import the file, because the old portfolio page's own `@theme` defines `--color-ink` and `--color-rule` for its dark palette. That file is allow-listed in the gate by name. #21 deletes the old page, imports the tokens and removes the allow-list.
