@@ -41,15 +41,17 @@ module DeliveryThread
   class << self
     # @raise [KeyError] when no content/threads/<id>.yml exists
     # @raise [Invalid] when the file breaks the schema
+    # The id is matched against the files that exist, never joined into a
+    # path, so an id like "../../config/database" names no thread.
     def fetch(id)
-      path = ROOT.join("#{id}.yml")
-      raise KeyError, "no thread #{id} in #{ROOT}" unless path.exist?
+      path = ROOT.glob("*.yml").find { |file| file.basename(".yml").to_s == id.to_s }
+      raise KeyError, "no thread #{id} in #{ROOT}" unless path
       return load(path) if Rails.env.development?
 
       cache[path.to_s] ||= load(path)
     end
 
-    def all = ROOT.glob("*.yml").sort.map { |path| fetch(path.basename(".yml").to_s) }
+    def all = ROOT.glob("*.yml").sort.map { |path| fetch(path.basename(".yml")) }
 
     # @raise [Invalid] naming the file and step for every problem found
     def load(path)

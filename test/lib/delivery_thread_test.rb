@@ -34,6 +34,11 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_raises(KeyError) { DeliveryThread.fetch(:nope) }
   end
 
+  test "an id that is a path reaches no file outside content/threads" do
+    assert_raises(KeyError) { DeliveryThread.fetch("../../config/database") }
+    assert_raises(KeyError) { DeliveryThread.fetch("home/../home") }
+  end
+
   test "every thread in content/threads loads" do
     threads = DeliveryThread.all
 
