@@ -3,7 +3,7 @@
 Status: Approved (G1, 2026-10-03)
 Date: 2026-10-03
 Slug: home-thread
-Feature branch: feature/home-thread
+**Feature branch:** feature/home-thread
 
 The home page of markevans.io is one real feature moving through the delivery
 chain, played as a self-running, steppable sequence of flight strips on a git
@@ -217,17 +217,25 @@ best guess at the template's fields; conform it and add each to `INDEX.md`.
 
 ## 8. Slices
 
-1. Tokens and static thread. Token file, thread schema and gate, `home.yml`,
-   the page rendered fully open with no scripts. Done when the no-script page
-   matches the mock's strips, chart and legend.
-2. Chart cell. Topology from data, sectors, branch labels. Done when
-   reordering steps in the YAML redraws the graph, with component tests for
-   fork, merge and loop.
-3. Playback. Controller, roll-up, strip states, scope, controls, bay, filter,
-   log. Done when the event table passes as system tests.
-4. Follow, yield and dock. Auto-scroll, pause on scroll, docked bar, hash,
-   keyboard, reduced motion. Done when a reader can scroll away mid-play and
-   still control the flow.
-5. Narrow screens. The 84 px gutter and stacked top row. Done at 390 px with
-   no horizontal scroll.
-6. Other pages. Work, Workflow, Background, Contact, reusing the components.
+Each lands as its own PR into `feature/home-thread`; the feature PR to `main`
+gets the human review. A rule flips from `diverges` to `matches` in the slice
+that makes it true.
+
+| # | Slice | Done when | Rules made true | Size |
+| --- | --- | --- | --- | --- |
+| 1 | Tokens and static thread | Token file, Newsreader self-hosted, thread loader and schema gate, placeholder and literal-color gates, the old home page removed, and `/` rendering every strip open with step bodies, header, top row and legend, no scripts. The chart column is an empty 400 px cell | tokens-only, content-is-files, no-invented-content, typeface-means-speaker | ~1,300 |
+| 2 | Chart cell | `ChartCellComponent` draws lanes, fork, merge, loop, sectors and branch labels from each step's `git` block; reordering steps in the YAML redraws the graph; component tests for fork, merge and loop | topology-from-data | ~600 |
+| 3 | Playback core | `playback` controller, step timer and remaining-time line, strip states, roll-up, controls, the scope with targets and sweep; the event table rows for play, pause, step, jump, restart, done-strip toggle and tab hidden pass as system tests; axe runs in playing, paused and no-script states | one-playback-state, real-controls, never-color-alone, motion-budget, color-means-role, every-element-answers | ~1,400 |
+| 4 | Bay, filter and log | `StripBayComponent`, `ControllerFilterComponent`, `LogComponent` render from playback state; the budget gate (JS under 60 kB gzipped, fonts under 120 kB, no third-party requests) | — | ~600 |
+| 5 | Follow, yield and dock | Auto-scroll, pause on reader scroll, docked bar, step hash, keyboard, reduced motion; a reader can scroll away mid-play and still control the flow | playback-yields | ~800 |
+| 6 | Narrow screens | The 84 px gutter and stacked top row; no horizontal scroll at 390 px | — | ~400 |
+| 7 | Other pages | Work, Workflow, Background (prints to one page), Contact, reusing the components; SEO per page | — | ~1,000 |
+
+## 9. Docs impact
+
+| Doc | Change | Slice |
+| --- | --- | --- |
+| `docs/system/home-page.md` | Rewritten: the old portfolio page is replaced by the thread | 1 |
+| `docs/sop/edit-the-home-thread.md` | New: change a step, its copy or its git block, and what the gates check | 1 |
+| `docs/system/home-thread-playback.md` | New: the playback controller, its state and the event table | 3, completed in 5 |
+| `docs/sop/add-seo-to-a-page.md` | Updated if the new pages change the procedure | 7 |

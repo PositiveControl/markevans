@@ -35,4 +35,4 @@ System tests: scroll during play pauses; no timer restarts it.
 
 ## Where this app is
 
-Playback does not exist yet. Slice 3 adds pause on selection and tab hide; slice 4 adds pause on scroll and the system tests that no timer resumes it.
+Playback does not exist yet. Slice 3 adds pause on selection and tab hide; slice 5 adds pause on scroll and the system tests that no timer resumes it.

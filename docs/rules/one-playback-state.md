@@ -35,4 +35,4 @@ Prose only; covered by the system tests for the event table.
 
 ## Where this app is
 
-There is no `playback` controller yet. Slice 3 adds it with the event table as system tests; slice 4 adds the docked bar as a second view of the same state.
+There is no `playback` controller yet. Slice 3 adds it with the event table as system tests; slice 5 adds the docked bar as a second view of the same state.
