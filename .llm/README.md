@@ -19,7 +19,7 @@ what already exists — before writing a new doc that duplicates one.
 Design docs for features. Written before issues are created, approved at gate G1.
 
 <!-- plans:start -->
-*None yet.*
+- [Home thread](../docs/plans/2026-10-03-home-thread-design.md) — the home page as one feature moving through the delivery chain: flight strips on a git spine, radar scope as console (approved G1)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`

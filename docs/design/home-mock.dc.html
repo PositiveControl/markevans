@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Option 4: the left column is the chart</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+a{color:#0F7480}a:hover{color:#0B3A40}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.sweep{animation:none !important}}
+</style>
+</helmet>
+<div style="background: #F7F6F0; color: #1B2428; font-family: 'Newsreader', Georgia, serif; font-size: 18px; line-height: 30px">
+
+<header style="border-bottom: 1px solid rgba(27,36,40,0.3)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 0 48px; box-sizing: border-box; min-height: 60px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<a href="#" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px; letter-spacing: 0.04em; text-transform: uppercase; color: #1B2428; text-decoration: none; padding: 12px 0">Mark Evans</a>
+<nav aria-label="Primary" style="display: flex; flex-wrap: wrap; gap: 0 24px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px; letter-spacing: 0.04em; text-transform: uppercase">
+<a href="#" style="padding: 13px 0; text-decoration: none">Work</a>
+<a href="#" style="padding: 13px 0; text-decoration: none">Workflow</a>
+<a href="#" style="padding: 13px 0; text-decoration: none">Background</a>
+<a href="#" style="padding: 13px 0; text-decoration: none">Contact</a>
+</nav>
+</div>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 0 48px; box-sizing: border-box">
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px 48px; padding-top: 36px">
+
+<aside aria-label="Scope and playback" style="flex: 0 0 400px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px">
+<div style="position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; border: 1px solid rgba(27,36,40,0.45); background: #EFEEE6; overflow: hidden">
+<div style="position: absolute; left: 12%; top: 12%; width: 76%; height: 76%; border-radius: 50%; border: 1px dashed rgba(27,36,40,0.45); box-sizing: border-box"></div>
+<div style="position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px solid rgba(27,36,40,0.15)"></div>
+<div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid rgba(27,36,40,0.15)"></div>
+<div class="sweep" style="{{ sweepStyle }}"></div>
+<div style="{{ leaderStyle }}"></div>
+<sc-for list="{{ steps }}" as="m" hint-placeholder-count="15">
+<button type="button" onClick="{{ m.jump }}" aria-label="{{ m.aria }}" title="{{ m.name }}" style="{{ m.blipStyle }}"><span style="{{ m.blipMark }}"></span></button>
+</sc-for>
+<div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #F7F6F0; border: 1px solid rgba(27,36,40,0.45); padding: 8px 12px; max-width: 200px; box-sizing: border-box; text-align: center; font-size: 12px; line-height: 18px">
+<div style="font-weight: 500; overflow-wrap: anywhere">{{pos}} {{curName}}</div>
+<div style="color: #4A5763; text-transform: uppercase">{{curLane}} · {{board}}</div>
+<div style="{{ curStatusStyle }}">{{curStatus}}</div>
+</div>
+<div style="position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); display: flex; gap: 6px">
+<button type="button" onClick="{{ restart }}" aria-label="Restart" title="Restart" style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; background: #F7F6F0; color: #1B2428; border: 1px solid rgba(27,36,40,0.5)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5"></path><path d="M3 3v3.5h3.5"></path></svg></button>
+<button type="button" onClick="{{ prev }}" aria-label="Step back" title="Step back" style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; background: #F7F6F0; color: #1B2428; border: 1px solid rgba(27,36,40,0.5)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4.5v11L6.5 10z"></path><path d="M5 4.5v11"></path></svg></button>
+<button type="button" onClick="{{ togglePlay }}" aria-label="{{ playLabel }}" title="{{ playLabel }}" style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; background: #1B2428; color: #F7F6F0; border: 1px solid #1B2428">
+<sc-if value="{{ playing }}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 4.5v11"></path><path d="M13 4.5v11"></path></svg></sc-if>
+<sc-if value="{{ notPlaying }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v11l8.5-5.5z"></path></svg></sc-if>
+</button>
+<button type="button" onClick="{{ next }}" aria-label="Step forward" title="Step forward" style="width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; background: #F7F6F0; color: #1B2428; border: 1px solid rgba(27,36,40,0.5)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4.5v11l7.5-5.5z"></path><path d="M15 4.5v11"></path></svg></button>
+</div>
+</div>
+
+<div aria-label="Strip bay" style="display: flex; border: 1px solid rgba(27,36,40,0.5); border-radius: 2px; text-transform: uppercase; letter-spacing: 0.02em; font-size: 11px; text-align: center">
+<sc-for list="{{ bays }}" as="b" hint-placeholder-count="4">
+<span style="{{ b.style }}">{{b.label}}</span>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+<span style="color: #4A5763; letter-spacing: 0.04em; text-transform: uppercase; margin-right: 6px">Controller</span>
+<sc-for list="{{ lanes }}" as="l" hint-placeholder-count="4">
+<button type="button" onClick="{{ l.pick }}" aria-pressed="{{ l.on }}" style="{{ l.style }}">{{l.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; color: #4A5763; border-top: 1px solid rgba(27,36,40,0.3); padding-top: 12px">
+<span style="display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true" style="flex: none"><polygon points="1,3 17,3 9,17" fill="none" stroke="{{command}}" stroke-width="2"></polygon></svg>command</span>
+<span style="display: flex; align-items: center; gap: 8px"><span style="flex: none; width: 18px; border-top: 2px solid #1B2428"></span>main</span>
+<span style="display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true" style="flex: none"><polygon points="1,3 17,3 9,17" fill="{{human}}" stroke="{{human}}" stroke-width="2"></polygon></svg>human gate</span>
+<span style="display: flex; align-items: center; gap: 8px"><span style="flex: none; width: 18px; border-top: 2px solid {{command}}"></span>feature branch</span>
+<span style="display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true" style="flex: none"><polygon points="1,3 17,3 9,17" fill="{{machine}}" stroke="{{machine}}" stroke-width="2"></polygon></svg>automated gate</span>
+<span style="display: flex; align-items: center; gap: 8px"><span style="flex: none; width: 18px; border-top: 2px dashed #4A5763"></span>side thread</span>
+<span style="display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true" style="flex: none"><polygon points="1,3 17,3 9,17" fill="none" stroke="#4A5763" stroke-width="2" stroke-dasharray="3 2"></polygon></svg>optional</span>
+<span style="display: flex; align-items: center; gap: 8px"><span style="flex: none; box-sizing: border-box; width: 9px; height: 9px; margin: 0 4px; border: 1.5px solid #4A5763"></span>target on scope</span>
+</div>
+</aside>
+
+<section style="flex: 999 1 460px; min-width: 0; padding: 36px 0 0">
+<h1 style="margin: 0; font-weight: 400; font-size: 40px; line-height: 48px; letter-spacing: -0.01em">I build web products with coding agents under positive control: every change planned, gated, reviewed and shipped the same way.</h1>
+<p style="margin: 24px 0 0; max-width: 66ch">Positive control is an air traffic term. No aircraft moves without explicit clearance. Here, no change ships without one. One feature is on the scope now, flying the whole route. Pause it and step through at your own pace.</p>
+<div style="margin-top: 36px; border: 1px solid rgba(27,36,40,0.3); border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 12px; padding: 8px 12px; border-bottom: 1px solid rgba(27,36,40,0.3); letter-spacing: 0.04em; text-transform: uppercase; color: #4A5763">
+<span style="color: #1B2428">Log</span>
+<span>Gates cleared <span style="color: #1B2428">{{gatesCleared}} / 4</span></span>
+<span>Artifacts <span style="color: #1B2428">{{artifactCount}}</span></span>
+</div>
+<div style="max-height: 220px; overflow-y: auto">
+<sc-if value="{{ logEmpty }}" hint-placeholder-val="{{ true }}">
+<div style="padding: 12px; color: #4A5763">Nothing completed yet. Entries appear here as each step finishes.</div>
+</sc-if>
+<sc-for list="{{ log }}" as="e" hint-placeholder-count="0">
+<div style="padding: 8px 12px; border-bottom: 1px solid rgba(27,36,40,0.15); display: flex; flex-direction: column">
+<span style="display: flex; gap: 12px"><span style="color: #4A5763">{{e.num}}</span><span style="font-weight: 500; overflow-wrap: anywhere">{{e.name}}</span><span style="margin-left: auto; text-transform: uppercase; color: #4A5763">{{e.status}}</span></span>
+<span style="padding-left: 30px; color: #1B2428">{{e.outcome}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+
+</div>
+
+<section aria-label="The thread" style="padding: 24px 0 96px">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+<div style="{{ s.wrapStyle }}">
+<div aria-hidden="true" style="{{ s.gutterStyle }}">
+<sc-for list="{{ s.lines }}" as="ln" hint-placeholder-count="2">
+<div style="{{ ln.style }}"></div>
+</sc-for>
+<span style="{{ s.sectorStyle }}">{{s.sectorLabel}}</span>
+<span style="{{ s.branchStyle }}">{{s.branchLabel}}</span>
+<div style="{{ s.ringStyle }}"></div>
+<svg width="18" height="18" viewBox="0 0 18 18" style="{{ s.nodeStyle }}"><polygon points="1,3 17,3 9,17" fill="{{ s.nodeFill }}" stroke="{{ s.nodeStroke }}" stroke-width="2" stroke-dasharray="{{ s.nodeDash }}"></polygon></svg>
+</div>
+<div style="flex: 1 1 0; min-width: 0; padding: 6px 0 6px 20px">
+<button type="button" onClick="{{ s.toggle }}" aria-expanded="{{ s.expanded }}" style="{{ s.stripStyle }}">
+<span style="flex: 0 0 44px; align-self: stretch; display: flex; align-items: center; justify-content: center; border-right: 1px solid rgba(27,36,40,0.3); font-size: 12px; color: #4A5763">{{s.num}}</span>
+<span style="{{ s.nameStyle }}">{{s.name}}</span>
+<span style="flex: 0 0 92px; align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding: 0 12px; border-left: 1px solid rgba(27,36,40,0.3); font-size: 11px; line-height: 16px; text-transform: uppercase"><span style="color: #4A5763">Ctl</span><span>{{s.laneLabel}}</span></span>
+<span style="flex: 0 0 132px; align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding: 0 12px; border-left: 1px solid rgba(27,36,40,0.3); font-size: 11px; line-height: 16px; text-transform: uppercase"><span style="color: #4A5763">Bay</span><span>{{s.board}}</span></span>
+<span style="{{ s.statusStyle }}">{{s.status}}</span>
+<sc-if value="{{ s.showOutcome }}" hint-placeholder-val="{{ false }}">
+<span style="flex-basis: 100%; padding: 4px 12px 4px 56px; box-sizing: border-box; border-top: 1px solid rgba(27,36,40,0.3); font-size: 13px; line-height: 22px; color: #1B2428"><span style="color: #4A5763; text-transform: uppercase; font-size: 11px; margin-right: 12px">Rmk</span>{{s.outcome}}</span>
+</sc-if>
+</button>
+<div style="{{ s.bodyStyle }}">
+<div style="overflow: hidden; min-height: 0">
+<div style="padding: 18px 12px 30px 12px; display: flex; flex-direction: column; gap: 24px">
+<p style="margin: 0; max-width: 66ch">{{s.body}}</p>
+<sc-for list="{{ s.groups }}" as="g" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 6px; max-width: 880px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px; letter-spacing: 0.04em; text-transform: uppercase; color: #4A5763; padding-bottom: 6px; border-bottom: 1px solid rgba(27,36,40,0.3)">{{g.title}}</div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+<div style="display: flex; flex-wrap: wrap; gap: 0 24px">
+<span style="flex: 0 0 260px; max-width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 14px; line-height: 30px; overflow-wrap: anywhere">{{r.k}}</span>
+<span style="flex: 1 1 280px; min-width: 0">{{r.v}}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<sc-if value="{{ s.hasArtifact }}" hint-placeholder-val="{{ false }}">
+<div style="border: 1px solid rgba(27,36,40,0.3); border-radius: 2px; max-width: 80ch; background: #FDFDFB; font-family: 'IBM Plex Mono', monospace; font-size: 14px; line-height: 24px">
+<div style="padding: 6px 12px; border-bottom: 1px solid rgba(27,36,40,0.3); font-size: 12px; line-height: 18px; color: #4A5763; overflow-wrap: anywhere">{{s.artifactSource}}</div>
+<pre style="margin: 0; padding: 12px; font: inherit; white-space: pre-wrap; overflow-x: auto">{{s.artifactBody}}</pre>
+</div>
+</sc-if>
+<sc-if value="{{ s.hasNote }}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; max-width: 66ch; font-style: italic">{{s.note}}</p>
+</sc-if>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+<div style="margin-top: 24px; border-top: 1px solid rgba(27,36,40,0.3); padding-top: 24px; display: flex; flex-wrap: wrap; gap: 0 48px; font-size: 24px; line-height: 30px">
+<a href="#" style="padding: 12px 0">Background</a>
+<a href="#" style="padding: 12px 0">How the method works</a>
+</div>
+</section>
+
+</main>
+
+<footer style="border-top: 1px solid rgba(27,36,40,0.3)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 24px 48px; box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px; color: #4A5763">
+<span>Mark Evans · PositiveControl</span>
+<span>This site is built with the workflow it describes.</span>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"secondsPerStep":{"editor":"range","default":6,"min":2,"max":15,"step":1,"unit":"s"},"command":{"editor":"color","default":"#0F7480"},"human":{"editor":"color","default":"#A6651A"},"machine":{"editor":"color","default":"#3E7C4F"},"$preview":{"width":1280,"height":2500}}'>
+class Component extends DCLogic {
+state = { step: 0, playing: true, open: {}, lane: 'all' };
+
+data() {
+return [
+{ name: '/pick', kind: 'command', lane: 'human', board: 'Todo',
+outcome: 'Unshaped work, routed to design.',
+body: 'Every session starts here. It surfaces ready work in priority order and routes it by shape and board state.',
+groups: [
+{ title: 'Routing', rows: [
+{ k: 'epic or unshaped', v: 'Goes to /feature_plan to be designed and split.' },
+{ k: 'sized Todo issue', v: 'Goes to /task_plan.' },
+{ k: 'In Progress', v: 'Resumes in /implement from the task file.' },
+{ k: 'Blocked', v: 'Shows the blocker instead of starting work.' } ] },
+{ title: 'Checked at the door', rows: [
+{ k: 'sizing', v: 'An issue fits when its acceptance criteria fit in five testable bullets. More than that is an epic.' } ] } ] },
+
+{ name: '/feature_plan', kind: 'command', lane: 'agent', board: 'Todo',
+outcome: 'Design doc drafted in docs/plans/.',
+body: 'The agent explores the codebase and drafts a design doc. Nothing is an issue yet. The doc is a proposal; issues are a commitment.',
+groups: [
+{ title: 'Produces', rows: [
+{ k: 'docs/plans/[slug]-design.md', v: 'The design doc, with the slice list.' },
+{ k: 'Status: Draft placeholders', v: 'Stubs for the system and procedure docs this feature will need.' },
+{ k: 'feature/[slug]', v: 'The feature branch name, written into the doc when there is more than one slice.' } ] },
+{ title: 'Valves, off the chain', rows: [
+{ k: '/grill', v: 'Interviews the design in rounds until no question is left open.' },
+{ k: '/research', v: 'Reads primary sources and writes one cited note.' },
+{ k: '/domain_model', v: 'Settles a term doing two jobs. Writes the vocabulary and an ADR.' } ] } ],
+artifactSource: 'docs/plans/[example]-design.md',
+artifactBody: '[Design doc excerpt. Example TBD.]' },
+
+{ name: '/segue \u2192 /segue_merge', kind: 'optional', lane: 'human', board: 'Todo',
+outcome: 'Findings merged back. Workstream clean.',
+body: 'A question comes up that would derail the design. I open an isolated thread, settle it there, and bring back only the findings.',
+groups: [
+{ title: 'The cycle', rows: [
+{ k: '/segue', v: 'Opens the thread and parks the workstream.' },
+{ k: '/segue_resume, /segue_close', v: 'Picks the thread up later, or finishes it.' },
+{ k: '/segue_merge', v: 'Returns the findings to the plan. The discussion itself stays out.' },
+{ k: '/segue_kill', v: 'A dead end. Records why it died and merges nothing.' } ] } ],
+note: '[Segue content TBD: the question, and what came back.]' },
+
+{ name: 'G1 \u00b7 Design approved', kind: 'human', lane: 'human', board: 'Todo',
+outcome: 'Approved. Sub-issues created on the board.',
+body: 'I read the design doc and approve it, send it back, or cut it down.',
+groups: [
+{ title: 'Gate', rows: [
+{ k: 'blocks', v: 'Issue creation.' },
+{ k: 'cleared by', v: 'Mark.' },
+{ k: 'then', v: 'A parent issue and sized sub-issues land on the board as Todo.' } ] } ],
+note: '[Your note: what you changed or sent back before approving.]' },
+
+{ name: '/task_plan', kind: 'command', lane: 'agent', board: 'Todo',
+outcome: 'Task file, plan and branch ready.',
+body: 'One sized issue becomes a task file, an implementation plan and a branch. The issue number threads through all of them.',
+groups: [
+{ title: 'Produces', rows: [
+{ k: '.llm/tasks/[n]_[slug].md', v: 'The task file. Any fresh session can resume from it.' },
+{ k: 'prefix/[n]/[slug]', v: 'The branch.' },
+{ k: 'Base: feature/[slug]', v: 'Recorded so every later command diffs against the right base.' },
+{ k: 'draft PR to main', v: 'Opened with the first slice, so CI runs on the feature from day one.' } ] },
+{ title: 'How rules are selected', rows: [
+{ k: 'CLAUDE.md', v: 'States the non-negotiables in short form and points at the index.' },
+{ k: 'docs/rules/INDEX.md', v: 'Routes by the paths this task will touch.' },
+{ k: 'frontmatter: applies_to, triggers', v: 'Path globs and keywords decide which rules match.' },
+{ k: 'frontmatter: tokens', v: 'The read cost of each rule, so the plan loads only what it needs.' },
+{ k: 'frontmatter: modes, current_state', v: 'Which kind of app the rule ships to, and whether this app matches it or diverges.' },
+{ k: 'docs/rules/SYMPTOMS.md', v: 'Read only when routing by path missed.' } ] } ],
+artifactSource: 'rules selected for this task',
+artifactBody: '[Rule files the plan loaded. Example TBD.]' },
+
+{ name: 'G2 \u00b7 Plan approved', kind: 'human', lane: 'human', board: 'In Progress',
+outcome: 'Approved. Board moves to In Progress.',
+body: 'I read the implementation plan before any code exists.',
+groups: [
+{ title: 'Gate', rows: [
+{ k: 'blocks', v: 'Any code.' },
+{ k: 'cleared by', v: 'Mark.' } ] } ],
+note: '[Your note: what you cut or reordered in the plan.]' },
+
+{ name: '/implement', kind: 'command', lane: 'agent', board: 'In Progress',
+outcome: 'Code and tests committed, one logical unit at a time.',
+body: 'The agent loads the task file and builds. Tests first, one commit per logical unit.',
+groups: [
+{ title: 'Rules in play', rows: [
+{ k: 'path routing', v: 'Each file edited routes to its rules through the index, the same way planning did.' },
+{ k: 'right and wrong pairs', v: 'Every rule shows both versions side by side, so the agent sees the specific mistake to avoid.' } ] },
+{ title: 'Enforced while writing', rows: [
+{ k: 'bin/hooks/post_edit', v: 'RuboCop on Ruby files; a bracket-class check on Slim templates.' },
+{ k: '.claude/settings.json deny list', v: 'Refuses force-push, reset --hard, clean -fd and reading secrets.' },
+{ k: 'bin/hooks/session_end', v: 'Flags draft doc placeholders left behind at the end of a turn.' } ] },
+{ title: 'Valves', rows: [
+{ k: '/diagnose', v: 'A bug with no failing test. Builds a tight loop first, then hunts.' },
+{ k: '/test_fix', v: 'The suite is red. Triage and a local fix.' },
+{ k: 'scope escape', v: 'Forecast passes 1,500 added lines or 25 files: stop, split a sub-issue, land this slice clean.' } ] } ],
+artifactSource: '[example PR] \u00b7 diff summary',
+artifactBody: '[Files changed and lines added. Example TBD.]' },
+
+{ name: '/pr_review --local', kind: 'command', lane: 'agent', board: 'In Progress',
+outcome: 'Self-review finished in two rounds or fewer.',
+body: 'Before any PR exists, an agent with a new context reviews the branch. It has not seen the implementation conversation, so it reads the diff cold.',
+groups: [
+{ title: 'Rounds', rows: [
+{ k: 'round 1', v: 'Full review of the diff. The implementer verifies each finding.' },
+{ k: 'disputes', v: 'I rule on them.' },
+{ k: 'fixes', v: 'Each lands with a test that failed first.' },
+{ k: 'round 2', v: 'Reviews only the fixes from round 1. There is no round 3.' } ] },
+{ title: 'Also here', rows: [
+{ k: '/rails_code_review', v: 'Reviews the branch against this stack\u2019s conventions. Posts nothing.' },
+{ k: '/run_lint', v: 'RuboCop and bin/flay on the diff, fixed locally.' } ] } ] },
+
+{ name: '/pr_submit', kind: 'command', lane: 'human', board: 'Up for Review',
+outcome: 'PR open. Board moves to Up for Review.',
+body: 'I invoke this one myself. Opening a PR has an audience.',
+groups: [
+{ title: 'In order', rows: [
+{ k: 'bin/rails db:queries', v: 'Regenerates the query ledger. Unreviewed queries get their plan printed for review.' },
+{ k: 'local suite', v: 'Must be green before anything is pushed.' },
+{ k: 'docs', v: 'Every placeholder is completed or deleted. The index is checked for duplicates and dead links.' },
+{ k: 'bin/qa-walkthrough', v: 'A user-facing branch needs a script that drives a browser through the pages it touched.' },
+{ k: 'PR', v: 'Title carries the issue number. Body carries Closes #n.' } ] } ] },
+
+{ name: 'G3 \u00b7 Deterministic gates', kind: 'machine', lane: 'ci', board: 'Up for Review',
+outcome: 'Every gate green.',
+body: 'An agent will eventually miss a rule, so the rules a machine can check are checked. None of these depend on the agent cooperating.',
+groups: [
+{ title: 'bin/gates \u00b7 pre-push hook, again in CI', rows: [
+{ k: 'rejected patterns', v: 'Banned tokens in app/ and the Gemfile.' },
+{ k: 'app/ directory budget', v: 'No new directory under app/ without an ADR.' },
+{ k: 'command mirror', v: 'The Cursor commands match the Claude commands.' },
+{ k: 'foreign keys', v: 'Every foreign key leads an index.' } ] },
+{ title: 'Their own CI jobs', rows: [
+{ k: 'bin/flay', v: 'Fails on Ruby this PR copied that its base did not have.' },
+{ k: 'db:queries:check', v: 'Every SQL shape the suite emits has a reviewed line in db/queries.yml.' },
+{ k: 'ci.yml', v: 'Ruby and JS security scans, RuboCop, the test suite.' },
+{ k: 'bin/lint-docs', v: 'Doc checks, including real hosts or IPs leaked into a doc.' },
+{ k: 'api:contract:check', v: 'API mode only: the OpenAPI contract agrees with the request tests.' } ] },
+{ title: 'Inside the test run', rows: [
+{ k: 'Bullet', v: 'Raises on an N+1 query.' },
+{ k: 'Lighthouse CI', v: 'Accessibility.' },
+{ k: 'Slowpoke', v: 'Suite speed.' } ] },
+{ title: 'Gate', rows: [
+{ k: 'blocks', v: 'The push, and the merge under branch protection.' } ] } ],
+artifactSource: '$ bin/gates',
+artifactBody: '[Gate output. Example TBD.]' },
+
+{ name: 'Human review', kind: 'command', lane: 'human', board: 'Up for Review',
+outcome: 'Review comments posted.',
+body: 'A person reads the PR. On a feature built in slices, each slice is read by /pr_review from a fresh session, and the feature PR is read by a human against the design doc.',
+groups: [
+{ title: 'Tools', rows: [
+{ k: '/pr_review', v: 'Full-context diff review. Posts comments.' },
+{ k: '/pr_qa', v: 'A guided manual QA pass with a structured report.' },
+{ k: '/pr_fix_ci', v: 'Reads a failed run and fixes it locally. Pushing the fix is mine.' } ] } ],
+note: '[Review comments from the example. TBD.]' },
+
+{ name: '/pr_comment_resolver', kind: 'command', lane: 'agent', board: 'Up for Review',
+outcome: 'Every conversation answered and resolved.',
+body: 'Each review comment gets a fix or a reply, then its conversation is resolved. Other people are reading those threads, so I choose when this runs.',
+groups: [
+{ title: 'The cycle', rows: [
+{ k: 'fix or reply', v: 'One per comment.' },
+{ k: 'changes requested', v: 'The board returns to In Progress until they are addressed.' },
+{ k: '/resolve_conflicts', v: 'Finishes a conflicted merge and regenerates what must not be hand-merged.' } ] } ] },
+
+{ name: 'G4 \u00b7 Comments resolved', kind: 'human', lane: 'human', board: 'Up for Review',
+outcome: 'Clear to merge.',
+body: 'Nothing merges with an open conversation.',
+groups: [
+{ title: 'Gate', rows: [
+{ k: 'blocks', v: 'Merge.' },
+{ k: 'cleared by', v: 'The reviewer and Mark.' } ] } ] },
+
+{ name: 'Merge', kind: 'command', lane: 'human', board: 'Done',
+outcome: 'Merged. Issue closed, board Done.',
+body: 'One click. Everything after it is automation.',
+groups: [
+{ title: 'Automation', rows: [
+{ k: 'Closes #n', v: 'Closes the issue on merge.' },
+{ k: 'board', v: 'The closed item moves to Done.' },
+{ k: 'branch', v: 'Deleted automatically.' },
+{ k: 'feature branch', v: 'After each slice, main is merged back in so the final merge stays small.' } ] } ] },
+
+{ name: 'Deploy', kind: 'command', lane: 'ci', board: 'Done',
+outcome: 'Shipped.',
+body: '[One line on how the example reached production.]',
+groups: [
+{ title: 'After', rows: [
+{ k: 'deploy', v: 'Kamal 2, as the template configures it.' },
+{ k: '/update_docs', v: 'An on-demand deep pass over the docs that keeps the index honest.' } ] } ] }
+];
+}
+
+componentDidMount() {
+var mq = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+if (mq && mq.matches) this.setState({ playing: false });
+this.loop();
+}
+
+componentWillUnmount() {
+clearTimeout(this.timer);
+}
+
+loop() {
+var self = this;
+var ms = (this.props.secondsPerStep ?? 6) * 1000;
+clearTimeout(this.timer);
+this.timer = setTimeout(function () {
+var st = self.state || {};
+var last = self.data().length - 1;
+if (st.playing) {
+if (st.step < last) self.setState({ step: st.step + 1 });
+else self.setState({ playing: false });
+}
+self.loop();
+}, ms);
+}
+
+go(i) {
+var last = this.data().length - 1;
+var n = Math.max(0, Math.min(last, i));
+this.setState({ step: n, playing: false });
+}
+
+renderVals() {
+var self = this;
+var st = this.state || {};
+var step = st.step || 0;
+var open = st.open || {};
+var lane = st.lane || 'all';
+var INK = '#1B2428', QUIET = '#4A5763', PAPER = '#F7F6F0';
+var colors = {
+command: this.props.command ?? '#0F7480',
+human: this.props.human ?? '#A6651A',
+machine: this.props.machine ?? '#3E7C4F',
+optional: QUIET
+};
+var tints = { human: '#F6E9D8', machine: '#E3EFE6', command: '#E4EEF0', optional: '#EFEEE6' };
+var laneNames = { human: 'Human', agent: 'Agent', ci: 'CI' };
+var raw = this.data();
+var last = raw.length - 1;
+var MX = 44, FX = 150, SX = 256, NY = 34;
+var GW = 400, CHART = true, BLIP = 28;
+var sectorBg = { 'Todo': 'transparent', 'In Progress': 'rgba(27,36,40,0.05)', 'Up for Review': 'rgba(27,36,40,0.10)', 'Done': 'rgba(27,36,40,0.05)' };
+var branchNames = { 0: 'main', 2: 'side thread', 4: 'feature/[slug]', 7: 'fresh context', 13: 'merge to main' };
+var FEAT = colors.command;
+
+// git topology per row: which lane the node sits on, and what the row draws
+var topo = [
+{ on: 'm', start: true },
+{ on: 'm' },
+{ on: 's', loopFrom: 'm' },
+{ on: 'm' },
+{ on: 'f', fork: true },
+{ on: 'f' },
+{ on: 'f' },
+{ on: 's', loopFrom: 'f' },
+{ on: 'f' },
+{ on: 'f' },
+{ on: 'f' },
+{ on: 'f' },
+{ on: 'f' },
+{ on: 'm', merge: true },
+{ on: 'm', end: true }
+];
+function v(x, top, rest, color) {
+return { style: 'position: absolute; left: ' + (x - 1) + 'px; top: ' + top + 'px; ' + rest + '; border-left: 2px solid ' + color };
+}
+function linesFor(i) {
+var t = topo[i], out = [];
+var featActive = i >= 4 && i <= 12;
+if (t.start) out.push(v(MX, NY, 'bottom: 0', INK));
+else if (t.end) out.push(v(MX, 0, 'height: ' + NY + 'px', INK));
+else out.push(v(MX, 0, 'bottom: 0', INK));
+if (t.fork) {
+out.push({ style: 'position: absolute; left: ' + (MX - 1) + 'px; top: ' + (NY - 15) + 'px; width: ' + (FX - MX) + 'px; height: 14px; border-left: 2px solid ' + FEAT + '; border-bottom: 2px solid ' + FEAT + '; border-bottom-left-radius: 14px' });
+out.push(v(FX, NY, 'bottom: 0', FEAT));
+} else if (t.merge) {
+out.push(v(FX, 0, 'height: ' + (NY - 15) + 'px', FEAT));
+out.push({ style: 'position: absolute; left: ' + (MX + 1) + 'px; top: ' + (NY - 15) + 'px; width: ' + (FX - MX - 2) + 'px; height: 14px; border-right: 2px solid ' + FEAT + '; border-bottom: 2px solid ' + FEAT + '; border-bottom-right-radius: 14px' });
+} else if (featActive) {
+out.push(v(FX, 0, 'bottom: 0', FEAT));
+}
+if (t.loopFrom) {
+var from = t.loopFrom === 'm' ? MX : FX;
+out.push({ style: 'position: absolute; left: ' + (from + 1) + 'px; top: 10px; bottom: 10px; width: ' + (SX - from - 2) + 'px; border: 2px dashed ' + QUIET + '; border-left: 0; border-radius: 0 14px 14px 0' });
+}
+return out;
+}
+
+var steps = raw.map(function (d, i) {
+var done = i < step;
+var current = i === step;
+var expanded = current || (done && !!open[i]);
+var color = colors[d.kind];
+var gate = d.kind === 'human' || d.kind === 'machine';
+var dim = lane !== 'all' && d.lane !== lane;
+var t = topo[i];
+var bayStart = i === 0 || raw[i - 1].board !== d.board;
+var nx = t.on === 'm' ? MX : (t.on === 'f' ? FX : SX);
+var ang = (135 + 270 * i / last) * Math.PI / 180;
+var bx = 50 + 38 * Math.cos(ang), by = 50 + 38 * Math.sin(ang);
+var status = done ? (gate ? 'cleared' : 'done') : (current ? (st.playing ? (gate ? 'hold' : 'active') : 'paused') : 'pending');
+return {
+num: (i < 9 ? '0' : '') + (i + 1),
+name: d.name,
+laneLabel: laneNames[d.lane],
+board: d.board,
+outcome: d.outcome,
+body: d.body,
+groups: d.groups || [],
+hasArtifact: !!d.artifactSource,
+artifactSource: d.artifactSource || '',
+artifactBody: d.artifactBody || '',
+hasNote: !!d.note,
+note: d.note || '',
+expanded: expanded,
+showOutcome: done,
+status: status,
+aria: 'Go to step ' + (i + 1) + ': ' + d.name,
+lines: linesFor(i),
+gutterStyle: 'position: relative; flex: none; width: ' + GW + 'px; transition: opacity 150ms ease-out; opacity: ' + (done || current ? 1 : 0.35) + (CHART ? '; background: ' + sectorBg[d.board] + '; border-top: ' + (bayStart ? '1px dashed rgba(27,36,40,0.5)' : '1px solid transparent') : ''),
+isCurrent: current,
+sectorLabel: bayStart ? 'Sector \u00b7 ' + d.board : '',
+sectorStyle: "position: absolute; right: 12px; top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: " + QUIET,
+branchLabel: branchNames[i] || '',
+branchStyle: "position: absolute; left: " + (nx + 20) + "px; top: " + (NY - 9) + "px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 18px; white-space: nowrap; color: " + (t.on === 'f' ? FEAT : (t.on === 's' ? QUIET : INK)),
+headStyle: "display: flex; flex-wrap: wrap; align-items: center; min-height: 64px; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 14px; line-height: 20px; background: " + tints[d.kind] + '; border: 1px ' + (d.kind === 'optional' ? 'dashed' : 'solid') + ' rgba(27,36,40,0.55); outline: 2px solid ' + INK + '; outline-offset: -1px',
+headStatusStyle: 'flex: 0 0 110px; align-self: stretch; display: flex; align-items: center; justify-content: center; border-left: 1px solid rgba(27,36,40,0.3); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; color: ' + color,
+nodeStyle: 'position: absolute; left: ' + (nx - 9) + 'px; top: ' + (NY - 9) + 'px; overflow: visible',
+nodeFill: gate ? color : PAPER,
+nodeStroke: color,
+nodeDash: d.kind === 'optional' ? '3 2' : 'none',
+ringStyle: 'position: absolute; left: ' + (nx - 16) + 'px; top: ' + (NY - 17) + 'px; width: 32px; height: 32px; box-sizing: border-box; border-radius: 50%; background: ' + PAPER + '; border: 1.5px solid ' + color + '; display: ' + (current ? 'block' : 'none'),
+stripStyle: "width: 100%; min-height: 56px; padding: 0; cursor: pointer; text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 14px; line-height: 20px; display: flex; flex-wrap: wrap; align-items: center; border-radius: 2px; color: " + (done || current ? INK : QUIET) + '; background: ' + (done || current ? tints[d.kind] : 'transparent') + '; border: 1px ' + (d.kind === 'optional' ? 'dashed' : 'solid') + ' rgba(27,36,40,' + (done || current ? 0.55 : 0.3) + '); outline: ' + (current ? '2px solid ' + INK : 'none') + '; outline-offset: -1px',
+nameStyle: 'flex: 1 1 200px; min-width: 0; padding: 8px 12px; font-size: 16px; line-height: 24px; font-weight: 500; overflow-wrap: anywhere',
+statusStyle: 'flex: 0 0 96px; align-self: stretch; display: flex; align-items: center; justify-content: center; border-left: 1px solid rgba(27,36,40,0.3); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; color: ' + (current ? color : (done ? INK : QUIET)),
+wrapStyle: 'display: flex; transition: opacity 150ms ease-out; opacity: ' + (dim ? 0.4 : 1),
+bodyStyle: 'display: grid; grid-template-rows: ' + (expanded ? '1fr' : '0fr') + '; visibility: ' + (expanded ? 'visible' : 'hidden') + '; transition: grid-template-rows 200ms ease-out, visibility 0s linear ' + (expanded ? '0s' : '200ms'),
+blipStyle: 'position: absolute; left: ' + bx.toFixed(2) + '%; top: ' + by.toFixed(2) + '%; width: ' + BLIP + 'px; height: ' + BLIP + 'px; margin: -' + (BLIP / 2) + 'px 0 0 -' + (BLIP / 2) + 'px; padding: 0; background: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center',
+blipMark: 'box-sizing: border-box; width: ' + (current ? 12 : 9) + 'px; height: ' + (current ? 12 : 9) + 'px; border: 1.5px solid ' + color + '; background: ' + (done || current ? color : '#EFEEE6') + '; transform: ' + (gate ? 'rotate(45deg)' : 'none'),
+toggle: function () {
+if (i < step) {
+var o = Object.assign({}, open);
+o[i] = !o[i];
+self.setState({ open: o });
+} else {
+self.go(i);
+}
+},
+jump: function () { self.go(i); }
+};
+});
+
+var lanes = ['all', 'human', 'agent', 'ci'].map(function (id) {
+var on = lane === id;
+return {
+label: id === 'all' ? 'All' : laneNames[id],
+on: on,
+pick: function () { self.setState({ lane: id }); },
+style: 'font: inherit; min-height: 44px; padding: 0 12px; border-radius: 2px; cursor: pointer; border: 1px solid ' + (on ? INK : 'rgba(27,36,40,0.5)') + '; background: ' + (on ? INK : 'transparent') + '; color: ' + (on ? PAPER : INK)
+};
+});
+
+var cur = raw[step];
+var bays = ['Todo', 'In Progress', 'Up for Review', 'Done'].map(function (b, i) {
+var on = cur.board === b;
+return { label: b, style: 'flex: 1 1 0; padding: 12px 4px; border-left: ' + (i ? '1px solid rgba(27,36,40,0.5)' : '0') + '; transition: background-color 150ms ease-out; background: ' + (on ? INK : 'transparent') + '; color: ' + (on ? PAPER : QUIET) };
+});
+var curAng = 135 + 270 * step / last;
+var curColor = colors[cur.kind];
+
+var log = steps.filter(function (s, i) { return i < step; }).reverse();
+return {
+cur: steps[step],
+log: log,
+logEmpty: log.length === 0,
+gatesCleared: raw.filter(function (d, i) { return i < step && (d.kind === 'human' || d.kind === 'machine'); }).length,
+artifactCount: raw.filter(function (d, i) { return i < step && !!d.artifactSource; }).length,
+steps: steps,
+lanes: lanes,
+bays: bays,
+pos: (step < 9 ? '0' : '') + (step + 1),
+board: cur.board,
+curName: cur.name,
+curLane: laneNames[cur.lane],
+curStatus: steps[step].status,
+curStatusStyle: 'text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; color: ' + curColor,
+leaderStyle: 'position: absolute; left: 50%; top: 50%; width: 38%; height: 0; border-top: 1px solid ' + INK + '; transform-origin: 0 0; transition: transform 300ms ease-out; transform: rotate(' + curAng + 'deg)',
+sweepStyle: 'position: absolute; left: 50%; top: 50%; width: 50%; height: 0; border-top: 1px solid rgba(27,36,40,0.35); transform-origin: 0 0; animation: sweep 6s linear infinite; animation-play-state: ' + (st.playing ? 'running' : 'paused'),
+playing: !!st.playing,
+notPlaying: !st.playing,
+playLabel: st.playing ? 'Pause' : (step === last ? 'Replay' : 'Play'),
+command: colors.command,
+human: colors.human,
+machine: colors.machine,
+togglePlay: function () {
+if (st.playing) self.setState({ playing: false });
+else if (step === last) self.setState({ step: 0, open: {}, playing: true });
+else self.setState({ playing: true });
+},
+prev: function () { self.go(step - 1); },
+next: function () { self.go(step + 1); },
+restart: function () { self.setState({ step: 0, open: {}, playing: false }); }
+};
+}
+}
+</script>
+</body>
+</html>
