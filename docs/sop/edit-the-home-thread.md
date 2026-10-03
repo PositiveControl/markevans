@@ -48,16 +48,23 @@ automated gate (green) or an optional step (dashed). Pick it for what the step
 The chart is drawn from these alone, never from a step's position
 (`docs/rules/topology-from-data.md`):
 
-- **main** runs through every row. Exactly one step has `event: start` and
-  exactly one has `event: end`.
-- **fork** starts a branch: `on: feature, event: fork, from: main`. Every fork
-  needs a later `event: merge` whose `from` is that branch.
+- **main** runs through every row. The first step has `event: start` and the
+  last has `event: end`; no other step has either.
+- **fork** opens a branch: `on: feature, event: fork, from: main`. The branch
+  is open from its fork until the `event: merge` whose `from` is that branch,
+  and every fork needs one.
+- A step may sit `on` a branch only while it is open: not before its fork,
+  not after its merge.
 - **loop** is a side thread that leaves and rejoins within one row:
-  `on: side, event: loop, from: <the line it leaves>`. It needs no merge.
-- A step with no `event` continues the line it is `on`.
+  `on: side, event: loop, from: <a line open at that row>`. `on: side` is
+  only ever a loop, and it needs no merge.
+- `fork`, `merge` and `loop` need `from`. A step with no `event` continues the
+  line it is `on`.
+- The block takes `on`, `event`, `from` and `label`, nothing else, so a typo
+  such as `evnet:` is an error rather than a missing event.
 
-Reordering steps is safe as long as those still hold. The loader says so if
-they do not.
+Reordering steps is safe as long as those still hold. The loader checks every
+one of them and names the step that breaks it.
 
 `on:` may be written bare. YAML reads a bare `on` key as the boolean `true`,
 and the loader accepts that rather than make you quote it.
@@ -90,7 +97,7 @@ home.yml: g3: kind "robot" is not one of command, human, machine, optional
 
 | Check | When | Fails on |
 |---|---|---|
-| Thread schema (`DeliveryThread`) | Every load, so tests and CI | An `id` that is not the filename; a missing or unknown key; a step key used twice; a value outside the lists above; not one start and one end; a fork that never merges |
+| Thread schema (`DeliveryThread`) | Every load, so tests and CI | An `id` that is not the filename; a missing or unknown key; a step key used twice; a value outside the lists above, or an unknown git key; start not first or end not last; a step on a branch outside its fork and merge; a side step that is not a loop; a fork that never merges |
 | Placeholders (`content:placeholders`) | Production build only, ahead of `assets:precompile` | `[…]` or TBD anywhere in `content/`. A bracket followed by `(` is a markdown link |
 | Literal colors (`bin/gates`) | Pre-push and CI | A hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in components, styles or scripts outside `app/assets/tailwind/tokens.css` |
 

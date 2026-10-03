@@ -26,6 +26,7 @@ module DeliveryThread
 
   REQUIRED = %w[key name kind lane bay outcome body git groups].freeze
   OPTIONAL = %w[artifact note seconds].freeze
+  GIT_KEYS = %w[on event from label].freeze
 
   Invalid = Class.new(StandardError)
 
@@ -141,8 +142,12 @@ module DeliveryThread
       return [ "git must be a mapping with on, and optionally event, from and label" ] unless git.is_a?(Hash)
       return [ "git.on is required" ] if missing?(DeliveryThread.git_on(git))
 
-      [ allowed("git.on", DeliveryThread.git_on(git), BRANCHES),
-        (allowed("git.event", git["event"], EVENTS) if git.key?("event")) ]
+      errors = (git.keys - GIT_KEYS - [ true ]).map { |key| "unknown git key #{key}" }
+      errors << allowed("git.on", DeliveryThread.git_on(git), BRANCHES)
+      errors << allowed("git.event", git["event"], EVENTS) if git.key?("event")
+      errors << allowed("git.from", git["from"], BRANCHES)
+      errors << "a #{git['event']} needs git.from" if git["event"].in?(%w[fork merge loop]) && missing?(git["from"])
+      errors
     end
 
     def group_errors(groups)
@@ -169,14 +174,58 @@ module DeliveryThread
         "exactly one #{event}, found #{count}" unless count == 1
       end
 
+      errors += placement_errors(steps, gits) + line_errors(steps, gits)
+
       gits.each_with_index do |git, index|
         next unless git["event"] == "fork"
 
         branch = DeliveryThread.git_on(git)
         merged = gits.drop(index + 1).any? { |later| later["event"] == "merge" && later["from"] == branch }
-        errors << "#{steps[index]['key']}: fork onto #{branch} never merges back" unless merged
+        errors << "#{name_of(steps, index)}: fork onto #{branch} never merges back" unless merged
       end
       errors
     end
+
+    def placement_errors(steps, gits)
+      start = gits.index { |git| git["event"] == "start" }
+      finish = gits.rindex { |git| git["event"] == "end" }
+      [ ("#{name_of(steps, start)}: start must be the first step" if start&.nonzero?),
+        ("#{name_of(steps, finish)}: end must be the last step" if finish && finish != gits.size - 1) ].compact
+    end
+
+    # Walks the thread in order, tracking which lines are open: main always,
+    # a branch from its fork to its merge. A step may sit only on an open
+    # line, and a side thread is a loop off one.
+    def line_errors(steps, gits)
+      open = [ "main" ]
+      merged = []
+      gits.each_with_index.flat_map do |git, index|
+        name = name_of(steps, index)
+        on = DeliveryThread.git_on(git)
+        from = git["from"]
+        errors = []
+
+        case git["event"]
+        when "fork"
+          errors << "#{name}: fork from #{from}, which is not open here" if from && !open.include?(from)
+          open << on
+        when "merge"
+          errors << "#{name}: merge from #{from}, which is not open here" if from && !open.include?(from)
+          open.delete(from)
+          merged << from
+        when "loop"
+          errors << "#{name}: loop from #{from}, which is not open here" if from && !open.include?(from)
+        end
+
+        if on == "side"
+          errors << "#{name}: on side must be a loop" unless git["event"] == "loop"
+        elsif on && !open.include?(on)
+          errors << "#{name}: on #{on}, which #{merged.include?(on) ? 'has already merged' : 'has not forked yet'}"
+        end
+        errors
+      end
+    end
+
+    def name_of(steps, index) = (steps[index].is_a?(Hash) && steps[index]["key"].presence) || "step #{index + 1}"
   end
 end

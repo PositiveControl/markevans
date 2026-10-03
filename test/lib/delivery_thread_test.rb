@@ -125,6 +125,39 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: kind false/) { |data| data["steps"][1]["kind"] = false }
   end
 
+  test "a git block rejects unknown keys and checks from" do
+    assert_invalid(/two: unknown git key evnet/) { |data| data["steps"][1]["git"] = { "on" => "main", "evnet" => "loop" } }
+    assert_invalid(/three: git.from "mian"/) { |data| data["steps"][2]["git"]["from"] = "mian" }
+    assert_invalid(/three: a fork needs git.from/) { |data| data["steps"][2]["git"].delete("from") }
+  end
+
+  test "start is the first step and end the last" do
+    assert_invalid(/two: start must be the first step/) do |data|
+      data["steps"][0]["git"] = { "on" => "main" }
+      data["steps"][1]["git"] = { "on" => "main", "event" => "start" }
+    end
+    assert_invalid(/four: end must be the last step/) do |data|
+      data["steps"][3]["git"] = { "on" => "main", "event" => "end" }
+      data["steps"][4]["git"] = { "on" => "main", "event" => "merge", "from" => "feature" }
+    end
+  end
+
+  test "a step sits on a branch only between its fork and its merge" do
+    assert_invalid(/two: on feature, which has not forked yet/) { |data| data["steps"][1]["git"] = { "on" => "feature" } }
+    assert_invalid(/five: on feature, which has already merged/) { |data| data["steps"][4]["git"] = { "on" => "feature", "event" => "end" } }
+  end
+
+  test "a side thread is a loop from an open line" do
+    assert_invalid(/two: on side must be a loop/) { |data| data["steps"][1]["git"] = { "on" => "side" } }
+    assert_invalid(/two: loop from feature, which is not open here/) do |data|
+      data["steps"][1]["git"] = { "on" => "side", "event" => "loop", "from" => "feature" }
+    end
+  end
+
+  test "the home thread's own topology passes" do
+    assert_equal 15, DeliveryThread.fetch(:home).steps.size
+  end
+
   test "a thread needs exactly one start and one end" do
     assert_invalid(/exactly one start, found 0/) { |data| data["steps"][0]["git"].delete("event") }
     assert_invalid(/exactly one end, found 2/) { |data| data["steps"][1]["git"]["event"] = "end" }
