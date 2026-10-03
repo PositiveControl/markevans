@@ -35,6 +35,10 @@ export default class extends Controller {
     this.liveTargets.forEach(element => { element.hidden = false })
     this.stripTargets.forEach(strip => { strip.disabled = false })
     this.touched = false
+    // Values live in data attributes, so a page Turbo restores from its cache
+    // comes back saying it was playing. It must not resume by itself
+    // (docs/rules/playback-yields.md).
+    this.playingValue = false
     this.connected = true
     this.resetClock()
     this.settle()

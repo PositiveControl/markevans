@@ -150,6 +150,25 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_equal step, current_step
   end
 
+  test "a page restored from Turbo's cache comes back paused: nothing resumes by itself" do
+    resize_to(400) do # the thread out of view, so only the restored value could start it
+      visit root_path
+      click_control "Play"
+      assert_selector "main[data-playing]"
+
+      # What a cache restore does: the controller reconnects to markup whose
+      # value attributes say it was playing.
+      execute_script(<<~JS)
+        const main = document.querySelector("main")
+        main.removeAttribute("data-controller")
+        setTimeout(() => main.setAttribute("data-controller", "playback"), 50)
+      JS
+
+      assert_no_selector "main[data-playing]"
+      assert_selector "[aria-label=Play]"
+    end
+  end
+
   test "step timer ends: next step active, previous strip rolls up" do
     open_thread(pace: FAST)
 
