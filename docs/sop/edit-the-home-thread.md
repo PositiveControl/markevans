@@ -26,7 +26,7 @@ steps:
       on: feature         # main | feature | side — the line this step sits on
       event: fork         # optional: start | fork | merge | loop | end
       from: main          # the line a fork, merge or loop leaves from
-      label: "feature/[slug]"   # optional: printed where the line starts
+      label: "feature/<slug>"   # optional: printed where the line starts
     groups:
       - title: "Produces"
         rows:
@@ -66,6 +66,10 @@ and the loader accepts that rather than make you quote it.
 
 Anything not known goes in square brackets, `"[n]"`, `"[Your note]"`, or as
 TBD. Never a plausible number (`docs/rules/no-invented-content.md`).
+
+Square brackets mean "still to write" and block the deploy. A path that shows a
+naming convention rather than the example's real value uses angle brackets,
+`feature/<slug>`, `.llm/tasks/<n>_<slug>.md`, which the check leaves alone.
 
 ## Check it
 
