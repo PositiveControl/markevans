@@ -102,14 +102,16 @@ module DeliveryThread
       return [ "top level must be a mapping with id, title and steps" ] unless @data.is_a?(Hash) && @data["steps"].is_a?(Array)
 
       steps = @data["steps"]
-      id_errors + steps.each_with_index.flat_map { |step, index| step_errors(step, index) } +
+      header_errors + steps.each_with_index.flat_map { |step, index| step_errors(step, index) } +
         duplicate_key_errors(steps) + topology_errors(steps)
     end
 
     private
 
-    def id_errors
-      @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
+    def header_errors
+      errors = @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
+      errors << "missing title" if missing?(@data["title"])
+      errors
     end
 
     def duplicate_key_errors(steps)

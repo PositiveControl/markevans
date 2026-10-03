@@ -107,6 +107,10 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_equal [], load_thread(minimal).steps.first.groups
   end
 
+  test "a thread needs a title" do
+    assert_invalid(/missing title/) { |data| data.delete("title") }
+  end
+
   test "step keys are unique" do
     assert_invalid(/two: key used by more than one step/) { |data| data["steps"][1]["key"] = "two"; data["steps"][2]["key"] = "two" }
   end
