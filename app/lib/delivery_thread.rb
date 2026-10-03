@@ -113,17 +113,42 @@ module DeliveryThread
     def step_errors(step, index)
       return [ "step #{index + 1}: must be a mapping" ] unless step.is_a?(Hash)
 
-      name = step["key"] || "step #{index + 1}"
-      errors = (REQUIRED - step.keys).map { |key| "missing #{key}" }
+      name = step["key"].presence || "step #{index + 1}"
+      errors = REQUIRED.select { |key| missing?(step[key]) }.map { |key| "missing #{key}" }
       errors += (step.keys - REQUIRED - OPTIONAL).map { |key| "unknown key #{key}" }
       errors << allowed("kind", step["kind"], KINDS)
       errors << allowed("lane", step["lane"], LANES)
       errors << allowed("bay", step["bay"], BAYS)
-      if step["git"].is_a?(Hash)
-        errors << allowed("git.on", DeliveryThread.git_on(step["git"]), BRANCHES)
-        errors << allowed("git.event", step["git"]["event"], EVENTS) if step["git"].key?("event")
-      end
+      errors += git_errors(step["git"]) + group_errors(step["groups"])
+      errors << "artifact needs a source and a body" if step.key?("artifact") && !pair?(step["artifact"], "source", "body")
+      errors << "seconds must be a positive whole number" if step.key?("seconds") && !(step["seconds"].is_a?(Integer) && step["seconds"].positive?)
       errors.compact.map { |error| "#{name}: #{error}" }
+    end
+
+    # nil, or a string of nothing but whitespace. An empty list is a value.
+    def missing?(value) = value.nil? || (value.is_a?(String) && value.strip.empty?)
+
+    def pair?(hash, *keys) = hash.is_a?(Hash) && keys.none? { |key| missing?(hash[key]) }
+
+    def git_errors(git)
+      return [] if git.nil? # reported as missing
+      return [ "git must be a mapping with on, and optionally event, from and label" ] unless git.is_a?(Hash)
+
+      [ allowed("git.on", DeliveryThread.git_on(git), BRANCHES),
+        (allowed("git.event", git["event"], EVENTS) if git.key?("event")) ]
+    end
+
+    def group_errors(groups)
+      return [] if groups.nil? # reported as missing
+      return [ "groups must be a list" ] unless groups.is_a?(Array)
+
+      groups.each_with_index.flat_map do |group, g|
+        next [ "groups[#{g + 1}] needs a title and a list of rows" ] unless group.is_a?(Hash) && !missing?(group["title"]) && group["rows"].is_a?(Array)
+
+        group["rows"].each_with_index.filter_map do |row, r|
+          "groups[#{g + 1}].rows[#{r + 1}] needs k and v" unless pair?(row, "k", "v")
+        end
+      end
     end
 
     def allowed(field, value, values)

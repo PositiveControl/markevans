@@ -59,6 +59,24 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: git.event "rebase"/) { |data| data["steps"][1]["git"]["event"] = "rebase" }
   end
 
+  test "a blank required value counts as missing" do
+    assert_invalid(/two: missing outcome/) { |data| data["steps"][1]["outcome"] = nil }
+    assert_invalid(/two: missing name/) { |data| data["steps"][1]["name"] = "  " }
+  end
+
+  test "a value of the wrong shape names the step instead of crashing" do
+    assert_invalid(/two: git must be a mapping/) { |data| data["steps"][1]["git"] = "main" }
+    assert_invalid(/two: groups must be a list/) { |data| data["steps"][1]["groups"] = "Routing" }
+    assert_invalid(/two: groups\[1\] needs a title and a list of rows/) { |data| data["steps"][1]["groups"] = [ { "title" => "Routing" } ] }
+    assert_invalid(/two: groups\[1\].rows\[1\] needs k and v/) { |data| data["steps"][1]["groups"] = [ { "title" => "T", "rows" => [ { "k" => "a" } ] } ] }
+    assert_invalid(/two: artifact needs a source and a body/) { |data| data["steps"][1]["artifact"] = "x" }
+    assert_invalid(/two: seconds must be a positive whole number/) { |data| data["steps"][1]["seconds"] = "8" }
+  end
+
+  test "an empty groups list is allowed" do
+    assert_equal [], load_thread(minimal).steps.first.groups
+  end
+
   test "step keys are unique" do
     assert_invalid(/two: key used by more than one step/) { |data| data["steps"][1]["key"] = "two"; data["steps"][2]["key"] = "two" }
   end
