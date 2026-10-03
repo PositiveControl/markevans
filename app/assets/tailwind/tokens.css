@@ -11,6 +11,24 @@
    No dark theme is designed. Do not add one.
    --------------------------------------------------------------------------- */
 
+/* IBM Plex Mono, latin, the two weights the design uses: 400 for labels, rows
+   and artifacts, 500 for the strip's command name. SIL Open Font License. */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("plex-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("plex-mono-500.woff2") format("woff2");
+}
+
 /* Newsreader, latin, fixed optical size. The variable optical-size cut is
    132 kB on its own, over the whole 120 kB font budget (design doc, section
    7). SIL Open Font License, self-hosted from Google Fonts. */
@@ -92,4 +110,12 @@
   --radius-box: 2px;
   --container-page: 1320px;        /* content max width */
   --container-column: 400px;       /* scope column, chart cell */
+  --spacing-strip-gap: 20px;       /* chart cell to strip */
+
+  /* Strip anatomy (design doc, section 4): w-step-number and so on */
+  --container-step-number: 44px;
+  --container-step-control: 92px;  /* Ctl */
+  --container-step-bay: 132px;     /* Bay */
+  --container-step-status: 96px;
+  --container-row-key: 260px;      /* detail row key */
 }
