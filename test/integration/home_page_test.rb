@@ -82,6 +82,21 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "[data-open], [data-state]", count: 0
   end
 
+  test "without scripts the scope is a map: one link per step, and nothing to press" do
+    get root_url
+
+    hrefs = css_select("[aria-label=Scope] a").map { |link| link["href"] }
+    assert_equal @thread.steps.map { |step| "##{step.key}" }, hrefs
+    assert_select "[aria-label=Scope] [data-playback-target=live]:not([hidden])", count: 0
+    assert_select "[aria-label=Scope] [hidden] button", count: 4
+  end
+
+  test "each row carries its step's seconds for the playback clock" do
+    get root_url
+
+    @thread.steps.each { |step| assert_select "##{step.key}[style=?]", "--seconds: #{step.duration}" }
+  end
+
   test "self-hosted fonts are preloaded, not fetched from a third party" do
     get root_url
 
