@@ -6,6 +6,8 @@
 # Builds no data: everything shown comes from content/threads/home.yml, read
 # here through DeliveryThread so the captions follow the file. Steps are picked
 # by what they are (the first, a fork, a human gate, the last), never by key.
+# Spotlights use text, the step's row id (its key, from the file) or an ARIA
+# label: hooks that survive a restyle, never utility classes.
 #
 # Not walked, because it is not built yet: the chart (slice 2), playback, the
 # scope and strip states (3), the bay, filter and log (4), follow and the docked
