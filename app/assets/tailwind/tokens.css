@@ -119,6 +119,18 @@
   --container-step-status: 96px;
   --container-row-key: 260px;      /* detail row key */
 
+  /* Chart geometry (design doc, sections 4 and 5), measured from the cell's
+     left and top edges: left-lane-main, top-fix and so on. A line's position
+     is composed from these with var() and calc() in ChartCellComponent. */
+  --spacing-lane-main: 44px;
+  --spacing-lane-feature: 150px;
+  --spacing-lane-side: 256px;
+  --spacing-fix: 34px;             /* the fix's centre, from the row top */
+  --spacing-elbow: 14px;           /* fork and merge corner radius */
+  --spacing-loop-inset: 10px;      /* a loop's bracket, from top and bottom */
+  --spacing-chart-label: 20px;     /* a branch label from its fix: right; on a merge, down too */
+  --spacing-line-half: 1px;        /* half a 2 px line: centres an elbow's arm on the fix */
+
   /* Reading measures: max-w-measure and so on */
   --container-measure: 66ch;       /* a serif paragraph */
   --container-artifact: 80ch;      /* an artifact block */

@@ -50,10 +50,20 @@ class HomePageTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "each row keeps an empty chart cell beside its strip" do
+  test "each row draws its chart cell beside its strip, hidden from assistive tech" do
     get root_url
 
-    assert_select "section[aria-labelledby=thread-heading] > div[id] > div.w-column[aria-hidden=true]:empty", count: @thread.steps.size
+    assert_select "section[aria-labelledby=thread-heading] > div[id] > div.w-column[aria-hidden=true] [data-chart=fix]", count: @thread.steps.size
+  end
+
+  test "the graph follows the file: its forks, merges, loops, sectors and labels" do
+    get root_url
+
+    events = @thread.steps.map { |step| step.git.event }.tally
+    %w[fork merge loop].each { |event| assert_select "[data-git-event=#{event}]", count: events[event] }
+    assert_select "[data-chart=loop]", count: events["loop"]
+    assert_select "[data-chart=sector]", count: @thread.cells.count(&:sector)
+    assert_equal @thread.steps.filter_map { |step| step.git.label }, css_select("[data-chart=label]").map(&:text)
   end
 
   test "the legend renders beside the headline" do

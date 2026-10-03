@@ -33,7 +33,27 @@ module DeliveryThread
 
   Invalid = Class.new(StandardError)
 
-  Sequence = Data.define(:id, :title, :headline, :intro, :steps)
+  Sequence = Data.define(:id, :title, :headline, :intro, :steps) do
+    # Each step with what its own git block cannot say about its row in the
+    # chart, so the chart is drawn from data and never from a row's position
+    # (docs/rules/topology-from-data.md).
+    def cells
+      open = []
+      above = nil
+      steps.map do |step|
+        open.delete(step.git.from) if step.git.event == "merge"
+        cell = Cell.new(step:, through: open.dup.freeze, sector: (step.bay unless step.bay == above&.bay))
+        open << step.git.on if step.git.event == "fork"
+        above = step
+        cell
+      end.freeze
+    end
+  end
+
+  # One row of the chart: the step, the branches other than main that run its
+  # full height, and its bay when the row starts a sector (nil when it
+  # continues the one above).
+  Cell = Data.define(:step, :through, :sector)
 
   Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds)
 
@@ -203,7 +223,8 @@ module DeliveryThread
 
     # Walks the thread in order, tracking which lines are open: main always,
     # a branch from its fork to its merge. A step may sit only on an open
-    # line, and a side thread is a loop off one.
+    # line, and a side thread is a loop off one: side holds only loops, and
+    # a loop sits only on side.
     def line_errors(steps, gits)
       open = [ "main" ]
       merged = []
@@ -223,6 +244,7 @@ module DeliveryThread
           merged << from
         when "loop"
           errors << "#{name}: loop from #{from}, which is not open here" if from && !open.include?(from)
+          errors << "#{name}: a loop must be on side, not #{on}" if on && on != "side"
         end
 
         if on == "side"

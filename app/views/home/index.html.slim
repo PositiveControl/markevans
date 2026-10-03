@@ -1,7 +1,7 @@
 / The home thread without scripts: every strip open, in order (design doc,
 / sections 4 and 6). Every word of copy comes from content/threads/home.yml.
-/ The chart cell is empty until ChartCellComponent (slice 2); the scope,
-/ controls and log arrive with playback.
+/ Each row's chart cell draws its piece of the git graph from the step's git
+/ block; the scope, controls and log arrive with playback.
 - content_for :title, "Mark Evans"
 - content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
@@ -19,9 +19,10 @@ main class="mx-auto max-w-page px-8"
 
   section class="pt-4 pb-16" aria-labelledby="thread-heading"
     h2#thread-heading class="sr-only" The thread
-    - @thread.steps.each.with_index(1) do |step, number|
+    - @thread.cells.each.with_index(1) do |cell, number|
+      - step = cell.step
       div class="flex" id=step.key
-        div class="w-column shrink-0" aria-hidden="true"
+        = render ChartCellComponent.new(cell:)
         div class="min-w-0 flex-1 py-1 pl-strip-gap"
           = render StripComponent.new(step:, number:)
           = render StepBodyComponent.new(step:)

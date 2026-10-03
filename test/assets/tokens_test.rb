@@ -56,6 +56,12 @@ class TokensTest < ActiveSupport::TestCase
     { "measure" => "66ch", "artifact" => "80ch", "detail" => "880px" }.each { |name, value| assert_token "--container-#{name}", value }
   end
 
+  # Design doc, sections 4 and 5: lanes, the fix, elbows, the loop bracket.
+  test "the chart geometry is named" do
+    { "lane-main" => "44px", "lane-feature" => "150px", "lane-side" => "256px", "fix" => "34px",
+      "elbow" => "14px", "loop-inset" => "10px", "chart-label" => "20px" }.each { |name, value| assert_token "--spacing-#{name}", value }
+  end
+
   test "the app stylesheet imports the tokens and defines no palette of its own" do
     app = Rails.root.join("app/assets/tailwind/application.css").read
 

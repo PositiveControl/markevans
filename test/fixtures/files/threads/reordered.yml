@@ -1,0 +1,100 @@
+# small.yml with the loop off main moved after the merge. Same steps, a
+# different graph: the chart must follow the order of the file.
+id: reordered
+title: "Reordered"
+steps:
+  - key: begin
+    name: "/begin"
+    kind: command
+    lane: human
+    bay: "Todo"
+    outcome: "Begin done."
+    body: "The begin step."
+    git:
+      on: main
+      event: start
+      label: "main"
+    groups: []
+  - key: plan
+    name: "/plan"
+    kind: command
+    lane: agent
+    bay: "Todo"
+    outcome: "Plan done."
+    body: "The plan step."
+    git:
+      on: feature
+      event: fork
+      from: main
+      label: "feature/x"
+    groups: []
+  - key: build
+    name: "/build"
+    kind: command
+    lane: agent
+    bay: "In Progress"
+    outcome: "Build done."
+    body: "The build step."
+    git:
+      on: feature
+    groups: []
+  - key: check
+    name: "/check"
+    kind: command
+    lane: agent
+    bay: "In Progress"
+    outcome: "Check done."
+    body: "The check step."
+    git:
+      on: side
+      event: loop
+      from: feature
+      label: "fresh context"
+    groups: []
+  - key: gate
+    name: "/gate"
+    kind: human
+    lane: human
+    bay: "Done"
+    outcome: "Gate done."
+    body: "The gate step."
+    git:
+      on: feature
+    groups: []
+  - key: land
+    name: "/land"
+    kind: command
+    lane: human
+    bay: "Done"
+    outcome: "Land done."
+    body: "The land step."
+    git:
+      on: main
+      event: merge
+      from: feature
+      label: "merge to main"
+    groups: []
+  - key: aside
+    name: "/aside"
+    kind: optional
+    lane: human
+    bay: "Todo"
+    outcome: "Aside done."
+    body: "The aside step."
+    git:
+      on: side
+      event: loop
+      from: main
+      label: "side thread"
+    groups: []
+  - key: ship
+    name: "/ship"
+    kind: command
+    lane: ci
+    bay: "Done"
+    outcome: "Ship done."
+    body: "The ship step."
+    git:
+      on: main
+      event: end
+    groups: []

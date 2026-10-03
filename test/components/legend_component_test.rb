@@ -15,13 +15,13 @@ class LegendComponentTest < ViewComponent::TestCase
     render_inline(LegendComponent.new)
 
     assert_selector "li", text: "command" do |li|
-      li.assert_selector "svg.text-command[aria-hidden=true] polygon[fill=none]"
+      li.assert_selector "svg.text-command[aria-hidden=true] polygon.fill-paper"
     end
     assert_selector "li", text: "human gate" do |li|
-      li.assert_selector "svg.text-human polygon[fill=currentColor]"
+      li.assert_selector "svg.text-human polygon.fill-current"
     end
     assert_selector "li", text: "automated gate" do |li|
-      li.assert_selector "svg.text-machine polygon[fill=currentColor]"
+      li.assert_selector "svg.text-machine polygon.fill-current"
     end
     assert_selector "li", text: "optional" do |li|
       li.assert_selector "svg.text-quiet polygon[stroke-dasharray]"

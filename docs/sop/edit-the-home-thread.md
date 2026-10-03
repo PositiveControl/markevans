@@ -58,12 +58,26 @@ The chart is drawn from these alone, never from a step's position
 - A step may sit `on` a branch only while it is open: not before its fork,
   not after its merge.
 - **loop** is a side thread that leaves and rejoins within one row:
-  `on: side, event: loop, from: <a line open at that row>`. `on: side` is
-  only ever a loop, and it needs no merge.
+  `on: side, event: loop, from: <a line open at that row>`. `on: side` holds
+  only loops, a loop sits only `on: side`, and a loop needs no merge.
 - `fork`, `merge` and `loop` need `from`. A step with no `event` continues the
   line it is `on`.
 - The block takes `on`, `event`, `from` and `label`, nothing else, so a typo
   such as `evnet:` is an error rather than a missing event.
+
+What each row draws in the chart cell beside its strip:
+
+| Block | Draws |
+|---|---|
+| `event: start` / `end` | main from the fix down / down to the fix |
+| `event: fork` | a rounded elbow from `from` into the fix, then `on` down from there |
+| `event: merge` | `from` down to a rounded elbow into the fix on `on` |
+| `event: loop` | a dashed bracket from `from` out to the side lane and back, which stretches with the row |
+| no `event` | the fix on `on`; main and any open branch run straight through |
+| `label` | that text beside the fix, in the line's colour. Give one where a line starts |
+
+A row whose `bay` differs from the row above opens a sector: a dashed edge,
+"Sector · <bay>" and the bay's band.
 
 Reordering steps is safe as long as those still hold. The loader checks every
 one of them and names the step that breaks it.
