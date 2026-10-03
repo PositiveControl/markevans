@@ -135,6 +135,7 @@ module DeliveryThread
     def git_errors(git)
       return [] if git.nil? # reported as missing
       return [ "git must be a mapping with on, and optionally event, from and label" ] unless git.is_a?(Hash)
+      return [ "git.on is required" ] if missing?(DeliveryThread.git_on(git))
 
       [ allowed("git.on", DeliveryThread.git_on(git), BRANCHES),
         (allowed("git.event", git["event"], EVENTS) if git.key?("event")) ]

@@ -88,6 +88,10 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: seconds must be a positive whole number/) { |data| data["steps"][1]["seconds"] = "8" }
   end
 
+  test "a git block needs on" do
+    assert_invalid(/two: git.on is required/) { |data| data["steps"][1]["git"] = { "event" => "loop", "from" => "main" } }
+  end
+
   test "an empty groups list is allowed" do
     assert_equal [], load_thread(minimal).steps.first.groups
   end
