@@ -81,8 +81,8 @@ naming convention rather than the example's real value uses angle brackets,
 ## Check it
 
 ```bash
-bin/test test/lib/delivery_thread_test.rb   # the schema: loads every thread file
-bin/rails content:placeholders              # what is still in [brackets] or TBD
+bin/rails content:check                     # the schema, then what is still in [brackets] or TBD
+bin/test test/lib/delivery_thread_test.rb   # the schema, as the suite runs it
 bin/gates                                   # literal colors, among the other gates
 ```
 
@@ -97,9 +97,15 @@ home.yml: g3: kind "robot" is not one of command, human, machine, optional
 
 | Check | When | Fails on |
 |---|---|---|
-| Thread schema (`DeliveryThread`) | Every load, so tests and CI | An `id` that is not the filename; a missing or unknown key; a step key used twice; a value outside the lists above, or an unknown git key; start not first or end not last; a step on a branch outside its fork and merge; a side step that is not a loop; a fork that never merges |
-| Placeholders (`content:placeholders`) | Production build only, ahead of `assets:precompile` | `[…]` or TBD anywhere in `content/`. A bracket followed by `(` is a markdown link |
+| Thread schema (`DeliveryThread`, `content:schema`) | Every load, so tests and CI; and the production build | An `id` that is not the filename; a missing or unknown key; a step key used twice; a value outside the lists above, or an unknown git key; start not first or end not last; a step on a branch outside its fork and merge; a side step that is not a loop; a fork that never merges |
+| Placeholders (`content:placeholders`) | Production build only | `[…]` or TBD anywhere in `content/`. Markdown's own brackets pass: a link `[text](url)`, a reference link `[text][1]` and its `[1]: url`, a checkbox `[ ]` or `[x]` |
 | Literal colors (`bin/gates`) | Pre-push and CI | A hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in components, styles or scripts outside `app/assets/tailwind/tokens.css` |
+
+Both content checks run as `content:check`, ahead of `assets:precompile`, when
+`RAILS_ENV=production`, which is what the Docker build uses.
+
+Write YAML lists one item per line. A flow list, `tags: [ci, deploy]`, reads
+as a placeholder.
 
 The placeholder check is kept out of push and CI on purpose: `home.yml` carries
 placeholders until the example feature is written, and a gate that fails every

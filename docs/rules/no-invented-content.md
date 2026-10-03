@@ -5,7 +5,7 @@ applies_to: ["content/**"]
 triggers: ["numbers", "metrics", "quotes", "ledger", "placeholder", "TBD"]
 see_also: ["content-is-files"]
 modes: [ web ]
-tokens: 260
+tokens: 270
 current_state: matches
 ---
 
@@ -31,4 +31,4 @@ added_lines: "[n]"   # until read from the PR
 
 ## Enforcement
 
-Gated: `bin/rails content:placeholders` fails a production build (it runs ahead of `assets:precompile` when `RAILS_ENV=production`) on any square-bracket placeholder or "TBD". It does not run on push or in CI, where placeholders are expected while content is written. A bracket followed by `(` is a markdown link.
+Gated: `bin/rails content:placeholders`, part of `content:check`, fails a production build (it runs ahead of `assets:precompile` when `RAILS_ENV=production`) on any square-bracket placeholder or "TBD". It does not run on push or in CI, where placeholders are expected while content is written. Markdown's own brackets pass: links, reference links, checkboxes.
