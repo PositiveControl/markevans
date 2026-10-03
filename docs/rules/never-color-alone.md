@@ -5,8 +5,8 @@ applies_to: ["app/components/**"]
 triggers: ["state", "status", "kind", "gate", "a11y", "contrast"]
 see_also: ["color-means-role", "real-controls", "accessibility"]
 modes: [ web ]
-tokens: 270
-current_state: diverges
+tokens: 210
+current_state: matches
 ---
 
 # never-color-alone
@@ -32,7 +32,3 @@ A solid triangle on the chart, the word "hold" or "cleared" on the strip, and th
 ## Enforcement
 
 Partly gated: axe runs on every route in playing, paused and no-script states.
-
-## Where this app is
-
-No strips or chart exist yet, and the axe gate does not exist. Slice 1 renders shapes and words with the static thread; slice 3 adds axe in system tests across playing, paused and no-script states.

@@ -5,8 +5,8 @@ applies_to: ["app/components/**", "content/**"]
 triggers: ["amber", "green", "teal", "accent", "highlight", "emphasis"]
 see_also: ["never-color-alone", "tokens-only"]
 modes: [ web ]
-tokens: 290
-current_state: diverges
+tokens: 230
+current_state: matches
 ---
 
 # color-means-role
@@ -32,7 +32,3 @@ An ink button. Amber appears only on G1, G2 and G4.
 ## Enforcement
 
 Prose only. Reviewed in /pr_review.
-
-## Where this app is
-
-Nothing renders the thread yet. The current home page (`app/views/home/`) uses its own palette and is replaced by slice 1 (tokens and static thread). Flip to `matches` when slice 3 (playback) ships the strip states.

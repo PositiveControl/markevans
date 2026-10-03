@@ -38,8 +38,8 @@ How things currently work. Architecture state, not intentions.
 
 <!-- system:start -->
 - [Models](../docs/system/models.md) — model reference
-- [Home page](../docs/system/home-page.md) — `/` as the home thread: content from content/threads/home.yml, the strip, step body, legend and chart cell components, the chart drawn from each git block, the tokens
-- [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its state and the event table (Draft, #16)
+- [Home page](../docs/system/home-page.md) — `/` as the home thread: content from content/threads/home.yml, the scope, controls, strip, step body, legend and chart cell components, the chart drawn from each git block, the tokens
+- [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its three values, what it writes on the page, the step clock and the event table (current through #16; #18 completes it)
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
 - [QA walkthroughs](../docs/system/qa_walkthrough.md) — the reviewer script per change, and how to run one
 <!-- system:end -->
