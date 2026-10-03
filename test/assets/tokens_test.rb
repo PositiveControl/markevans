@@ -48,8 +48,8 @@ class TokensTest < ActiveSupport::TestCase
     assert_token "--container-column", "400px"
   end
 
-  test "Tailwind's default palette, faces, sizes, radii and shadows are cleared" do
-    %w[color font text radius shadow].each { |namespace| assert_token "--#{namespace}-*", "initial" }
+  test "Tailwind's default palette, faces, sizes, radii, shadows and widths are cleared" do
+    %w[color font text radius shadow inset-shadow drop-shadow container].each { |namespace| assert_token "--#{namespace}-*", "initial" }
   end
 
   test "no size token shares a name with a color token" do

@@ -4,7 +4,7 @@
    docs/rules/tokens-only.md). Each color is a role, not a shade: see
    docs/rules/color-means-role.md before reaching for one.
 
-   Tailwind's own palette, faces, sizes, radii and shadows are cleared, so a
+   Tailwind's own palette, faces, sizes, radii, shadows and widths are cleared, so a
    utility either names a token here or does not exist. Spacing is one 6 px
    unit: p-1 is 6, p-2 12, p-3 18, p-4 24, p-6 36, p-8 48, p-16 96.
 
@@ -36,6 +36,9 @@
   --text-*: initial;
   --radius-*: initial;
   --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --container-*: initial;
 
   /* Grounds */
   --color-paper: #F7F6F0;          /* page */
