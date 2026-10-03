@@ -13,9 +13,6 @@ module Markevans
       g.orm :active_record, primary_key_type: :uuid
     end
 
-    # Autoload app/lib for registries and game config
-    config.autoload_paths << Rails.root.join("app/lib")
-
     # ViewComponent: generate a sidecar directory so a component's class,
     # template, and any component-scoped Stimulus controller sit together.
     # Template engine follows config.generators.template_engine, which
