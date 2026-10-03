@@ -40,6 +40,14 @@ class GatesLiteralColorTest < Minitest::Test
     assert_includes err, "app/assets/tailwind/extra.css:1: rgba("
   end
 
+  def test_other_color_functions_fail
+    write "app/assets/tailwind/extra.css", ".a { color: oklch(0.6 0.1 200); }\n.b { color: hsl(200 50% 40%); }\n"
+
+    _, err, = run_gates
+    assert_includes err, "extra.css:1: oklch("
+    assert_includes err, "extra.css:2: hsl("
+  end
+
   def test_hex_in_javascript_fails
     write "app/javascript/controllers/playback_controller.js", %(el.style.color = "#fff"\n)
 

@@ -5,7 +5,7 @@ applies_to: ["app/components/**", "app/assets/**", "app/javascript/**"]
 triggers: ["color", "hex", "rgb", "font-size", "radius", "spacing"]
 see_also: ["color-means-role", "tailwind"]
 modes: [ web ]
-tokens: 380
+tokens: 390
 current_state: diverges
 ---
 
@@ -31,7 +31,7 @@ div class="text-command rounded-box"
 
 ## Enforcement
 
-Gated: `bin/gates` (pre-push and CI) fails on a hex value or `rgb(` in `app/components`, `app/assets` or `app/javascript` outside `app/assets/tailwind/tokens.css`.
+Gated: `bin/gates` (pre-push and CI) fails on a hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in `app/components`, `app/assets` or `app/javascript` outside `app/assets/tailwind/tokens.css`.
 
 ## Where this app is
 

@@ -88,7 +88,7 @@ home.yml: g3: kind "robot" is not one of command, human, machine, optional
 |---|---|---|
 | Thread schema (`DeliveryThread`) | Every load, so tests and CI | An `id` that is not the filename; a missing or unknown key; a step key used twice; a value outside the lists above; not one start and one end; a fork that never merges |
 | Placeholders (`content:placeholders`) | Production build only, ahead of `assets:precompile` | `[…]` or TBD anywhere in `content/`. A bracket followed by `(` is a markdown link |
-| Literal colors (`bin/gates`) | Pre-push and CI | A hex value or `rgb(` in components, styles or scripts outside `app/assets/tailwind/tokens.css` |
+| Literal colors (`bin/gates`) | Pre-push and CI | A hex value or a CSS color function (`rgb(`, `hsl(`, `oklch(` …) in components, styles or scripts outside `app/assets/tailwind/tokens.css` |
 
 The placeholder check is kept out of push and CI on purpose: `home.yml` carries
 placeholders until the example feature is written, and a gate that fails every

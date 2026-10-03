@@ -143,8 +143,9 @@ def singular(word)
 end
 
 # --- literal colors ----------------------------------------------------------
-# docs/rules/tokens-only.md: a color is a token, so a hex value or rgb() call
-# appears in the token file and nowhere else in components, styles or scripts.
+# docs/rules/tokens-only.md: a color is a token, so a hex value
+# or a CSS color function (rgb, hsl, hwb, lab, lch, oklab, oklch) appears in the
+# token file and nowhere else in components, styles or scripts.
 # Generated builds are skipped. A hex is 3, 4, 6 or 8 digits standing alone, so
 # an anchor like "#work" is not one.
 
@@ -152,7 +153,7 @@ COLOR_DIRS = %w[app/components app/assets app/javascript].freeze
 TOKEN_FILE = "app/assets/tailwind/tokens.css"
 # The old portfolio page's palette, until #21 deletes that page with it.
 LITERAL_COLOR_ALLOWED = %w[app/assets/tailwind/application.css].freeze
-LITERAL_COLOR = /(?<![\w&])#(?:\h{8}|\h{6}|\h{3,4})\b|\brgba?\(/
+LITERAL_COLOR = /(?<![\w&])#(?:\h{8}|\h{6}|\h{3,4})\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(/
 
 def literal_colors
   files = COLOR_DIRS.flat_map { |dir| Dir.glob("#{dir}/**/*.{css,js,rb,slim,erb}") }
