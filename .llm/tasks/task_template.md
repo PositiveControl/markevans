@@ -1,4 +1,4 @@
-**LLM Persona:** {{PERSONA}}
+**LLM Persona:** Staff Rails Engineer, TDD advocate
 
 # Task: [Short Task Name]
 **Issue:** #[NUMBER]

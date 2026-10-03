@@ -229,3 +229,18 @@ docs/                       # names are load-bearing
 └── threads/                # Segue threads — local scratch, gitignored
 WORKFLOW.md                 # Lifecycle spec + diagrams
 ```
+
+## Workflow
+
+Chain, sizing and gates are under *Development workflow* above; the doc canon is
+under *Documentation*. Conventions live in `docs/rules/`, one per file, and are
+referenced, never restated. This repo's settings (full record in
+`.claude/workflow.config.md`):
+
+- **Tracker:** `labels` — GitHub Issues with `status:todo`, `status:in-progress`,
+  `status:up-for-review`, `status:blocked`, `status:done`. No board; PR bodies
+  carry `Closes #<issue>`
+- **Branches:** `me/<issue>/<slug>` · **PR titles:** `ME | <issue> | <title>` ·
+  **Review label:** `ready for review`
+- **CI:** `/pr_submit` polls `scan_ruby`, `scan_js`, `lint`, `gates`; `test` ran
+  locally and is not polled

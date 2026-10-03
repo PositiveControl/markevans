@@ -25,7 +25,7 @@ No PR yet — the pre-PR review `/implement` Step 5 runs in a fresh-context agen
 Gather all PR context:
 
 ```bash
-gh pr view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json number,title,body,author,baseRefName,headRefName,additions,deletions,changedFiles,labels,reviews,comments
+gh pr view $ARGUMENTS --repo PositiveControl/markevans --json number,title,body,author,baseRefName,headRefName,additions,deletions,changedFiles,labels,reviews,comments
 ```
 
 Show brief summary: PR title, author, base ← head, lines changed, file count.
@@ -39,7 +39,7 @@ Base ref is not `main` → the PR is a slice of a feature branch (see `WORKFLOW.
 Get full diff:
 
 ```bash
-gh pr diff $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}}
+gh pr diff $ARGUMENTS --repo PositiveControl/markevans
 ```
 
 Diff very large (50+ files or 2000+ lines)? Tell user, review most critical files first (models, controllers, services, migrations).
@@ -49,7 +49,7 @@ Diff very large (50+ files or 2000+ lines)? Tell user, review most critical file
 List changed files:
 
 ```bash
-gh pr diff $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --name-only
+gh pr diff $ARGUMENTS --repo PositiveControl/markevans --name-only
 ```
 
 Each non-trivial changed file: read full file, not just diff. Critical — diff without full-file context gives shallow feedback.
@@ -73,12 +73,12 @@ Before own assessment, read all existing review comments. Avoids duplicating poi
 
 1. **Fetch all inline review comments** (human + bot):
    ```bash
-   gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR_NUMBER>/comments
+   gh api repos/PositiveControl/markevans/pulls/<PR_NUMBER>/comments
    ```
 
 2. **Fetch issue-level comments** (general discussion, not tied to specific lines):
    ```bash
-   gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/issues/<PR_NUMBER>/comments
+   gh api repos/PositiveControl/markevans/issues/<PR_NUMBER>/comments
    ```
 
 3. **Parse and categorize the feedback:**
@@ -119,7 +119,7 @@ requested. A PR can follow every convention in `docs/rules/` and still not do th
 job, and that finding never comes out of reading the diff alone.
 
 1. Find the originating issue — `Closes #n` in the PR body, the `<issue>` segment
-   of the branch name, or the `{{PR_TITLE_PREFIX}} | <issue> | …` title. A slice PR
+   of the branch name, or the `ME | <issue> | …` title. A slice PR
    into a feature branch carries no `Closes` by design, so use the other two. None
    of the three present → that is itself a finding: nothing ties this work to a
    request.
@@ -136,7 +136,7 @@ job, and that finding never comes out of reading the diff alone.
    a blocking finding. The decision was made; reopening it belongs in a comment
    thread, not in code.
 
-Under tier `{{TRACKER}}` = `beads`, the issue is a bead: read it with
+Under tier `labels` = `beads`, the issue is a bead: read it with
 `bd show <id> --json` instead of `gh issue view`.
 
 An unmet criterion is blocking when the PR claims to close the issue, and a
@@ -220,7 +220,7 @@ Use `line` (file line number) and `side` ("RIGHT" for additions, "LEFT" for dele
 **Review with inline comments:**
 
 ```bash
-gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR_NUMBER>/reviews -X POST \
+gh api repos/PositiveControl/markevans/pulls/<PR_NUMBER>/reviews -X POST \
   --input - <<'EOF'
 {
   "event": "<APPROVE|REQUEST_CHANGES|COMMENT>",
@@ -246,7 +246,7 @@ EOF
 **Review without inline comments:**
 
 ```bash
-gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR_NUMBER>/reviews -X POST \
+gh api repos/PositiveControl/markevans/pulls/<PR_NUMBER>/reviews -X POST \
   --input - <<'EOF'
 {
   "event": "<APPROVE|REQUEST_CHANGES|COMMENT>",
@@ -277,7 +277,7 @@ A slice PR into a feature branch (`WORKFLOW.md`, *Feature branches*) is reviewed
   - **Pass 2** runs once, from another new session, and only when pass 1 left fixed blockers or suggestions. It reviews only those fixes: the diff from the commit pass 1 reviewed (its review's `commit_id`) to `HEAD`, plus wherever the fixes reach — callers, shared state, tests they changed or deleted. Step 4 hands it pass 1 and the replies, so a dropped finding stays dropped. In place of Step 2's `gh pr diff`:
 
     ```bash
-    SHA=$(gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR_NUMBER>/reviews --jq '[.[] | select(.body | startswith("Self-review pass 1"))][0].commit_id')
+    SHA=$(gh api repos/PositiveControl/markevans/pulls/<PR_NUMBER>/reviews --jq '[.[] | select(.body | startswith("Self-review pass 1"))][0].commit_id')
     gh pr checkout <PR_NUMBER> && git diff "$SHA"..HEAD
     ```
   - **No pass 3.** Pass 2's confirmed blockers and suggestions go to the developer with the proposed fix (*Fix it* / *Drop it*), and fixes land under the same test rule. Then land the slice.
@@ -308,9 +308,9 @@ A slice PR into a feature branch (`WORKFLOW.md`, *Feature branches*) is reviewed
 
 ## Reference
 - GitHub username: Use `gh api user --jq .login` to get the current user's GitHub username
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
+- Repo: PositiveControl/markevans
 - Use `gh api` for review submission (not `gh pr review` which has limited comment support)
 - Diff position vs line number: prefer `line` + `side` over `position` for accuracy
 - Review events: APPROVE, REQUEST_CHANGES, COMMENT
-- PR title convention: `{{PR_TITLE_PREFIX}} | <issue_number> | <description>`
+- PR title convention: `ME | <issue_number> | <description>`
 - Base for the diff: the PR's `baseRefName` — `main`, or a feature branch for a slice

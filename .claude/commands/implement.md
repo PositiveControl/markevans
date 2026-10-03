@@ -12,14 +12,14 @@ Execute an approved task plan. Idempotent — first run after `/task_plan` appro
 ### Step 1: Resolve the issue
 
 1. `$ARGUMENTS` given → use it
-2. Otherwise parse from the current branch name (`{{BRANCH_PREFIX}}/<id>/<slug>`). The `<id>` segment is
+2. Otherwise parse from the current branch name (`me/<id>/<slug>`). The `<id>` segment is
    either a bare number (`1613`) or a bead ID (`bd-a3f2dd`) depending on the tracker tier — accept both.
 3. Neither works → ask, or suggest `/pick`
 
 ### Step 2: Load state
 
 1. Read `.llm/tasks/<id>_*.md` — goal, acceptance criteria, `Base:` (the branch this slice's PR targets: `main` or `feature/<slug>`), Next Actions, progress log. **No task file → stop, run `/task_plan <issue>` first.** Never implement without an approved plan.
-2. Verify the branch: on `{{BRANCH_PREFIX}}/<id>/*`? If not, check it out. `git status` + `git log origin/<BASE>..HEAD --oneline` — what's already committed.
+2. Verify the branch: on `me/<id>/*`? If not, check it out. `git status` + `git log origin/<BASE>..HEAD --oneline` — what's already committed.
 3. Cross-check progress log vs actual commits — the log can lag reality; commits are truth.
 
 ### Step 3: Orient
@@ -81,9 +81,9 @@ All acceptance criteria met. Run: /pr_submit <ISSUE_NUMBER>
 Criteria remain → keep looping or report the blocker.
 
 ## Reference
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
+- Repo: PositiveControl/markevans
 - Task files: `.llm/tasks/<id>_<slug>.md`
-- Branch convention: `{{BRANCH_PREFIX}}/<id>/<slug>` — `<id>` is a number or `bd-<hash>`
+- Branch convention: `me/<id>/<slug>` — `<id>` is a number or `bd-<hash>`
 - Test runner: `bin/test` (specific file: `bin/test <path-to-test-file>`), system: `bin/rails test:system`
 - Sizing: PR target 200–1,500 added lines / ≤25 files
 - Pre-PR review: `/pr_review --local <base>` in a new-context agent, two rounds at most (Step 5)

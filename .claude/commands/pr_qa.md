@@ -14,8 +14,8 @@ suite and the lint run belong to `/pr_submit`. Pass the PR number: `/pr_qa 1760`
 ### Step 1: Fetch the PR
 
 ```bash
-gh pr view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json number,title,body,author,headRefName,baseRefName,additions,deletions,changedFiles,files
-gh pr diff $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}}
+gh pr view $ARGUMENTS --repo PositiveControl/markevans --json number,title,body,author,headRefName,baseRefName,additions,deletions,changedFiles,files
+gh pr diff $ARGUMENTS --repo PositiveControl/markevans
 ```
 
 Read the linked issue too if the body references one. Screenshots, videos, and
@@ -93,7 +93,7 @@ Then report the same summary in the session, and name what runs next:
 `/pr_comment_resolver` if the review left comments, `/pr_submit` if fixes landed.
 
 ## Reference
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
+- Repo: PositiveControl/markevans
 - QA guides live in `docs/qa/`, indexed in `.llm/README.md` between the `qa` markers
 - Testing conventions, and which layer covers what: `docs/rules/testing.md`
 - A flow worth testing twice is a flow worth a system test; say so in the report
