@@ -7,15 +7,16 @@
 #
 # Renders nothing when given no content, so call sites don't need a conditional.
 #
-# Variants are a frozen hash rather than a case statement — adding one is a
-# single line, and the full Tailwind class names appear literally in the source
-# where the compiler can see them.
+# Every variant draws the same box from the tokens and names itself in words.
+# The design has no success green or danger red: green and amber mean the two
+# kinds of gate (docs/rules/color-means-role.md), and a meaning carried by color
+# alone is lost to some readers (docs/rules/never-color-alone.md).
 class AlertComponent < ApplicationComponent
   VARIANTS = {
-    notice: "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950 dark:border-blue-900 dark:text-blue-200",
-    success: "bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-900 dark:text-green-200",
-    warning: "bg-yellow-50 border-yellow-200 text-yellow-900 dark:bg-yellow-950 dark:border-yellow-900 dark:text-yellow-200",
-    alert: "bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-900 dark:text-red-200"
+    notice: "Notice",
+    success: "Done",
+    warning: "Warning",
+    alert: "Error"
   }.freeze
 
   DEFAULT_VARIANT = :notice
@@ -32,7 +33,5 @@ class AlertComponent < ApplicationComponent
 
   private
 
-  def classes
-    class_names("rounded border px-4 py-3 text-sm", VARIANTS.fetch(@variant, VARIANTS[DEFAULT_VARIANT]))
-  end
+  def label = VARIANTS.fetch(@variant, VARIANTS[DEFAULT_VARIANT])
 end

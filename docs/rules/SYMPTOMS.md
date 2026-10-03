@@ -98,7 +98,7 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [write-path](write-path.md) | 580 | Layer order end to end |
 | [slim-gotchas](slim-gotchas.md) | 630 | Brackets, pipes, `ruby:` blocks, strict-locals syntax |
 | [tailwind-build](tailwind-build.md) | 340 | Interpolated classes are purged; no class strings in JS |
-| [view-code-placement](view-code-placement.md) | 440 | Component vs partial vs helper vs inline |
+| [view-code-placement](view-code-placement.md) | 430 | Component vs partial vs helper vs inline |
 | [components](components.md) | 1120 | ViewComponent shape, slots, variants, tests |
 | [partials](partials.md) | 460 | Strict locals, no instance variables, collections |
 | [turbo-frames](turbo-frames.md) | 390 | Stable ids, matching responses, lazy, morphing |
@@ -122,7 +122,7 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [one-playback-state](one-playback-state.md) | 270 | One controller owns step, playing, reopened |
 | [playback-yields](playback-yields.md) | 250 | Reader input wins; nothing auto-resumes |
 
-**Total corpus:** ~26,390 tokens across 51 rules. Typical read: this index (~3000)
+**Total corpus:** ~26,380 tokens across 51 rules. Typical read: this index (~3000)
 plus one or two rules (230–1150). Reading the whole corpus is a bug, not thoroughness.
 
 These figures are generated from the files by `bin/doc-tokens`, not typed by hand —
