@@ -22,6 +22,16 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_kind_of DeliveryThread::Artifact, step.artifact
   end
 
+  test "a loaded thread is frozen all the way down, so a shared copy cannot be edited" do
+    step = DeliveryThread.fetch(:home).steps.find { |s| s.key == "feature_plan" }
+
+    assert step.body.frozen?
+    assert step.groups.frozen?
+    assert step.groups.first.rows.frozen?
+    assert step.groups.first.rows.first.value.frozen?
+    assert step.artifact.body.frozen?
+  end
+
   test "optional fields are nil when absent" do
     step = DeliveryThread.fetch(:home).steps.first
 

@@ -55,7 +55,7 @@ module DeliveryThread
 
     # @raise [Invalid] naming the file and step for every problem found
     def load(path)
-      data = YAML.safe_load_file(path)
+      data = YAML.safe_load_file(path, freeze: true)
       errors = Schema.new(data, id: File.basename(path, ".yml")).errors
       raise Invalid, errors.map { |error| "#{File.basename(path)}: #{error}" }.join("\n") if errors.any?
 
@@ -72,7 +72,7 @@ module DeliveryThread
           key: step["key"], name: step["name"], kind: step["kind"], lane: step["lane"], bay: step["bay"],
           outcome: step["outcome"], body: step["body"],
           git: Git.new(on: git_on(step["git"]), event: step["git"]["event"], from: step["git"]["from"], label: step["git"]["label"]),
-          groups: step["groups"].map { |group| Group.new(title: group["title"], rows: group["rows"].map { |row| Row.new(key: row["k"], value: row["v"]) }) },
+          groups: step["groups"].map { |group| Group.new(title: group["title"], rows: group["rows"].map { |row| Row.new(key: row["k"], value: row["v"]) }.freeze) }.freeze,
           artifact: (Artifact.new(source: step["artifact"]["source"], body: step["artifact"]["body"]) if step["artifact"]),
           note: step["note"], seconds: step["seconds"]
         )
