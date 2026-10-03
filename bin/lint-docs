@@ -1,0 +1,526 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# bin/lint-docs — checks that the docs still agree with the tree.
+#
+# The alignment layer asks an agent to trust what the docs say: that a rule
+# exists, that the index routes to it, that a read costs what it claims, that a
+# path resolves. Every one of those is a fact about the tree, so every one is
+# checkable. Prose that disagrees with the tree is worse than no prose, because
+# the agent has no way to tell.
+#
+# Two homes, one file. In the template repo the docs it checks live under
+# templates/; in a generated app they are the app's own, at the root. Four checks
+# compare the templates/ tree to the generators, or read the template's own prose,
+# and mean nothing in an app — they are skipped there. Everything an agent is
+# asked to trust is checked in both.
+#
+# Run it on every edit to docs/rules/, .claude/commands/, or any doc quoting a
+# count:
+#
+#   bin/lint-docs                  # in a generated app
+#   templates/bin/lint-docs        # in the template repo
+#
+# Exits 0 when clean, 1 with a list of findings otherwise. Add the marker
+# `lint-docs:ignore` to a line that legitimately names a different count.
+
+require "yaml"
+
+# `templates/bin` in the template repo, `<app>/bin` in a generated app. An app
+# generated inside the repo would fool a test that only looked for template.rb
+# somewhere above, so the directory name is what decides.
+IN_TEMPLATE_REPO = File.basename(File.expand_path("..", __dir__)) == "templates" &&
+                   File.exist?(File.expand_path("../../template.rb", __dir__))
+ROOT = File.expand_path(IN_TEMPLATE_REPO ? "../.." : "..", __dir__)
+# Where the docs under check live: templates/ here, the app root there.
+DOCS_ROOT = IN_TEMPLATE_REPO ? File.join(ROOT, "templates") : ROOT
+TEMPLATES = DOCS_ROOT
+RULES_DIR = File.join(DOCS_ROOT, "docs/rules")
+COMMANDS_DIR = File.join(DOCS_ROOT, ".claude/commands")
+INDEX_PATH = File.join(RULES_DIR, "INDEX.md")
+
+# One mode, one pair of routers (ADR 0009). A rule's `modes` decides which pair
+# has to route it. The repo holds both committed pairs; an app holds exactly one,
+# installed under the shared names, so there the mode is read off the app the same
+# way adopt.rb and bin/rocket-sheep-update read it.
+ALL_MODES = { "web" => %w[INDEX.md SYMPTOMS.md], "api" => %w[INDEX.api.md SYMPTOMS.api.md] }.freeze
+APP_MODE =
+  if File.exist?(File.join(ROOT, "config/application.rb")) &&
+     File.read(File.join(ROOT, "config/application.rb")).match?(/^\s*config\.api_only\s*=\s*true/)
+    "api"
+  else
+    "web"
+  end
+MODES = IN_TEMPLATE_REPO ? ALL_MODES : { APP_MODE => %w[INDEX.md SYMPTOMS.md] }.freeze
+ROUTERS = MODES.values.flatten.freeze
+IGNORE = "lint-docs:ignore"
+REQUIRED_RULE_KEYS = %w[id title applies_to triggers see_also modes tokens current_state].freeze
+CURRENT_STATE_VALUES = %w[matches diverges].freeze
+DIVERGENCE_HEADING = "## Where this app is"
+# Shared with bin/doc-tokens, which generates the per-rule figures. One estimator,
+# or the generator and the check disagree and every regenerated figure trips a finding.
+load File.expand_path("doc-tokens", __dir__)
+MAX_DESCRIPTION = 80 # a picker line, not a paragraph
+LONG_FORM_LINES = 60 # over this, a command carries the Instructions/Reference frame
+
+findings = []
+def rel(path) = path.sub("#{ROOT}/", "")
+
+rule_paths = Dir.glob(File.join(RULES_DIR, "*.md")).reject { |p| ROUTERS.include?(File.basename(p)) }.sort
+command_paths = Dir.glob(File.join(COMMANDS_DIR, "*.md")).sort
+
+# --- 1. Rule frontmatter -----------------------------------------------------
+# Six keys, and `id` matching the filename, because every other file references
+# a rule by id.
+declared_tokens = {}
+rule_modes = {}
+rule_paths.each do |path|
+  id = File.basename(path, ".md")
+  body = File.read(path)
+  raw = body[/\A---\n(.*?)\n---\n/m, 1]
+  next findings << "#{rel(path)}: no YAML frontmatter" if raw.nil?
+
+  fm = begin
+    YAML.safe_load(raw) || {}
+  rescue Psych::SyntaxError => e
+    findings << "#{rel(path)}: unparseable frontmatter (#{e.message})"
+    next
+  end
+
+  missing = REQUIRED_RULE_KEYS - fm.keys
+  findings << "#{rel(path)}: frontmatter missing #{missing.join(', ')}" if missing.any?
+  findings << "#{rel(path)}: id is #{fm['id'].inspect}, filename says #{id.inspect}" if fm["id"] != id
+  declared_tokens[id] = fm["tokens"]
+
+  declared_modes = Array(fm["modes"])
+  unknown = declared_modes - ALL_MODES.keys
+  if declared_modes.empty?
+    findings << "#{rel(path)}: modes is empty, so this rule ships nowhere"
+  elsif unknown.any?
+    findings << "#{rel(path)}: modes has #{unknown.join(', ')}, expected only #{ALL_MODES.keys.join(', ')}"
+  end
+  rule_modes[id] = declared_modes
+
+  # A rule the code no longer obeys says so, in a section, where a reader lands.
+  # Checked both ways: the claim cannot go missing, and it cannot outlive the
+  # divergence it describes.
+  state = fm["current_state"]
+  has_section = body.include?(DIVERGENCE_HEADING)
+  if !CURRENT_STATE_VALUES.include?(state)
+    findings << "#{rel(path)}: current_state is #{state.inspect}, expected one of #{CURRENT_STATE_VALUES.join(', ')}"
+  elsif state == "diverges" && !has_section
+    findings << "#{rel(path)}: current_state says diverges but there is no '#{DIVERGENCE_HEADING}' section"
+  elsif state == "matches" && has_section
+    findings << "#{rel(path)}: has a '#{DIVERGENCE_HEADING}' section but current_state says matches"
+  end
+end
+
+# --- 2. Index routing and 3. read costs, per mode ---------------------------
+# Routing is two-tier (ADR 0012): the index is the entry point and carries the
+# path table plus the conditional tables, SYMPTOMS is the fallback and carries the
+# symptom table and the full list. A rule has to be reachable from both tiers of
+# every mode it declares — and from neither tier of a mode it does not, because a
+# rule leaking into the wrong index routes an app to advice for an app it is not.
+#
+# `see_also` is a pointer an agent follows, and it has no guard section to sit
+# behind — one list serves both halves of a dual-mode file. So a shared rule's
+# see_also names only shared rules; a mode-specific cross-reference belongs in the
+# prose, where `## In API mode` can guard it.
+rule_paths.each do |path|
+  id = File.basename(path, ".md")
+  fm = YAML.safe_load(File.read(path)[/\A---\n(.*?)\n---\n/m, 1]) || {}
+  Array(fm["see_also"]).each do |target|
+    next findings << "#{rel(path)}: see_also names #{target}, which has no rule file" unless rule_modes.key?(target)
+
+    missing = (Array(rule_modes[id]) & MODES.keys) - Array(rule_modes[target])
+    findings << "#{rel(path)}: see_also names #{target}, which does not ship to #{missing.join(', ')}" if missing.any?
+  end
+end
+
+# A rule may only link a rule its own readers have. Both halves of a dual-mode rule
+# live in one file (ADR 0009), so a shared rule naming an API-only file leaves a web
+# reader following a link to nothing — and the reverse. The exception is a link
+# inside the `## In API mode` section, which a web reader skips: that section is the
+# guard, and it is the only one.
+API_SECTION = "## In API mode"
+rule_paths.each do |path|
+  id = File.basename(path, ".md")
+  body = File.read(path)
+  guarded_from = body.index(API_SECTION)
+
+  body.enum_for(:scan, /\]\((?!\.\.\/|https?:)([a-z0-9-]+)\.md\)/).each do
+    target = Regexp.last_match(1)
+    in_api_section = !guarded_from.nil? && Regexp.last_match.begin(0) > guarded_from
+
+    unless rule_modes.key?(target)
+      # The repo holds every rule, so a target with no file is a typo. An app holds
+      # one mode's, so the other mode's rules are absent by design — which is only a
+      # problem when the link is somewhere this app's reader will actually go.
+      findings << "#{rel(path)}: links #{target}.md, which has no rule file" if IN_TEMPLATE_REPO || !in_api_section
+      next
+    end
+
+    needs = (in_api_section ? [ "api" ] : Array(rule_modes[id])) & MODES.keys
+    missing = needs - Array(rule_modes[target])
+    next if missing.empty?
+
+    where = in_api_section ? "its API-mode section" : "shared prose"
+    findings << "#{rel(path)}: #{where} links #{target}, which does not ship to #{missing.join(', ')}"
+  end
+end
+
+# The read-cost figures are the only ones in the repo and an agent budgets from
+# them, so each mode's are checked against that mode's own corpus.
+def sections_of(doc)
+  doc.split(/^## /).each_with_object({}) do |chunk, acc|
+    acc[chunk.lines.first.to_s.strip] = chunk
+  end
+end
+
+MODES.each do |mode, (index_name, symptoms_name)|
+  index = File.read(File.join(RULES_DIR, index_name))
+  symptoms = File.read(File.join(RULES_DIR, symptoms_name))
+  sections = sections_of(symptoms)
+  symptom_table = sections["Route by symptom"].to_s
+  full_list = sections["Full list"].to_s
+  mode_ids = rule_modes.select { |_, modes| modes.include?(mode) }.keys.sort
+
+  mode_ids.each do |id|
+    link = "(#{id}.md)"
+    # Anywhere in the index: the path table for rules that always apply, a
+    # conditional table for the rest. Which tier is a judgement; being absent is not.
+    findings << "#{index_name}: #{id} is not routed from anywhere in the index" unless index.include?(link)
+    findings << "#{symptoms_name}: #{id} missing from 'Route by symptom'" unless symptom_table.include?(link)
+
+    row = full_list[/^\|\s*\[#{Regexp.escape(id)}\]\(#{Regexp.escape(id)}\.md\)\s*\|\s*(\d+)\s*\|/, 1]
+    if row.nil?
+      findings << "#{symptoms_name}: #{id} missing from 'Full list'"
+    elsif row.to_i != declared_tokens[id]
+      findings << "#{symptoms_name}: #{id} row says #{row} tokens, the file declares #{declared_tokens[id]}"
+    end
+  end
+
+  listed = full_list.scan(/^\|\s*\[([a-z0-9-]+)\]\(\1\.md\)/).flatten
+  (listed - mode_ids).each do |id|
+    why = rule_modes.key?(id) ? "which does not ship to #{mode}" : "which has no rule file"
+    findings << "#{symptoms_name}: 'Full list' has a row for #{id}, #{why}"
+  end
+
+  sum = mode_ids.sum { |id| declared_tokens[id].to_i }
+  claimed_sum = symptoms[/\*\*Total corpus:\*\* ~([\d,]+) tokens across (\d+) rules/, 1]&.delete(",")&.to_i
+  claimed_count = symptoms[/\*\*Total corpus:\*\* ~[\d,]+ tokens across (\d+) rules/, 1].to_i
+  if claimed_sum.nil?
+    findings << "#{symptoms_name}: no 'Total corpus' line to check"
+  else
+    findings << "#{symptoms_name}: corpus claims ~#{claimed_sum} tokens, rules declare #{sum}" if (claimed_sum - sum).abs > 100
+    findings << "#{symptoms_name}: corpus claims #{claimed_count} rules, #{mode} has #{mode_ids.size}" if claimed_count != mode_ids.size
+  end
+
+  lo, hi = mode_ids.map { |id| declared_tokens[id] }.compact.minmax
+  claimed_lo = index[/plus one or two rules \((\d+)[–-](\d+)\)/, 1]&.to_i
+  claimed_hi = index[/plus one or two rules \((\d+)[–-](\d+)\)/, 2]&.to_i
+  if claimed_lo && (claimed_lo != lo || claimed_hi != hi)
+    findings << "#{index_name}: per-rule range claims #{claimed_lo}-#{claimed_hi}, actual #{lo}-#{hi}"
+  end
+
+  claimed_index = index[/this index \(~([\d,]+)\)/, 1]&.delete(",")&.to_i
+  estimated_index = (index.length / CHARS_PER_TOKEN).round(-2)
+  if claimed_index && (claimed_index - estimated_index).abs > estimated_index * 0.2
+    findings << "#{index_name}: claims ~#{claimed_index} tokens for itself, estimate is ~#{estimated_index}"
+  end
+
+  claimed_symptoms = index[/\(SYMPTOMS\.md\) \(~([\d,]+)\)/, 1]&.delete(",")&.to_i
+  estimated_symptoms = (symptoms.length / CHARS_PER_TOKEN).round(-2)
+  if claimed_symptoms && (claimed_symptoms - estimated_symptoms).abs > estimated_symptoms * 0.2
+    findings << "#{index_name}: claims ~#{claimed_symptoms} tokens for #{symptoms_name}, estimate is ~#{estimated_symptoms}"
+  end
+end
+
+# --- 4. Wizard token coverage ------------------------------------------------
+# A {{TOKEN}} nobody fills ships to a generated app as literal braces.
+wizard = File.read(File.join(COMMANDS_DIR, "workflow_setup.md"))
+command_paths.flat_map { |p| File.read(p).scan(/\{\{[A-Z_]+\}\}/) }.uniq.sort.each do |token|
+  findings << "workflow_setup.md never mentions #{token}, so nothing fills it" unless wizard.include?(token)
+end
+
+# --- 5. Paths referenced by commands ----------------------------------------
+# Every path-shaped `.md` reference in a command has to resolve inside
+# templates/, which is what makes the `task_template.llm.md` class of bug
+# visible. A reference naming a file the workflow writes at runtime carries a
+# placeholder (`<id>`, a date, a glob), and those are skipped: the path is a
+# pattern, not a file. A bare basename with no directory is a name in prose.
+PLACEHOLDER = /[<>*$]|YYYY|\{\{/
+# The skill is a router too (ADR 0010), and its one job is to name paths that
+# exist — a skill pointing at a missing index routes an agent nowhere, silently.
+skill_paths = Dir.glob(File.join(TEMPLATES, ".claude/skills/*/SKILL.md")).sort
+findings << "templates/.claude/skills: no SKILL.md, so nothing makes the index model-invocable" if skill_paths.empty?
+(command_paths + skill_paths).each do |path|
+  File.readlines(path).each_with_index do |line, i|
+    next if line.include?(IGNORE) # a file this command creates at runtime
+
+    line.scan(%r{[\w.][\w./-]*\.md}).uniq.each do |ref|
+      next if ref.match?(PLACEHOLDER) || ref.start_with?("http", "../")
+      next unless ref.include?("/") # a bare basename in prose is a name, not a path
+
+      target = File.join(TEMPLATES, ref)
+      next if File.exist?(target) || File.exist?("#{target}.tt")
+
+      findings << "#{rel(path)}:#{i + 1}: references #{ref}, which does not exist under templates/"
+    end
+  end
+end
+
+# --- 6. Command routers ------------------------------------------------------
+# A router that omits a command is a router that lies.
+# In the repo AGENTS.md is a template — its short list names the mode's patterns
+# (ADR 0009) — so it is read as source there and as rendered output in an app.
+agents_path = File.join(DOCS_ROOT, IN_TEMPLATE_REPO ? "AGENTS.md.tt" : "AGENTS.md")
+workflow_path = File.join(DOCS_ROOT, "WORKFLOW.md")
+agents_md = File.read(agents_path)
+workflow_md = File.read(workflow_path)
+invocation_table = workflow_md[/^## Who invokes what$.*?^## /m].to_s
+command_paths.each do |path|
+  name = File.basename(path, ".md")
+  findings << "#{rel(agents_path)}: no entry for /#{name}" unless agents_md.include?(name)
+  findings << "#{rel(workflow_path)}: 'Command inventory' has no entry for /#{name}" unless workflow_md.include?(name)
+  findings << "#{rel(workflow_path)}: 'Who invokes what' does not say who invokes /#{name}" unless invocation_table.include?("`/#{name}`")
+end
+
+# --- 7. Command frontmatter -------------------------------------------------
+# A command's `description` is what a picker shows a human deciding whether to
+# run it, so it is the routing surface, not decoration. `argument-hint` is
+# required wherever the body reads $ARGUMENTS. Values are quoted because a
+# description with a colon, or a hint in brackets, otherwise parses as a map or
+# a list rather than a string.
+command_names = command_paths.map { |p| File.basename(p, ".md") }
+command_paths.each do |path|
+  name = File.basename(path, ".md")
+  body = File.read(path)
+  raw = body[/\A---\n(.*?)\n---\n/m, 1]
+
+  if raw.nil?
+    findings << "#{rel(path)}: no frontmatter, so no description for a picker to show"
+  else
+    fm = begin
+      YAML.safe_load(raw) || {}
+    rescue Psych::SyntaxError => e
+      findings << "#{rel(path)}: unparseable frontmatter (#{e.message})"
+      {}
+    end
+
+    fm.each do |key, value|
+      next if value.is_a?(String)
+
+      findings << "#{rel(path)}: #{key} parses as #{value.class}, not a string (quote the value)"
+    end
+
+    description = fm["description"].to_s
+    findings << "#{rel(path)}: frontmatter has no description" if description.empty?
+    findings << "#{rel(path)}: description is #{description.length} chars, keep it under #{MAX_DESCRIPTION}" if description.length > MAX_DESCRIPTION
+    if description.match?(/\Ause when|\Athis (command|skill)|\Ainvoke/i)
+      findings << "#{rel(path)}: description opens with trigger phrasing; a human reads it in a picker, so state the job"
+    end
+    if body.include?("$ARGUMENTS") && fm["argument-hint"].to_s.empty?
+      findings << "#{rel(path)}: reads $ARGUMENTS but declares no argument-hint"
+    end
+  end
+
+  # Shape, per docs/writing-commands.md: an H1, and for anything long-form the
+  # `## Instructions` / `## Reference` frame. Short-form commands (the segue set,
+  # run_lint) carry the job in a numbered list and are exempt.
+  after_frontmatter = raw.nil? ? body : body.sub(/\A---\n.*?\n---\n/m, "")
+  first_heading = after_frontmatter.lines.map(&:strip).find { |l| l.start_with?("#") }
+  findings << "#{rel(path)}: does not open with an H1 title" unless first_heading&.start_with?("# ")
+
+  if body.lines.size > LONG_FORM_LINES
+    %w[Instructions Reference].each do |section|
+      findings << "#{rel(path)}: #{body.lines.size} lines, so it needs a `## #{section}` section" unless body.include?("\n## #{section}")
+    end
+  end
+
+  # A command that documents itself under a name nobody can type is a router
+  # that lies about its own address. Only backticked names are checked: a bare
+  # slash is usually a URL path or /dev/null.
+  body.scan(/`\/([a-z][a-z0-9_]*)[^`]*`/).flatten.uniq.each do |mentioned|
+    next if command_names.include?(mentioned)
+
+    findings << "#{rel(path)}: mentions `/#{mentioned}`, which is not a command"
+  end
+end
+
+# --- 8. Counts quoted in prose ----------------------------------------------
+# Every doc that names a count, anywhere in the repo, against the real one.
+COUNT_PATTERNS = [
+  [/(\d+)\s+single-rule/, :rules],
+  [/(\d+)\s+rules\b/, :rules],
+  [/(\d+)\s+(?:workflow )?(?:slash )?commands?\b/, :commands]
+].freeze
+
+actual = { rules: rule_paths.size, commands: command_paths.size }
+# A mode's router names that mode's corpus, not the whole directory. Everything
+# else names the directory, so it has one right answer and gets checked against it.
+MODE_OF_ROUTER = MODES.flat_map { |mode, files| files.map { |file| [ file, mode ] } }.to_h
+mode_rule_counts = MODES.keys.to_h { |mode| [ mode, rule_modes.count { |_, ms| ms.include?(mode) } ] }
+count_scan =
+  if IN_TEMPLATE_REPO
+    Dir.glob(File.join(ROOT, "**/*.{md,tt,rb}"))
+  else
+    # The doc canon plus the root-level markdown, and nothing else: a comment in
+    # this app's own code that happens to say "3 rules" is not this check's business.
+    Dir.glob(File.join(ROOT, "*.md")) +
+      Dir.glob(File.join(ROOT, "{docs,.llm,.claude,.cursor}/**/*.{md,mdc}"))
+  end
+count_scan.reject { |p| p.include?("/.git/") }.sort.each do |path|
+  File.readlines(path).each_with_index do |line, i|
+    next if line.include?(IGNORE)
+
+    COUNT_PATTERNS.each do |pattern, kind|
+      claimed = line[pattern, 1]&.to_i
+      next if claimed.nil? || claimed == actual[kind]
+
+      # A count is allowed to be a mode's rather than the directory's, but only
+      # when the reader can tell which: the file is that mode's router, or the
+      # line says "web mode" / "api mode" in as many words.
+      modes_named = [ MODE_OF_ROUTER[File.basename(path)] ]
+      modes_named += MODES.keys.select { |m| line.match?(/\b#{m} mode\b/i) }
+      allowed = modes_named.compact.uniq.map { |m| mode_rule_counts[m] }
+      next if kind == :rules && allowed.include?(claimed)
+
+      expected = actual[kind]
+      expected = "#{allowed.join(' or ')} for the mode named" if kind == :rules && allowed.any?
+      findings << "#{rel(path)}:#{i + 1}: claims #{claimed} #{kind}, there are #{expected}"
+    end
+  end
+end
+
+# Checks 9, 10 and 11 compare the templates/ tree to the generators that copy it,
+# and the stamp regex to the file that writes it. A generated app has neither, so
+# there is nothing there for them to be true or false about.
+if IN_TEMPLATE_REPO
+  # --- 9. Everything under templates/ actually ships --------------------------
+  # A file added to templates/ that no `copy_template_file` names, and no glob
+  # covers, is a file that silently never reaches a generated app. Both entry
+  # points count: template.rb generates, adopt.rb installs the alignment layer
+  # into an app that already exists, and template.rb evaluates adopt.rb.
+  generator = ["template.rb", "adopt.rb"].map { |f| File.read(File.join(ROOT, f)) }.join("\n")
+  literal_copies = generator.scan(/(?:copy_template_file|template_file)\s+"([^"]+)"/).flatten
+  glob_dirs = generator.scan(%r{Dir\.glob\(File\.join\(TEMPLATE_ROOT,\s*"templates/([^"*]+)/\*}).flatten
+
+  DOC_TREES = ["docs", ".llm", ".claude", ".cursor"].freeze
+  Dir.glob(File.join(TEMPLATES, "**/*.{md,tt,mdc,json}"), File::FNM_DOTMATCH).sort.each do |path|
+    ref = path.sub("#{TEMPLATES}/", "")
+    next unless DOC_TREES.any? { |tree| ref.start_with?("#{tree}/") }
+    next if literal_copies.include?(ref) || literal_copies.include?(ref.sub(/\.tt\z/, ""))
+    next if glob_dirs.any? { |dir| File.dirname(ref) == dir.chomp("/") }
+
+    findings << "template.rb never copies #{ref}, so it does not ship"
+  end
+
+  # --- 10. The stamp the updater reads is the stamp the template writes -------
+  # bin/rocket-sheep-update finds the commit to merge from by matching a regex
+  # against the generated CLAUDE.md. Rewording that line silently costs every
+  # future app its upgrade path, and nothing else would notice.
+  updater_path = File.join(TEMPLATES, "bin/rocket-sheep-update")
+  stamp_source = File.read(updater_path)[%r{^STAMP = (?:%r)?/(.+)/$}, 1]
+  if stamp_source.nil?
+    findings << "templates/bin/rocket-sheep-update: no STAMP regex found, so the stamp contract is unchecked"
+  else
+    stamped = File.read(File.join(TEMPLATES, "CLAUDE.md.tt"))
+                  .gsub("<%= TEMPLATE_SHA %>", "abc1234")
+                  .gsub("<%= TEMPLATE_GENERATED_ON %>", "2026-01-01")
+    unless stamped.match?(Regexp.new(stamp_source))
+      findings << "templates/CLAUDE.md.tt: the origin stamp no longer matches STAMP in " \
+                  "bin/rocket-sheep-update, so an update would have no commit to merge from"
+    end
+  end
+
+  # --- 11. The filename railties re-renders after bundling ---------------------
+  # Rails' own generator runs `template "kamal-secrets.tt", ".kamal/secrets"` after
+  # bundling (Rails::Generators::AppBase#run_kamal), resolved through our
+  # source_paths. A rename or a delete makes every bundling generation die there,
+  # and `--skip-bundle` never reaches the call, so the probe most people run stays
+  # green. Cheap to assert, expensive to discover.
+  RAILTIES_RENDERED = ["kamal-secrets.tt"].freeze
+  RAILTIES_RENDERED.each do |name|
+    next if File.exist?(File.join(TEMPLATES, name))
+
+    findings << "templates/#{name} is missing, and Rails' own generator renders it " \
+                "after bundling — generation would die at the kamal step"
+  end
+
+end
+
+# --- 12. Real infrastructure in a public repo -------------------------------
+# templates/docs/sop/extract-database-and-storage.md shipped one app's live
+# server IP, production database names and domains for two weeks, because the
+# file was written for that app, sat untracked, and was committed by a fix whose
+# subject was generation defects. Nobody reread 260 lines of prose they were
+# only trying to make generation stop failing on.
+#
+# A bare public IPv4 address is the shape that matters: a documentation address
+# (TEST-NET-1/2/3), a private range, and a CIDR block are all fine — Cloudflare's
+# published ranges are legitimately in the hardening SOP, and they carry a /nn.
+# What no doc here has a reason to name is a single routable host.
+#
+# Same for an ssh or scp target: `root@<placeholder>` teaches the command,
+# `root@<real host>` hands out an address.
+#
+# Mark a line that legitimately names one with `lint-docs:ignore`.
+DOC_HOSTS = %w[myapp.com www.myapp.com media.myapp.com example.com myapp].freeze
+
+def documentation_ip?(address)
+  octets = address.split(".").map(&:to_i)
+  return true if octets.any? { |o| o > 255 }
+
+  case octets
+  in [0, *] | [127, *] | [10, *] | [169, 254, *] | [192, 168, *] then true
+  in [172, second, *] if (16..31).cover?(second) then true
+  in [192, 0, 2, *] | [198, 51, 100, *] | [203, 0, 113, *] then true # RFC 5737
+  in [100, second, *] if (64..127).cover?(second) then true          # RFC 6598 CGNAT
+  in [first, *] if first >= 224 then true                            # multicast, reserved
+  else false
+  end
+end
+
+BARE_IPV4 = /(?<![\w.\/])(\d{1,3}(?:\.\d{1,3}){3})(?![\d.\/])/
+SSH_TARGET = /\b(?:ssh|scp)\b[^\n]*?\b([a-z][\w.-]*)@([\w.-]+\.[a-z]{2,})/i
+# Only a cue *immediately* before the number makes it a version. Matching the
+# whole line would let `ssh root@<ip> to restart postgres` past the check.
+VERSION_CUE = /\b(?:ruby|rails|pagy|node|bun|version|v)\s+\z/i
+
+host_scan =
+  if IN_TEMPLATE_REPO
+    Dir.glob(File.join(ROOT, "**/*.{md,tt,rb,yml,mdc}"))
+  else
+    Dir.glob(File.join(ROOT, "*.md")) +
+      Dir.glob(File.join(ROOT, "{docs,.llm,.claude,.cursor,.kamal,config}/**/*.{md,mdc,yml}"))
+  end
+host_scan.reject { |p| p.include?("/.git/") }.sort.each do |path|
+  File.readlines(path).each_with_index do |line, i|
+    next if line.include?(IGNORE)
+
+    line.scan(BARE_IPV4).flatten.each do |address|
+      next if documentation_ip?(address)
+      before = line[0, line.index(address)]
+      next if before.match?(VERSION_CUE) # "Rails 8.1.3.1" is a version, not a host
+
+      findings << "#{rel(path)}:#{i + 1}: names the routable address #{address} — " \
+                  "use a documentation address (203.0.113.10) or add #{IGNORE}"
+    end
+
+    match = line.match(SSH_TARGET)
+    next if match.nil? || DOC_HOSTS.include?(match[2])
+
+    findings << "#{rel(path)}:#{i + 1}: ssh/scp target #{match[1]}@#{match[2]} names a real host"
+  end
+end
+
+# --- Report ------------------------------------------------------------------
+if findings.empty?
+  puts "lint-docs: clean (#{rule_paths.size} rules, #{command_paths.size} commands)"
+  exit 0
+end
+
+warn "lint-docs: #{findings.size} finding#{'s' unless findings.size == 1}"
+findings.uniq.each { |f| warn "  #{f}" }
+exit 1

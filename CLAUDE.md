@@ -2,6 +2,16 @@
 
 Rails 8 application built with the Solid Stack architecture.
 
+Generated from [Rails Rocket Sheep](https://github.com/PositiveControl/rails-rocket-sheep)
+at commit `7e47077` on 2026-10-03. Everything below,
+including `docs/rules/` and `.claude/commands/`, is a snapshot from that commit and
+is now this app's own code. Nothing is fetched behind your back, so when a
+convention here disagrees with a newer version of it, this app's copy is what
+governs this app. To take template changes deliberately, three-way merge them —
+`bin/rocket-sheep-update --check`, then
+[docs/sop/update-from-the-template.md](docs/sop/update-from-the-template.md).
+Leave the commit on the line above intact: it is where the merge starts from.
+
 ## Quick Start
 
 ```bash
@@ -9,13 +19,15 @@ bin/dev              # Start development server with Tailwind watcher
 bin/test             # Run tests (single worker on macOS)
 bin/rails console    # Rails console
 bin/rails db:migrate # Run migrations
+bin/rails db:queries # Record the SQL shapes the suite emits; review the new ones
 bin/rubocop          # Run linter
 bin/brakeman         # Security analysis
+bin/flay             # Copied Ruby this branch adds vs origin/main (BASE= for a slice)
 ```
 
 ## Tech Stack
 
-- **Backend:** Rails 8 + PostgreSQL, UUID primary keys
+- **Backend:** Rails 8 + PostgreSQL (`postgresql`), uuid primary keys
 - **Frontend:** Hotwire (Turbo + Stimulus), Tailwind CSS, Slim (not ERB)
 - **Components:** ViewComponent (`app/components`, `ApplicationComponent`)
 - **Pagination:** Pagy (wired into `ApplicationController`)
@@ -28,14 +40,18 @@ bin/brakeman         # Security analysis
 
 **Conventions are one rule per file in `docs/rules/`. Do not read them all.**
 
-Start at [`docs/rules/INDEX.md`](docs/rules/INDEX.md). It routes three ways:
+Start at [`docs/rules/INDEX.md`](docs/rules/INDEX.md). It routes by the file you are
+editing: a small set that applies to any edit in that path, then conditional tables
+for what you are actually doing. Read what it names and stop.
 
-1. **By the file you are editing** — the `applies_to` glob table
-2. **By symptom** — `grep -l "<keyword>" docs/rules/*.md`, or the trigger table
-3. **By rule id** — the file is always `docs/rules/<id>.md`
+If it did not answer you — you know the symptom but not the file — the fallback is
+[`docs/rules/SYMPTOMS.md`](docs/rules/SYMPTOMS.md), which carries the symptom table
+and the full annotated list. It costs about twice the index, so it is second, not
+first. `grep -l "<keyword>" docs/rules/*.md` finds a rule by its `triggers` without
+loading anything, and a rule id is always `docs/rules/<id>.md`.
 
-The index costs ~1,300 tokens; a rule costs 150–500. Reading the whole directory
-is a mistake, not diligence.
+Both routers carry read costs, so budget from them rather than guessing. Reading the
+whole directory is a mistake, not diligence.
 
 ## Non-negotiables
 
@@ -84,10 +100,21 @@ Command-driven lifecycle. Full spec and diagrams in `WORKFLOW.md`.
 
 - `/pick` is the entry door for every session — it surfaces ready work and routes it
 - Four gates: design approved (G1), plan approved (G2), suite green (G3), comments resolved (G4)
-- Sizing: 100–600 added lines per PR; issue acceptance criteria ≤5 bullets. Forecast
-  passes 600 lines mid-implementation → stop, split, land the current slice
+- Sizing: 200–1,500 added lines and ≤25 files per PR; issue acceptance criteria ≤5
+  bullets. Forecast passes 1,500 lines mid-implementation → stop, split, land the
+  current slice
+- Multi-slice features land on `feature/<slug>`. A slice is reviewed by `/pr_review`
+  run from a fresh session, two passes at most, and merged there on that review;
+  the feature PR gets the human review. Spec: `WORKFLOW.md`, *Feature branches*;
+  why: `docs/adr/0014-slices-merge-on-the-agents-review-features-on-a-humans.md`
 - `/segue` is the escape valve — isolate a tangent, merge findings back without
   polluting the workstream
+- You invoke the chain. Four of the nineteen (`/run_lint`, `/test_fix`,
+  `/rails_code_review`, `/pr_fix_ci`) read and edit locally, so an agent may reach
+  for them when the situation fits; anything that posts, pushes, moves the board,
+  or sits at a gate is yours to type. `WORKFLOW.md` has the table and the reason
+  per command. No command invokes another one: "next: `/pr_submit`" is an
+  instruction to you
 
 Run `/workflow_setup` once before first use — it fills in GitHub org, repo, and board IDs.
 
@@ -100,6 +127,10 @@ bin/test test/models/user_test.rb:42  # Specific line
 ```
 
 System tests are separate: `bin/rails test:system`.
+
+Every branch with a user-facing change ships a reviewer walkthrough (`script/qa/`,
+`bin/qa-walkthrough`; `docs/system/qa_walkthrough.md`) unless the developer skips it —
+`/task_plan` plans the steps, `/pr_submit` gates on them.
 
 How to write one — layering, fixtures, VCR, assertions — is `docs/rules/testing.md`.
 
@@ -130,18 +161,37 @@ these exact paths — don't rename them.
 
 | Directory | Holds | Written by |
 |-----------|-------|------------|
-| `docs/rules/` | One convention per file + `INDEX.md` | Hand-maintained; see the index's own rules |
+| `docs/rules/` | One convention per file + `INDEX.md` router and `SYMPTOMS.md` fallback | Hand-maintained; see the index's own rules |
 | `docs/plans/` | Design docs for features | `/feature_plan` |
+| `docs/adr/` | One decision per file, numbered — why a rule exists | `/domain_model` |
 | `docs/system/` | Architecture state — how things currently work | `/pr_submit`, `/update_docs` |
 | `docs/sop/` | Procedures someone will repeat | `/pr_submit`, `/update_docs` |
 | `docs/qa/` | Manual test guides | `/pr_qa` |
 
-`docs/system/` holds `architecture.md` (ADRs — *why* a rule exists and what was
-accepted) and `models.md`. Rules say what to
-do; ADRs say why it was chosen. Don't merge them.
+`docs/adr/` holds one decision per file, numbered (`0001-<slug>.md`): *why* a rule
+exists and what was accepted for it. `docs/system/` holds `models.md` and
+`vocabulary.md`. Rules say what to do; ADRs say why it was chosen. Don't merge
+them.
+
+`vocabulary.md` defines the words this workflow uses in one place — thread ID,
+tracker tier, gate, contract slot, doc canon, pattern budget — with the wording to
+avoid where a term has a common near-synonym. Reach for it when a word in
+`WORKFLOW.md` or a command reads like jargon; don't restate a definition anywhere
+else.
 
 `.llm/README.md` indexes committed docs. Conventions are single-sourced in
 `docs/rules/`; task files in `.llm/tasks/` reference them and never restate them.
+
+Two of those properties are checked rather than trusted:
+
+```bash
+bin/doc-tokens     # rewrites each rule's `tokens:` figure and the figures derived from it
+bin/lint-docs      # rule frontmatter, index routing, read costs, path resolution, quoted counts
+```
+
+Run both after editing anything under `docs/rules/` or `.claude/commands/`, or any
+doc that quotes a count — `/update_docs` ends on them. A doc that disagrees with the
+tree is worse than no doc, because the agent reading it cannot tell.
 
 ## Project Structure
 
@@ -164,18 +214,18 @@ app/
 
 docs/                       # names are load-bearing
 ├── rules/                  # One convention per file
-│   └── INDEX.md            #   Router — start here
+│   ├── INDEX.md            #   Router — start here
+│   └── SYMPTOMS.md         #   Fallback — by symptom, and the full list
 ├── plans/                  # Design docs (/feature_plan)
+├── adr/                    # One decision per file, numbered
 ├── system/                 # Architecture state
-│   ├── architecture.md     #   Architecture Decision Records
 │   └── models.md           #   Model documentation
 ├── sop/                    # Procedures / how-tos
 └── qa/                     # Manual test guides
 
-.claude/commands/           # 19 workflow slash commands (tracked, shared)
+.claude/commands/           # 25 workflow slash commands (tracked, shared)
 .llm/
 ├── tasks/                  # Task files — local scratch, gitignored
 └── threads/                # Segue threads — local scratch, gitignored
-bin/pr-stack                # Stacked-PR footer generator (used by /pr_submit)
 WORKFLOW.md                 # Lifecycle spec + diagrams
 ```

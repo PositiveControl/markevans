@@ -1,3 +1,7 @@
+---
+description: "Entry door: prioritized ready work, routed by shape and state"
+---
+
 # Pick
 
 Entry door to the workflow. Show **my** prioritized ready work, then route the selected item to the right next command based on its shape and state.
@@ -18,11 +22,11 @@ bd list --label lifecycle:up_for_review --json
 ```
 For each result, take its `external_ref` (`gh-<n>`, written by `/pr_submit`) and check whether that PR merged:
 ```bash
-gh pr list --state merged --search "<n>" --json number,title --limit 5
+gh pr list --state merged --base main --search "<n>" --json number,title --limit 5
 ```
-Merged → `bd close <id>`. Report what was reconciled in one line; say nothing when there is nothing to close.
+`--base main` matters: a slice PR merged into a feature branch is not done — Done means in `main` (`WORKFLOW.md`, *Feature branches*). Merged to `main` → `bd close <id>`. Report what was reconciled in one line; say nothing when there is nothing to close.
 
-**`labels`:** same shape, using `gh issue list --label "status:up-for-review"` and closing merged ones with `gh issue close <n>`.
+**`labels`:** same shape, using `gh issue list --label "status:up-for-review"` and closing the ones whose PR merged to `main` with `gh issue close <n>`.
 
 ### Step 1: Fetch my open issues
 
@@ -108,6 +112,7 @@ Fetch full details of the selection (`gh issue view <n>`), then route by shape +
 | Todo — sized leaf issue with acceptance criteria | `/task_plan <n>` |
 | In Progress — task file exists in `.llm/tasks/` | `/implement <n>` |
 | In Progress — no task file | `/task_plan <n>` (plan was never made or is lost) |
+| Todo — sized, but the approach rests on a decision nobody has made | `/grill <title>` first, then `/task_plan <n>` |
 | Blocked | Show the blocker (dependency, question, PR); no route until cleared |
 | Up for Review | Show PR status; suggest `/pr_fix_ci` or `/pr_comment_resolver` if red/commented |
 

@@ -1,33 +1,40 @@
+---
+description: "Review a branch against this stack's Rails 8 conventions"
+argument-hint: '[extra focus, e.g. "auth paths only"]'
+---
+
 # Rails Code Review
 
-Thorough code review of a Rails 8 branch against `main`.
+Review the current branch against its base, judged against this stack's Rails 8
+conventions. Reviewing somebody else's PR by number is `/pr_review`; this reads the
+branch you are on. Pass an optional focus: `/rails_code_review "auth paths only"`.
 
-## Setup
+## Instructions
 
-First, gather context:
+### Step 1: Gather context
+
+`<BASE>` is the task file's `Base:` line (`.llm/tasks/<id>_*.md`) — `main`, or the feature branch this slice targets. No task file → `main`.
 
 ```bash
-git fetch origin main
-git diff origin/main...HEAD --stat
-git diff origin/main...HEAD
-git log origin/main..HEAD --oneline
+git fetch origin <BASE>
+git diff origin/<BASE>...HEAD --stat
+git diff origin/<BASE>...HEAD
+git log origin/<BASE>..HEAD --oneline
 ```
 
 Diff alone not enough for context → read changed files in full. Also check related files (models, tests, routes) not changed but relevant to the diff.
 
 *Note: diff huge → prioritize `app/models/`, `app/controllers/`, `app/services/`, `db/migrate/` over UI tweaks or locale files.*
 
-$ARGUMENTS
+`$ARGUMENTS` given → treat it as the focus for this review, and say at the end what you did not look at.
 
----
-
-## Review Standards
+### Step 2: Route to the rules that apply
 
 This app's conventions are one rule per file in `docs/rules/`, routed by `docs/rules/INDEX.md`; `CLAUDE.md` carries the non-negotiables. This command reviews *against* those conventions; it does not restate them. Route to the rules that match the changed files rather than reading the whole directory.
 
 Stack:
 - Rails 8 Solid Stack — Solid Queue, Solid Cache, Solid Cable, each on its own database
-- PostgreSQL, UUID primary keys on every table
+- PostgreSQL with UUID primary keys, *or* MySQL/MariaDB with bigint — the Tech Stack line in `CLAUDE.md` says which, and several checks below depend on it
 - Hotwire (Turbo Frames, Turbo Streams, Stimulus)
 - Slim templates, Tailwind CSS
 - Devise (Turbo-configured) + Petergate for roles
@@ -41,11 +48,17 @@ Stack:
 
 Code style: double quotes, 2-space indent, trailing newline, empty line between methods and after guard clauses.
 
+### Step 3: Work the checklist
+
+Every section of **Review checklist** below, in order. Nothing relevant in a section → skip it.
+
+### Step 4: Write the review
+
+In the shape given by **Output format** below. Then name what runs next: `/pr_submit` once the findings are addressed, or `/test_fix` if the suite is red.
+
 ---
 
-## Review Checklist
-
-Work each section. Nothing relevant → skip the section.
+## Review checklist
 
 ### 1. Correctness & Business Logic
 
@@ -63,14 +76,14 @@ Work each section. Nothing relevant → skip the section.
 - **XSS**: `raw` and `html_safe` must be justified. User content escaped.
 - **Mass Assignment**: `assign_attributes` / `update` use permitted params.
 - **Sensitive Data**: no credentials, tokens, or PII in logs, comments, or hardcoded strings.
-- **UUID enumeration**: UUID PKs prevent ID guessing — flag anywhere a sequential or predictable identifier is exposed instead.
+- **ID enumeration**: on UUID keys, flag anywhere a sequential or predictable identifier is exposed instead. On bigint keys the primary key *is* sequential — flag a bare `id` in a public URL or API response where walking it would leak, and require a slug or random token.
 - **Soft deletes**: discarded records must not leak through a query that forgot `.kept` — especially in authorization checks and API responses. A new `include Discard::Model` needs a stated reason (user-facing restore, audit obligation, foreign keys that must stay valid); `default_scope -> { kept }` is always wrong.
 
 ### 3. Performance
 
 - **N+1 Queries**: check every `.each` over an ActiveRecord collection. Associations eager-loaded with `includes` / `preload` / `eager_load`? Bullet is enabled in development — an N+1 reaching review means it was ignored.
 - **Missing Indexes**: new columns used in `WHERE`, `ORDER BY`, or as foreign keys need indexes, added in the same migration. Composite indexes for frequently combined filters.
-- **UUID index cost**: UUID keys are 16 bytes and randomly ordered. Flag redundant or unused indexes on high-write tables.
+- **Index cost**: UUID keys are 16 bytes and randomly ordered, so redundant or unused indexes on high-write tables cost more than they would on bigint. Flag them either way; weight it heavier on UUIDs.
 - **Unbounded Queries**: `Model.all` or scopes without `.limit` on tables that grow need Pagy.
 - **Counter Caches**: association counts displayed → counter cache or `.size`, never `.count` inside a loop.
 - **Caching**: expensive or repeated computation → `Rails.cache` (Solid Cache). Cache keys nameable and expirable?
@@ -86,11 +99,11 @@ Work each section. Nothing relevant → skip the section.
 - **Scopes over class methods** for all queries.
 - **RESTful routing**: custom actions genuinely non-CRUD, or should this be a new resource?
 - **Callbacks**: avoid `after_save` / `after_create` for side effects that should be explicit (emails, notifications). Call them from a service.
-- **UUID foreign keys**: `t.uuid :parent_id` with `add_foreign_key` — not `t.references` without a type, which silently produces a bigint mismatch.
+- **Foreign key types**: on UUID keys, `t.uuid :parent_id` with an explicit `add_foreign_key` — `t.references` without a type silently produces a bigint mismatch. On bigint keys, `t.references :parent, foreign_key: true` is correct and the explicit form is noise. Check which database first ([database-conventions](../../docs/rules/database-conventions.md)).
 - **Form objects**: a submit that writes two or more models, or carries fields that aren't columns, belongs in `app/forms/` inheriting `ApplicationForm`. Flag `accepts_nested_attributes_for` outright.
 - **Query objects**: a read joining two or more models belongs in `app/queries/` and must return a relation, never an array. Flag `.to_a` followed by Ruby `select` / `sort_by`.
 - **Policies**: record-level authorization (`can this user edit this record`) belongs in a policy object used by both controller and view. Flag the same ownership conditional copy-pasted into a view and a controller. Petergate stays for role-level access.
-- **Pattern budget**: six sanctioned directories under `app/` — `services`, `forms`, `queries`, `policies`, `lib`, `components`. A seventh needs an ADR in `docs/system/architecture.md`.
+- **Pattern budget**: six sanctioned directories under `app/` — `services`, `forms`, `queries`, `policies`, `lib`, `components`. A seventh needs an ADR in `docs/adr/`, which `/domain_model` writes.
 - **Turbo / Hotwire**:
   - **Form failures render `status: :unprocessable_content`.** A 200 makes Turbo discard the response and the form silently freezes. Flag every `render :new` / `render :edit` without it.
   - Turbo Stream responses come from the controller by default. Model `broadcasts_to` is for genuine multi-user push only — flag it where the person who clicked is the only one who needs the update.
@@ -132,12 +145,12 @@ What that rule can't tell you, and you have to judge from the change itself:
 - New columns have appropriate defaults and null constraints?
 - Indexes added in the same migration as the column?
 - Data migration needed alongside the schema migration?
-- **Large-table changes**: PostgreSQL takes an `ACCESS EXCLUSIVE` lock for many `ALTER TABLE` operations. Adding a column with a volatile default, adding a `NOT NULL` constraint, or creating an index without `algorithm: :concurrently` will block writes for the duration. Flag any of these on a table expected to be large, and require `disable_ddl_transaction!` where `concurrently` is used.
+- **Large-table changes**: on PostgreSQL, many `ALTER TABLE` operations take an `ACCESS EXCLUSIVE` lock — a column with a volatile default, a `NOT NULL` constraint, or an index without `algorithm: :concurrently` blocks writes for the duration; require `disable_ddl_transaction!` wherever `concurrently` is used. On MySQL 8 most of these are online by default and `algorithm: :concurrently` raises, so flag it as an error rather than requiring it. Either way, flag the operation on a table expected to be large ([safe-migrations](../../docs/rules/safe-migrations.md)).
 - Does the migration target the right database? Queue, cache, and cable have their own `migrations_paths` — a migration in the wrong directory silently applies to the wrong database.
 
 ---
 
-## Output Format
+## Output format
 
 ### Summary
 2–4 sentences: what changed, why, overall quality.
@@ -157,3 +170,10 @@ What's done well — specific, not generic.
 ---
 
 Direct and specific. Reference file paths and line numbers. Show corrected snippets for non-obvious fixes. Nothing for a section → omit it. Signal over volume: a focused review with 5 real issues beats 20 nitpicks.
+
+## Reference
+- Base for the diff: `origin/<BASE>`, from the task file's `Base:` line; `main` when there is none
+- Conventions, routed by path or symptom: `docs/rules/INDEX.md`
+- A seventh directory under `app/` needs an ADR: `docs/adr/`, written by `/domain_model`
+- Reviewing someone else's PR by number instead: `/pr_review`
+- Missing tests are a finding at the same severity as the code they would cover

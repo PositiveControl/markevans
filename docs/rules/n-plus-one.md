@@ -3,8 +3,10 @@ id: n-plus-one
 title: N+1 queries — includes, counter_cache, aggregate in the database
 applies_to: ["app/models/**/*.rb", "app/controllers/**/*.rb", "app/views/**/*.slim", "app/queries/**/*.rb"]
 triggers: ["N+1", "n plus one", "Bullet", "includes", "preload", "eager load", "counter_cache", "count", "size", "sort_by", "slow page", "query per row"]
-see_also: ["query-objects", "scopes", "caching"]
-tokens: 320
+see_also: ["query-objects", "scopes", "caching", "query-ledger"]
+modes: [ web, api ]
+tokens: 410
+current_state: matches
 ---
 
 # N+1 queries
@@ -46,3 +48,6 @@ User.left_joins(:orders).group(:id).order("COUNT(orders.id) DESC")
 ```
 
 Caching a slow query is not the fix — see [caching](caching.md).
+
+Bullet says whether a query repeats. Whether the one that remains has an index is the
+[query ledger](query-ledger.md)'s question, and CI asks it.

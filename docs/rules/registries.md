@@ -4,7 +4,9 @@ title: Registries — fixed variant sets as Data objects
 applies_to: ["app/lib/**/*.rb"]
 triggers: ["registry", "plans", "tiers", "product types", "Data.define", "fixed set", "frozen hash", "PlanRegistry", "has_feature?", "fetch", "constants", "app_config"]
 see_also: ["pattern-budget", "optional-patterns"]
-tokens: 520
+modes: [ web, api ]
+tokens: 790
+current_state: matches
 ---
 
 # Registries
@@ -68,5 +70,5 @@ every typo into a runtime `nil`.
 **Not a registry:** constants with no variants. Branding strings, upload limits,
 timeouts. Those are frozen constants — see `app/lib/app_config.rb`.
 
-There is no base class, deliberately. See ADR-008 in
-[`../system/architecture.md`](../system/architecture.md).
+There is no base class, deliberately. See
+[ADR 0008](../adr/0008-registries-as-data-objects.md).

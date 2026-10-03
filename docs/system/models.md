@@ -10,18 +10,18 @@ This document describes the data models and their relationships.
 
 ### User
 
-The primary user model, managed by Devise.
-
-**Associations:**
-- `has_many :sessions` (if using database sessions)
+Created by `rails g devise User`, which the template leaves to you. Until then there
+is no User model, and `db/schema.rb` is the source of truth for what one has once
+there is.
 
 **Key Fields:**
 - `email` - User's email address (unique)
 - `encrypted_password` - Devise-managed password
-- `role` - User role for Petergate authorization
+- `reset_password_token`, `reset_password_sent_at`, `remember_created_at` - Devise's defaults
+- `roles` - added by Petergate's generator, read by `db/seeds.rb` if present
 
-**Scopes:**
-- `active` - Users who haven't been discarded
+No associations, no scopes, no soft delete. Add them when a feature earns them, and
+document them here when you do.
 
 ---
 
@@ -29,11 +29,14 @@ The primary user model, managed by Devise.
 
 When adding a new model:
 
-1. **Generate with UUID:**
+1. **Generate:**
    ```bash
    rails g model Thing name:string user:references
    ```
-   UUIDs are configured automatically.
+   Primary keys are UUIDs: `config.generators` sets `primary_key_type: :uuid`,
+   so `user:references` produces a `uuid` column. Declare foreign keys as
+   `t.uuid :parent_id` with an explicit `add_foreign_key`.
+   Either way: [database-conventions](../rules/database-conventions.md).
 
 2. **Add soft deletes only if the table earns them** — restoration is a user-facing
    feature, an audit obligation requires the row, or foreign keys must stay valid.

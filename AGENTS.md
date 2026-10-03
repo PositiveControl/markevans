@@ -20,7 +20,7 @@ pointer, not a second source — anything restated here would drift.
 | Development lifecycle, gates, sizing rules | `WORKFLOW.md` |
 | Workflow commands | `.claude/commands/` (mirrored to `.cursor/commands/`) |
 | Index of committed documentation | `.llm/README.md` |
-| Design docs · architecture · procedures · QA guides | `docs/plans` · `docs/system` · `docs/sop` · `docs/qa` |
+| Design docs · decisions · architecture · procedures · QA guides | `docs/plans` · `docs/adr` · `docs/system` · `docs/sop` · `docs/qa` |
 
 ## Commands
 
@@ -28,7 +28,19 @@ These are markdown instruction files, not executables. Tools with a slash-comman
 concept (Claude Code, Cursor) surface them as `/name`. **If yours doesn't, read
 and follow the file directly** — e.g. "follow `.claude/commands/pr_submit.md`".
 
-The chain is self-navigating: each command ends by naming the next.
+Each one opens with frontmatter carrying a one-line `description`, and an
+`argument-hint` if it takes an argument. That is enough to choose a command
+without opening it, whether a picker renders it for you or you `head` the file.
+
+The chain is self-navigating: each command ends by naming the next. That naming is
+an instruction to the human, not automation — no command invokes another.
+
+Most are for a person to run. `/run_lint`, `/test_fix`, `/diagnose`,
+`/resolve_conflicts`, `/research`, `/domain_model`, `/rails_code_review`, and
+`/pr_fix_ci` read and
+edit locally, so an agent may follow one when the situation calls for it; anything
+that posts, pushes, moves a board, or stands at a gate is the human's to invoke.
+`WORKFLOW.md` carries the table under "Who invokes what".
 
 ```
 /pick (entry) → /feature_plan → /task_plan → /implement → /pr_submit → human merge
@@ -37,19 +49,25 @@ The chain is self-navigating: each command ends by naming the next.
 | Command | Job |
 |---|---|
 | `pick` | Entry door. Surfaces ready work and routes it by shape and state |
+| `grill` | Interview a design in rounds until nothing is silently assumed |
+| `research` | Answer a question from primary sources, write it into the doc canon |
+| `domain_model` | Sharpen the vocabulary; write settled terms and decisions down |
 | `feature_plan` | Explore → design doc → sized sub-issues + doc placeholders |
 | `task_plan` | Design doc → task file + implementation plan → branch |
-| `implement` | Idempotent resume: load task file, execute, commit per logical unit |
+| `implement` | Idempotent resume: load task file, execute, commit per logical unit, fresh-eyes review |
 | `pr_submit` | Local suite → docs resolved → PR → review comments |
-| `pr_review` | Reviewer side: full-context diff review |
+| `pr_review` | Full-context diff review; also the self-review pass on a slice, from a fresh session, and `--local` before a PR exists |
 | `pr_qa` | Guided manual QA pass, structured report |
+| `qa_walkthrough` | Script that drives a browser through a change for the reviewer |
 | `rails_code_review` | Rails-specific review against this stack's conventions |
 | `update_docs` | Deep doc pass; keeps the index honest |
 | `segue`, `segue_resume`, `segue_close`, `segue_merge`, `segue_kill` | Isolated discussion thread with findings-only merge-back |
 | `pr_comment_resolver` | Work through review comments |
 | `pr_fix_ci` | Diagnose and fix a failing CI run |
 | `test_fix` | Fix failing tests |
-| `run_lint` | Lint and auto-fix |
+| `diagnose` | Hard bug or slow path: build a loop that goes red, then fix what it proves |
+| `resolve_conflicts` | Finish a conflicted merge or rebase, and prove the tree green |
+| `run_lint` | Lint, auto-fix, and flag copied code |
 | `workflow_setup` | One-time wizard: repo, board, naming, CI checks |
 
 Run `workflow_setup` once before first use.
@@ -72,10 +90,11 @@ wrong version, is in the matching `docs/rules/` file.
 
 ## Finding a rule without reading everything
 
-`docs/rules/` holds one convention per file. `docs/rules/INDEX.md` routes three ways:
-by the path you are editing, by symptom, or by rule id (`docs/rules/<id>.md`). Each
-rule file carries `applies_to` globs and `triggers` keywords in its frontmatter, so
-`grep -l "<keyword>" docs/rules/*.md` also works.
+`docs/rules/` holds one convention per file. Start at `docs/rules/INDEX.md`, which
+routes by the path you are editing. When you know the symptom but not the file, the
+fallback is `docs/rules/SYMPTOMS.md` — it also carries the full list. A rule id is
+always `docs/rules/<id>.md`. Each rule file carries `applies_to` globs and `triggers`
+keywords in its frontmatter, so `grep -l "<keyword>" docs/rules/*.md` also works.
 
 **Read the index, then only the rules it points you to.** Reading the whole
 directory is a mistake, not diligence.
