@@ -50,6 +50,12 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
     assert_equal %w[https://fonts.example/a.css https://fonts.example/b.css https://cdn.example/x.png local.woff2], urls_in(css)
   end
 
+  test "an inline data: url is no request, so the gate leaves it out" do
+    css = %(.x { background: url("data:image/svg+xml;utf8,<svg/>") } .y { background: url(https://cdn.example/y.png) })
+
+    assert_equal %w[https://cdn.example/y.png], urls_in(css)
+  end
+
   test "the gate counts a plain script tag as well as the importmap" do
     html = <<~HTML
       <script type="importmap">{"imports": {"app": "/assets/app.js"}}</script>
@@ -91,8 +97,11 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
 
   def fonts = stylesheet_urls.select { |url| url.match?(/\.woff2?\z/) }
 
+  # A quoted url() runs to its closing quote, so quotes inside it do not cut it
+  # short. An inline data: url is no request and is left out.
   def urls_in(css)
-    css.scan(/url\(\s*["']?([^"')\s]+)["']?\s*\)|@import\s+["']([^"']+)["']/).flatten.compact
+    css.scan(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s]+))\s*\)|@import\s+["']([^"']+)["']/)
+      .map { |groups| groups.compact.first }.reject { |url| url.start_with?("data:") }
   end
 
   def home
