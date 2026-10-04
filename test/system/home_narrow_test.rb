@@ -155,6 +155,42 @@ class HomeNarrowTest < ApplicationSystemTestCase
     end
   end
 
+  test "the arriving scroll still drops the follow to a step the clock moves to, though it does not pause" do
+    at_size(*PHONE) do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+      # A 6 s step lasts 300 ms, so steps advance mid-gesture. A follow waits
+      # out the 200 ms roll-up, and a tick every 50 ms lands inside that.
+      execute_script("document.querySelector('#{PLAYER}').dataset.playbackPaceValue = 50")
+
+      # A follow moves the page with scrollIntoView and nothing else does, so
+      # the gesture counts its calls. Played inside the page, as above.
+      followed, advanced = using_wait_time(5) { evaluate_async_script(<<~JS) }
+        const done = arguments[0], tick = () => new Promise(resolve => setTimeout(resolve, 50))
+        const rows = [...document.querySelectorAll("#{PLAYER} [data-playback-target=row]")]
+        const active = () => rows.findIndex(row => row.dataset.state === "active")
+        const scrollIntoView = Element.prototype.scrollIntoView
+        let followed = 0
+        Element.prototype.scrollIntoView = function (...args) {
+          followed++
+          return scrollIntoView.apply(this, args)
+        }
+        ;(async () => {
+          for (let i = 0; i < 40; i++) {
+            window.scrollBy(0, 120)
+            window.dispatchEvent(new WheelEvent("wheel", { deltaY: 120 }))
+            await tick()
+          }
+          Element.prototype.scrollIntoView = scrollIntoView
+          done([followed, active()])
+        })()
+      JS
+      assert playing?, "the arriving scroll paused it"
+      assert_operator advanced, :>=, 2, "no step advanced during the gesture, so nothing was there to follow"
+      assert_equal 0, followed, "a follow scrolled the page during the arriving scroll"
+    end
+  end
+
   private
 
   # The viewport at that size. Headless Chrome will not size a window under

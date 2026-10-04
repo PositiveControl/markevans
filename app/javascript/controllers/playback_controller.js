@@ -141,8 +141,7 @@ export default class extends Controller {
   // started, a scroll is how the thread comes into view, so it counts as
   // nothing.
   yield() {
-    this.followingStep = null
-    this.gateArmedAt = null
+    this.drop()
     if (!this.playingValue) return
 
     this.touched = true
@@ -160,6 +159,11 @@ export default class extends Controller {
     this.scrolledAt = now
     if (!this.arriving) return this.yield()
 
+    this.drop()
+  }
+
+  // What any scroll of the reader's cancels, paused or not.
+  drop() {
     this.followingStep = null
     this.gateArmedAt = null
   }
