@@ -109,6 +109,22 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby=log-heading][hidden]", count: 1
   end
 
+  test "the footer signs the page, and its key list waits for playback" do
+    get root_url
+
+    assert_select "footer", text: /Mark Evans · PositiveControl/
+    assert_select "footer", text: /This site is built with the workflow it describes\./
+    assert_select "footer ul[aria-label='Keyboard'][hidden][data-playback-target=live] kbd", count: 6
+  end
+
+  test "playback and the filter sit on a wrapper around main and the footer, so both read one state" do
+    get root_url
+
+    assert_select "[data-controller='playback filter'] > main"
+    assert_select "[data-controller='playback filter'] > footer"
+    assert_select "main[data-controller]", count: 0
+  end
+
   test "the log counts gates out of the thread's own total" do
     get root_url
 

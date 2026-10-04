@@ -9,7 +9,7 @@ class PageRequestsTest < ApplicationSystemTestCase
   test "the home page makes no request to another origin" do
     visit root_path
     assert_selector "[aria-label=Restart]" # playback connected: every script has loaded
-    assert_selector "main[data-playing]" # and run
+    assert_selector "[data-controller~=playback][data-playing]" # and run
 
     origins = evaluate_script(<<~JS)
       performance.getEntriesByType("resource").map(entry => new URL(entry.name).origin)

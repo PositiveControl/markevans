@@ -39,7 +39,7 @@ QaWalkthrough.run("home_thread") do
 
   step "As the thread comes into view it plays: the sweep turns and step 1 is outlined" do
     spotlight "##{first.key}"
-    find("main[data-playing]")
+    find("[data-controller~=playback][data-playing]")
     spotlight "[aria-label=Scope]", note: "the centre block names the active step; the leader points at its target"
   end
 

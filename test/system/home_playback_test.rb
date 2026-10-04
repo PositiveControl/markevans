@@ -10,6 +10,10 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Milliseconds per second of step time: a 6 s step takes 300 ms here.
   FAST = 50
 
+  # The element the playback and filter controllers sit on: a wrapper around
+  # main and the footer.
+  PLAYER = "[data-controller~=playback]"
+
   setup do
     @thread = DeliveryThread.fetch(:home)
     @steps = @thread.steps
@@ -31,7 +35,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Restart]"
 
     assert_equal 0, evaluate_script("document.getAnimations().filter(a => a instanceof CSSTransition).length")
-    assert_no_selector "main[data-settling]"
+    assert_no_selector "#{PLAYER}[data-settling]"
   end
 
   test "thread first scrolls into view: it starts playing on step 1" do
@@ -42,7 +46,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
       scroll_to find("##{@steps.first.key}"), align: :center
 
-      assert_selector "main[data-playing]"
+      assert_selector "#{PLAYER}[data-playing]"
       assert_step 0, status: active_word(0)
     end
   end
@@ -56,7 +60,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Play]"
 
     click_control "Play"
-    assert_selector "main[data-playing]"
+    assert_selector "#{PLAYER}[data-playing]"
     assert_step 0, status: "active"
   end
 
@@ -82,7 +86,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step @gate, status: "paused"
     assert_row @gate - 1, state: "done", status: "done"
     assert_selector "[data-playback-target=target][aria-current=step]", count: 1
-    assert_equal "#{target(@gate)[:"data-angle"]}deg", evaluate_script("document.querySelector('main').style.getPropertyValue('--leader-angle')")
+    assert_equal "#{target(@gate)[:"data-angle"]}deg", evaluate_script("document.querySelector('#{PLAYER}').style.getPropertyValue('--leader-angle')")
     assert_equal root_path, URI(current_url).request_uri, "a jump moves no hash"
   end
 
@@ -155,11 +159,11 @@ class HomePlaybackTest < ApplicationSystemTestCase
     resize_to(400) do # the thread out of view, so only the restored value could start it
       visit root_path
       click_control "Play"
-      assert_selector "main[data-playing]"
+      assert_selector "#{PLAYER}[data-playing]"
 
       restore_from_cache
 
-      assert_no_selector "main[data-playing]"
+      assert_no_selector "#{PLAYER}[data-playing]"
       assert_selector "[aria-label=Play]"
     end
   end
@@ -221,7 +225,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_log_counts @steps.count(&:gate?), @steps.count(&:artifact)
 
     click_control "Replay"
-    assert_selector "main[data-playing]"
+    assert_selector "#{PLAYER}[data-playing]"
     assert_step 0, status: "active"
     assert_selector "[data-playback-target=logEmpty]"
   end
@@ -347,7 +351,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Opens the page and waits for the thread to start playing on step 1.
   def open_thread(pace: nil)
     visit root_path
-    assert_selector "main[data-playing]"
+    assert_selector "#{PLAYER}[data-playing]"
     self.pace(pace) if pace
   end
 
@@ -360,14 +364,15 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # earlier render wrote, value attributes included.
   def restore_from_cache
     execute_script(<<~JS)
-      const main = document.querySelector("main")
-      const controllers = main.dataset.controller
-      main.removeAttribute("data-controller")
-      setTimeout(() => main.setAttribute("data-controller", controllers), 50)
+      const player = document.querySelector("#{PLAYER}")
+      const controllers = player.dataset.controller
+      player.removeAttribute("data-controller")
+      setTimeout(() => player.setAttribute("data-controller", controllers), 50)
     JS
+    assert_selector PLAYER # reconnected: until then, no assertion on it means anything
   end
 
-  def playing? = has_selector?("main[data-playing]", wait: 0)
+  def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
 
   def click_control(label) = find("[aria-label='#{label}']").click
 
