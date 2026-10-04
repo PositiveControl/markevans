@@ -64,7 +64,7 @@ gem "paper_trail"
 gem "pagy", "~> 43.6"
 gem "slim-rails"
 gem "view_component", "~> 4.0"
-gem "resend", "~> 1.7"
+gem "resend", "~> 1.17"
 
 group :development do
   gem "letter_opener_web", "~> 3.0"
