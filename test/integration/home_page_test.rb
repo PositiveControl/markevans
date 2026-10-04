@@ -31,11 +31,12 @@ class HomePageTest < ActionDispatch::IntegrationTest
     DeliveryThread.define_singleton_method(:fetch, original)
   end
 
-  test "the header names the site and links home, and nothing else yet" do
+  test "the header names the site and links home, with the site's sections and none current" do
     get root_url
 
-    assert_select "header a", count: 1
     assert_select "header a[href=?]", root_path, text: "Mark Evans"
+    assert_select "header nav[aria-label=Site] a", count: 4
+    assert_select "header [aria-current]", count: 0
   end
 
   test "every step renders open, in the thread file's order" do

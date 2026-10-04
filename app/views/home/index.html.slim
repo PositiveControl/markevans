@@ -8,10 +8,6 @@
 - content_for :title, "Mark Evans"
 - content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
-header class="border-b border-rule"
-  div class="mx-auto flex min-h-10 max-w-page items-center px-3 chart:px-8"
-    a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
-
 / Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
 / scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).
 div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#scroll:passive touchmove@window->playback#scroll:passive pointerdown@window->playback#press keydown@window->playback#key"
@@ -43,26 +39,23 @@ div data-controller="playback filter" data-action="visibilitychange@document->pl
             = render StripComponent.new(step:, number:)
             = render StepBodyComponent.new(step:)
 
-  footer class="border-t border-rule"
-    div class="mx-auto flex max-w-page flex-wrap justify-between gap-x-4 gap-y-1 px-3 py-4 font-mono text-label text-quiet chart:px-8"
-      span Mark Evans · PositiveControl
-      / What playback answers to from anywhere on the page but a text field
-      / (docs/system/home-thread-playback.md, The keyboard).
-      ul class="flex flex-wrap gap-x-3" aria-label="Keyboard" hidden=true data-playback-target="live"
-        li
-          kbd> Space
-          | play or pause
-        li
-          kbd> j
-          | next
-        li
-          kbd> k
-          | previous
-        li
-          kbd> g
-          | then
-          kbd<> 1
-          | –
-          kbd<> = @thread.steps.count(&:gate?)
-          | a gate
-      span This site is built with the workflow it describes.
+  = render SiteFooterComponent.new do
+    / What playback answers to from anywhere on the page but a text field
+    / (docs/system/home-thread-playback.md, The keyboard).
+    ul class="flex flex-wrap gap-x-3" aria-label="Keyboard" hidden=true data-playback-target="live"
+      li
+        kbd> Space
+        | play or pause
+      li
+        kbd> j
+        | next
+      li
+        kbd> k
+        | previous
+      li
+        kbd> g
+        | then
+        kbd<> 1
+        | –
+        kbd<> = @thread.steps.count(&:gate?)
+        | a gate

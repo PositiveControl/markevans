@@ -11,6 +11,13 @@ Rails.application.routes.draw do
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
   end
 
+  # The site's other pages (design doc, section 2). Copy lives in content/
+  # (docs/system/site-pages.md).
+  resources :projects, path: "work", only: %i[index show]
+  resource :workflow, only: :show
+  resource :background, only: :show
+  resource :contact, only: :show
+
   # Root path
   root "home#index"
 end
