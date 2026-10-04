@@ -116,15 +116,17 @@ references as it is served:
 
 | Limit | Measured | Today |
 |---|---|---|
-| Scripts, 60 kB gzipped | Every entry in the page's importmap, fetched and gzipped. Turbo is most of it | 47.2 kB |
+| Scripts, 60 kB gzipped | Every entry in the page's importmap and every `script src`, fetched and gzipped. Turbo is most of it | 47.2 kB |
 | Fonts, 120 kB | Every font the stylesheets' `url()`s name | 102.7 kB |
-| No third party | Every stylesheet, preload, script, image and frame the HTML names, every importmap entry and every font: no other host | — |
+| No third party | Every stylesheet, preload, script, image and frame the HTML names, every importmap entry, and every `url()` and `@import` in the page's stylesheets: no other host | — |
 
 A kB is 1,000 bytes. A new pin, controller or font counts the moment the page
 references it. `test/system/page_requests_test.rb` checks the same third-party
 rule against every request the browser made, which catches one a script or
-stylesheet starts on its own. Both run in `bin/test` and CI, not in `bin/gates`:
-Turbo and Stimulus are served from gems, so measuring them needs Rails.
+stylesheet starts on its own. The integration test runs in `bin/test`, the
+system test in `bin/rails test:system`, and both in CI's `test` job. Neither is
+in `bin/gates`: Turbo and Stimulus are served from gems, so measuring them
+needs Rails.
 
 ## Not built yet
 

@@ -35,9 +35,28 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
   end
 
   test "nothing the page loads comes from another host" do
-    foreign = (references + scripts + fonts).reject { |url| local?(url) }
+    foreign = (references + scripts + stylesheet_urls).reject { |url| local?(url) }
 
     assert_empty foreign, "third-party requests"
+  end
+
+  test "the gate reads every url() and @import in a stylesheet, not only fonts" do
+    css = <<~CSS
+      @import "https://fonts.example/a.css";
+      @import url(https://fonts.example/b.css) screen;
+      .x { background: url('https://cdn.example/x.png'); src: url(local.woff2) }
+    CSS
+
+    assert_equal %w[https://fonts.example/a.css https://fonts.example/b.css https://cdn.example/x.png local.woff2], urls_in(css)
+  end
+
+  test "the gate counts a plain script tag as well as the importmap" do
+    html = <<~HTML
+      <script type="importmap">{"imports": {"app": "/assets/app.js"}}</script>
+      <script src="/assets/shim.js"></script>
+    HTML
+
+    assert_equal %w[/assets/app.js /assets/shim.js], scripts_in(html)
   end
 
   private
@@ -50,19 +69,30 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
       page.css("script[src], img[src], iframe[src], source[src], video[src], audio[src]").map { |element| element["src"] }
   end
 
-  def scripts
-    map = Nokogiri::HTML(home).at_css("script[type=importmap]")
-    JSON.parse(map.text).fetch("imports").values.uniq
+  # The importmap's entries and every plain script tag: all of them load.
+  def scripts = scripts_in(home)
+
+  def scripts_in(html)
+    page = Nokogiri::HTML(html)
+    imports = page.css("script[type=importmap]").flat_map { |map| JSON.parse(map.text).fetch("imports").values }
+    (imports + page.css("script[src]").map { |script| script["src"] }).uniq
   end
 
   def stylesheets
     Nokogiri::HTML(home).css("link[rel=stylesheet]").map { |link| link["href"] }
   end
 
-  def fonts
+  # Every url() and @import in the page's own stylesheets, resolved.
+  def stylesheet_urls
     stylesheets.select { |url| local?(url) }.flat_map do |sheet|
-      fetch(sheet).scan(/url\(\s*["']?([^"')]+\.woff2?)["']?\s*\)/).flatten.map { |font| URI.join(root_url, sheet, font).to_s }
+      urls_in(fetch(sheet)).map { |url| URI.join(root_url, sheet, url).to_s }
     end.uniq
+  end
+
+  def fonts = stylesheet_urls.select { |url| url.match?(/\.woff2?\z/) }
+
+  def urls_in(css)
+    css.scan(/url\(\s*["']?([^"')\s]+)["']?\s*\)|@import\s+["']([^"']+)["']/).flatten.compact
   end
 
   def home
