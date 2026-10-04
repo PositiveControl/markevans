@@ -29,7 +29,12 @@ namespace :content do
     loads = threads.map { |path| [ path, DeliveryThread ] } + work.map { |path| [ path, Portfolio ] } +
       pages.map { |path| [ path, SitePage ] }
 
-    errors = loads.filter_map do |path, reader|
+    # A missing file a route reads would pass every check below and then 500
+    # on the live site, so its absence is an error too.
+    missing = ([ "work.yml" ] + SitePage::ROUTED.map { |key| "pages/#{key}.yml" }).reject { |path| root.join(path).exist? }
+    errors = missing.map { |path| "#{path}: missing, and a route reads it" }
+
+    errors += loads.filter_map do |path, reader|
       reader.load(path)
       nil
     rescue DeliveryThread::Invalid, Portfolio::Invalid, SitePage::Invalid => e

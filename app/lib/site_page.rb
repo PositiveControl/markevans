@@ -15,6 +15,9 @@
 # validates, so a broken edit fails at the first read and in content:schema.
 module SitePage
   ROOT = Rails.root.join("content/pages")
+  # The pages a route reads. Each must exist: content:schema fails without
+  # one, rather than leave its route to raise on the live site.
+  ROUTED = %w[work workflow background contact].freeze
 
   REQUIRED = %w[title description intro].freeze
   OPTIONAL = %w[links sections].freeze

@@ -63,9 +63,12 @@ class ContentTasksTest < ActiveSupport::TestCase
   end
 
   test "content:check passes a valid thread with no placeholders" do
-    FileUtils.mkdir_p(File.join(@root, "threads"))
-    FileUtils.cp(Rails.root.join("content/threads/home.yml"), File.join(@root, "threads/home.yml"))
-    File.write(File.join(@root, "threads/home.yml"), File.read(File.join(@root, "threads/home.yml")).gsub(/\[[^\]\n]+\]|\bTBD\b/, "x"))
+    FileUtils.cp_r(Rails.root.join("content/."), @root)
+    # Every placeholder written, as the live content will be: a link's url
+    # becomes an address, everything else a word.
+    Pathname(@root).glob("**/*.yml").each do |path|
+      path.write(path.read.gsub(/url: "\[[^\]\n]+\]"/, "url: https://example.com").gsub(/\[[^\]\n]+\]|\bTBD\b/, "x"))
+    end
     %w[content:check content:schema].each { |name| Rake::Task[name].reenable }
 
     assert_output(/threads: 1 valid.*no placeholders/m) { with_root { Rake::Task["content:check"].invoke } }
@@ -80,6 +83,18 @@ class ContentTasksTest < ActiveSupport::TestCase
     _, err = capture_io { assert_raises(SystemExit) { with_root { schema.invoke } } }
     assert_includes err, "work.yml: Bad Key: key must be lowercase letters"
     assert_includes err, "contact.yml: missing description"
+  end
+
+  test "content:schema fails when the work list or a page a route reads is missing" do
+    FileUtils.cp_r(Rails.root.join("content/."), @root)
+    FileUtils.rm(File.join(@root, "work.yml"))
+    FileUtils.rm(File.join(@root, "pages/contact.yml"))
+    schema = Rake::Task["content:schema"]
+    schema.reenable
+
+    _, err = capture_io { assert_raises(SystemExit) { with_root { schema.invoke } } }
+    assert_includes err, "work.yml: missing, and a route reads it"
+    assert_includes err, "pages/contact.yml: missing, and a route reads it"
   end
 
   test "content:schema passes the work list and pages as they ship" do
