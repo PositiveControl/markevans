@@ -99,7 +99,7 @@ read one when the work touches it, not because you opened a file of that type.
 | adding a fixed set of variants with attributes | [registries](registries.md) |
 
 **Read cost:** this index (~1700) plus one or two rules (190–1210) ·
-[`SYMPTOMS.md`](SYMPTOMS.md) (~2900) only when routing by path missed. Every `tokens`
+[`SYMPTOMS.md`](SYMPTOMS.md) (~3000) only when routing by path missed. Every `tokens`
 figure is generated from the file by `bin/doc-tokens` — budget from it, and re-run that
 script after editing a rule.
 
