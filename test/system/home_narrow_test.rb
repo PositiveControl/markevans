@@ -94,7 +94,7 @@ class HomeNarrowTest < ApplicationSystemTestCase
     end
   end
 
-  [ 390, 1024, 1100, 1400 ].each do |width|
+  [ 390, 1024, 1100, 1280, 1400 ].each do |width|
     test "docked bar: one row, under the 96 px line, at #{width} px wide" do
       at_size(width, 1000) do
         visit root_path

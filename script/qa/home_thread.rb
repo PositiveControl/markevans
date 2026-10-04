@@ -206,8 +206,8 @@ QaWalkthrough.run("home_thread") do
     spotlight "#{DOCK} [data-playback-target=readoutName]", note: "page #{page_width} px wide in a #{viewport} px viewport; jump from the strips"
   end
 
-  step "At 1024 px the docked bar keeps its marks, drops the bay, and stays above the followed strip" do
-    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1024, height: 900, deviceScaleFactor: 1, mobile: false)
+  step "At 1280 px the docked bar adds the bay and the marks, and stays one row above the followed strip" do
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1280, height: 900, deviceScaleFactor: 1, mobile: false)
     bottom = evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom")
     spotlight "#{DOCK} [aria-label=Steps]", note: "bar bottom at #{bottom.round} px, above the 96 px line"
   ensure

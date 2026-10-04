@@ -168,11 +168,12 @@ second player (`docs/rules/one-playback-state.md`). It shows only while the
 wrapper carries `data-docked`, so while the scope is in view its copies of the
 controls are out of the tab order. It is one 44 px row at every width, under
 the 96 px the page follows to, so something gives way as the window narrows:
-the bay shows from 1280 px (`xl:`), the marks from 1024 px (`lg:`; fifteen of
-them and the controls need about 880 px), and the name is cut to one line
+the bay and the marks show from 1280 px (`xl:`; fifteen marks and the
+controls need about 880 px, and below 1280 px they left the name about
+50 px), and the name is cut to one line
 (`truncate`). On a phone the bar is the controls and the step's name, and the
 strips are the way to jump. `test/system/home_narrow_test.rb` holds it under
-96 px at 390, 1024, 1100 and 1400 px.
+96 px at 390, 1024, 1100, 1280 and 1400 px.
 
 ## The step hash
 
@@ -242,7 +243,7 @@ labels. Text at that opacity fails axe's contrast check.
 | File | Covers |
 |---|---|
 | `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; the bay following a jump; the filter dimming without hiding; the log's order, counts, empty state and 220 px scroll; the follow landing at 96 px; wheel, touch, key and scrollbar yields; the 96 px scroll padding; the docked bar driving state; the hash written and read; each key; reduced motion; every control, docked ones too, at least 44 px; axe while playing, paused, filtered, docked and without scripts |
-| `test/system/home_narrow_test.rb` | The narrow layout (`docs/system/home-page.md`, *Narrow screens*): no sideways scroll at 390 px with and without scripts, the 84 px gutter and its lanes, the stacked top row, 44 px targets, the docked bar under 96 px at four widths, and the arriving scroll that does not pause but still drops a follow and a waiting `g` |
+| `test/system/home_narrow_test.rb` | The narrow layout (`docs/system/home-page.md`, *Narrow screens*): no sideways scroll at 390 px with and without scripts, the 84 px gutter and its lanes, the stacked top row, 44 px targets, the docked bar under 96 px at five widths, and the arriving scroll that does not pause but still drops a follow and a waiting `g` |
 | `test/application_system_test_case.rb` | `assert_accessible` (axe-core-api, single-frame), and `without_scripts`, which blocks every `.js` URL over CDP. Chrome's own script switch also blocks axe |
 | `test/components/{strip,step_body,controls,scope,chart_cell,strip_bay,controller_filter,log,docked_bar}_component_test.rb` | The markup each state is styled from |
 | `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, bay, filter, log and docked bar, targets as links, each row's seconds, bay and lane, the wrapper, the footer and its hidden key list |

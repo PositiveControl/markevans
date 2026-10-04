@@ -46,7 +46,7 @@ list is in their reach:
 | Header | The site name, linking to `/`. Nav links arrive with their pages | the view |
 | Top row, left (`max-w-column`, 400 px; stacked above the right below 900 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
 | Top row, right | Headline and intro, then the log | the thread file, `LogComponent` |
-| Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay (from 1280 px), a mark per step (from 1024 px); shown only while the scope is out of view | `DockedBarComponent` |
+| Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay and a mark per step (both from 1280 px); shown only while the scope is out of view | `DockedBarComponent` |
 | Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`, or the 84 px `w-gutter` below 900 px), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `-scroll-mt-1`, under the page's 96 px `scroll-pt-16`, puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
 | Footer | The site's signature and line, from the mock, and the keyboard's keys, hidden until playback connects; the gate count is the thread's | the view |
 
@@ -106,7 +106,7 @@ Below it is a phone's layout; from it, the desktop's (design doc, section 4):
 
 The lanes are CSS variables the chart cell reads with `var()`, so they change
 with the width in `tokens.css` (an `@variant chart` block on `:root`) rather
-than in a utility. The docked bar has its own steps (`lg:`, `xl:`), set by what
+than in a utility. The docked bar has its own step (`xl:`), set by what
 fits in one 44 px row (`docs/system/home-thread-playback.md`, *The docked
 bar*). At 390 px nothing scrolls sideways; `test/system/home_narrow_test.rb`
 holds that with and without scripts.
