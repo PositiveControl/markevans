@@ -15,6 +15,7 @@ main class="mx-auto max-w-page px-8" data-controller="playback" data-action="vis
   div class="flex items-start gap-x-8 pt-6"
     aside class="flex w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
       = render ScopeComponent.new(steps: @thread.steps)
+      = render StripBayComponent.new
       = render LegendComponent.new
     section class="min-w-0 flex-1 pt-6"
       h1 class="text-headline" = @thread.headline
@@ -24,7 +25,7 @@ main class="mx-auto max-w-page px-8" data-controller="playback" data-action="vis
     h2#thread-heading class="sr-only" The thread
     - @thread.cells.each.with_index(1) do |cell, number|
       - step = cell.step
-      div class="flex" id=step.key style="--seconds: #{step.duration}" data-playback-target="row"
+      div class="flex" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-playback-target="row"
         = render ChartCellComponent.new(cell:)
         div class="min-w-0 flex-1 py-1 pl-strip-gap"
           = render StripComponent.new(step:, number:)

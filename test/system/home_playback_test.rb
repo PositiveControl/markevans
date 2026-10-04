@@ -207,6 +207,16 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step 0, status: "active"
   end
 
+  test "the strip bay fills the active step's bay, and follows a jump into the next" do
+    open_thread
+    assert_bay @steps[0].bay
+
+    later = @steps.index { |step| step.bay != @steps[0].bay }
+    target(later).click
+
+    assert_bay @steps[later].bay
+  end
+
   test "the remaining-time line runs on the active strip and freezes when paused" do
     open_thread
 
@@ -290,6 +300,10 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row(index, state: "active", open: "true", status:)
     assert_selector "[data-playback-target=readoutName]", text: @steps[index].name
     assert_selector "[data-playback-target=readoutStatus]", text: status.upcase if status
+  end
+
+  def assert_bay(name)
+    assert_selector "[data-playback-target=bay][data-current][aria-current=true]", count: 1, text: name.upcase
   end
 
   def assert_row(index, state: nil, open: nil, status: nil)

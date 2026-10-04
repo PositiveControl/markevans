@@ -21,7 +21,7 @@ const GATES = ["human", "machine"]
 
 export default class extends Controller {
   static targets = ["thread", "row", "strip", "status", "line", "target", "live", "play",
-    "readoutName", "readoutDetail", "readoutStatus"]
+    "readoutName", "readoutDetail", "readoutStatus", "bay"]
 
   static values = {
     step: Number,
@@ -230,6 +230,7 @@ export default class extends Controller {
     })
 
     this.renderReadout(step, playing)
+    this.renderBay(step)
     if (this.hasPlayTarget) {
       this.playTarget.setAttribute("aria-label", playing ? "Pause" : this.onLastStep ? "Replay" : "Play")
     }
@@ -247,6 +248,16 @@ export default class extends Controller {
       this.readoutStatusTarget.textContent = this.word("active", kind, playing)
       this.readoutStatusTarget.dataset.kind = kind
     }
+  }
+
+  // The strip bay: the cell for the active step's bay is current.
+  renderBay(step) {
+    const bay = this.rowTargets[step]?.dataset.bay
+    this.bayTargets.forEach(cell => {
+      const current = cell.dataset.bay === bay
+      cell.toggleAttribute("data-current", current)
+      current ? cell.setAttribute("aria-current", "true") : cell.removeAttribute("aria-current")
+    })
   }
 
   // The status word (design doc, section 4): a gate holds while active and is
