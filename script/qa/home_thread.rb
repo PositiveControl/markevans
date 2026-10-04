@@ -2,8 +2,9 @@
 
 # The home thread (#21): headline and intro, the legend, every strip with its
 # body, the git graph drawn beside the strips (#15), playback from the scope
-# (#16), and the strip bay, controller filter and log (#17). The page starts playing as the thread comes into view, so the
-# walk pauses it first and the reading steps run on a still page.
+# (#16), and the strip bay, controller filter and log (#17). The page starts
+# playing as the thread comes into view, so the walk pauses it first and the
+# reading steps run on a still page.
 #
 # Builds no data: everything shown comes from content/threads/home.yml, read
 # here through DeliveryThread so the captions follow the file. Steps are picked
