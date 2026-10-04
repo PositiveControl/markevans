@@ -152,12 +152,16 @@ export default class extends Controller {
   // The wheel or a touch scroll. Where the thread starts below the fold, the
   // scroll that brings it into view starts it, and that same scroll goes on
   // for a moment after: it is how the reader got here, not a new one, so it
-  // counts as nothing until it goes quiet for SCROLL_QUIET ms.
+  // does not pause until it goes quiet for SCROLL_QUIET ms. It is still the
+  // reader's hand on the page, so a follow on its way and a waiting g drop.
   scroll() {
     const now = performance.now()
     this.arriving = this.arriving && this.scrolling(now)
     this.scrolledAt = now
-    if (!this.arriving) this.yield()
+    if (!this.arriving) return this.yield()
+
+    this.followingStep = null
+    this.gateArmedAt = null
   }
 
   // A wheel or touch scroll heard less than SCROLL_QUIET ms ago.

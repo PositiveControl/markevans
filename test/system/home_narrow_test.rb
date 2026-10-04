@@ -115,7 +115,7 @@ class HomeNarrowTest < ApplicationSystemTestCase
       # One gesture, as a wheel sends it: ticks 50 ms apart, sent as one chain
       # so the driver's own round trips cannot open gaps in it. It starts
       # above the thread and runs on past where it comes into view.
-      gesture = page.driver.browser.action
+      gesture = wheel_gesture
       30.times { gesture.scroll_by(0, 120).pause(duration: 0.05) }
       gesture.perform
       assert playing?, "the scroll that brought the thread into view paused it"
@@ -123,6 +123,35 @@ class HomeNarrowTest < ApplicationSystemTestCase
       sleep 0.5 # the reader stops; their next scroll is a new one
       wheel
       assert_no_selector "#{PLAYER}[data-playing]"
+    end
+  end
+
+  test "the arriving scroll still drops a g waiting for its number, though it does not pause" do
+    gate = @steps.index(&:gate?)
+    at_size(*PHONE) do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+
+      # g pressed once the thread is playing, mid-gesture, and the scroll goes
+      # on. Played inside the page, 50 ms a tick: Selenium drops wheel ticks
+      # that follow a key in one action chain.
+      evaluate_async_script(<<~JS)
+        const done = arguments[0], tick = () => new Promise(resolve => setTimeout(resolve, 50))
+        const press = key => document.body.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }))
+        ;(async () => {
+          for (let i = 0; i < 24; i++) {
+            if (i === 20) press("g")
+            window.scrollBy(0, 120)
+            window.dispatchEvent(new WheelEvent("wheel", { deltaY: 120 }))
+            await tick()
+          }
+          done()
+        })()
+      JS
+      assert playing?, "the arriving scroll paused it"
+
+      page.driver.browser.action.send_keys("1").perform
+      assert_no_selector "##{@steps[gate].key}[data-state=active]", wait: 0.5
     end
   end
 
@@ -139,6 +168,10 @@ class HomeNarrowTest < ApplicationSystemTestCase
   end
 
   def wheel = page.driver.browser.action.scroll_by(0, 120).perform
+
+  # Ticks with no duration of their own, so each lands as one wheel event, as
+  # a real wheel sends them. Selenium's default spreads each over 250 ms.
+  def wheel_gesture = page.driver.browser.action.tap { |action| action.default_scroll_duration = 0 }
 
   def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
 
