@@ -3,7 +3,8 @@
 # The home thread (#21): headline and intro, the legend, every strip with its
 # body, the git graph drawn beside the strips (#15), playback from the scope
 # (#16), the strip bay, controller filter and log (#17), and follow, yield,
-# the docked bar, the step hash and the keyboard (#18). The page starts
+# the docked bar, the step hash and the keyboard (#18), and narrow screens
+# (#19). The page starts
 # playing as the thread comes into view, so the walk pauses it first and the
 # reading steps run on a still page.
 #
@@ -21,7 +22,7 @@
 # The follow step waits out one step's time (6 s) once, since following is
 # what happens when the timer runs out. Not walked: the page without scripts
 # and under reduced motion (the system tests cover both, axe included), and
-# what is not built yet: narrow screens (6) and the other pages (7). The page
+# what is not built yet: the other pages (7). The page
 # budget is a test, not a page to walk.
 require Rails.root.join("lib/qa_walkthrough")
 
@@ -44,7 +45,7 @@ PLAYER = "[data-controller~=playback]"
 
 QaWalkthrough.run("home_thread") do
   step "The page opens on the headline and the positive-control paragraph" do
-    # Desktop width: narrow screens are #19, and below this the docked bar wraps.
+    # Desktop width first; the phone steps come last.
     page.current_window.resize_to(1400, 1000)
     visit root_path
     spotlight text: thread.headline, note: "headline and intro in content/threads/home.yml"
@@ -177,5 +178,40 @@ QaWalkthrough.run("home_thread") do
     visit current_url
     find("##{gates.second.key}[data-state=active]")
     spotlight "#{DOCK} [data-playback-target=readoutName]", note: "URL ends ##{gates.second.key}; the page did not start by itself"
+  end
+
+  # A phone, emulated as DevTools' device mode does: a desktop Chrome window
+  # will not size under about 500 px.
+  step "On a phone (390 px) the top row stacks: the scope above the headline" do
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 390, height: 844, deviceScaleFactor: 1, mobile: false)
+    visit root_path
+    spotlight SCOPE, note: "full width, at most 400 px; the headline, intro and log follow below"
+  end
+
+  step "Wheel the thread into view: it starts playing, and the rest of that scroll leaves it playing" do
+    40.times do
+      break if has_selector?("#{PLAYER}[data-playing]", wait: 0)
+      page.driver.browser.action.scroll_by(0, 120).perform
+    end
+    3.times { page.driver.browser.action.scroll_by(0, 120).perform }
+    find("#{PLAYER}[data-playing]")
+    spotlight "##{first.key}[data-state=active]", note: "still playing: the scroll that arrived is not a new one until it stops for 300 ms"
+  end
+
+  step "The chart is an 84 px gutter, lanes at 14, 38 and 62 px, no labels; each strip wraps to two lines" do
+    find("#{DOCK} [aria-label=Pause]").click
+    spotlight "##{fork.key}", note: "#{fork.name}'s fork elbow in the gutter; Ctl, Bay and status in thirds under the name"
+  end
+
+  step "The docked bar is one row: the controls and the step's name, and nothing scrolls sideways" do
+    width = evaluate_script("document.documentElement.scrollWidth")
+    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "page #{width} px wide in a 390 px window; jump from the strips"
+  end
+
+  step "At 1024 px the docked bar keeps its marks, drops the bay, and stays above the followed strip" do
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1024, height: 900, deviceScaleFactor: 1, mobile: false)
+    bottom = evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom")
+    spotlight "#{DOCK} [aria-label=Steps]", note: "bar bottom at #{bottom.round} px, above the 96 px line"
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 end
