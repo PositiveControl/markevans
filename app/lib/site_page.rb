@@ -68,8 +68,13 @@ module SitePage
 
     def sections(list)
       Array(list).map do |section|
-        Section.new(heading: section["heading"], paragraphs: Array(section["paragraphs"]).freeze,
-          groups: Array(section["groups"]).map { |group| Group.new(title: group["title"], rows: group["rows"].map { |row| Row.new(key: row["k"], value: row["v"]) }.freeze) }.freeze)
+        Section.new(heading: section["heading"], paragraphs: Array(section["paragraphs"]).freeze, groups: groups(section["groups"]))
+      end.freeze
+    end
+
+    def groups(list)
+      Array(list).map do |group|
+        Group.new(title: group["title"], rows: group["rows"].map { |row| Row.new(key: row["k"], value: row["v"]) }.freeze)
       end.freeze
     end
 
