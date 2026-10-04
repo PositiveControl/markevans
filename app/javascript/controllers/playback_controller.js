@@ -21,7 +21,8 @@ const GATES = ["human", "machine"]
 
 export default class extends Controller {
   static targets = ["thread", "row", "strip", "status", "line", "target", "live", "play",
-    "readoutName", "readoutDetail", "readoutStatus", "bay"]
+    "readoutName", "readoutDetail", "readoutStatus", "bay",
+    "logEntry", "logEmpty", "gatesCleared", "artifacts"]
 
   static values = {
     step: Number,
@@ -231,6 +232,7 @@ export default class extends Controller {
 
     this.renderReadout(step, playing)
     this.renderBay(step)
+    this.renderLog(step)
     if (this.hasPlayTarget) {
       this.playTarget.setAttribute("aria-label", playing ? "Pause" : this.onLastStep ? "Replay" : "Play")
     }
@@ -258,6 +260,20 @@ export default class extends Controller {
       cell.toggleAttribute("data-current", current)
       current ? cell.setAttribute("aria-current", "true") : cell.removeAttribute("aria-current")
     })
+  }
+
+  // The log: an entry for every step before the active one, and what they
+  // add up to. The entries are rendered newest first; this only shows them.
+  renderLog(step) {
+    const finished = this.logEntryTargets.filter(entry => Number(entry.dataset.index) < step)
+    this.logEntryTargets.forEach(entry => { entry.hidden = !finished.includes(entry) })
+    if (this.hasLogEmptyTarget) this.logEmptyTarget.hidden = finished.length > 0
+    if (this.hasGatesClearedTarget) {
+      this.gatesClearedTarget.textContent = finished.filter(entry => entry.dataset.gate === "true").length
+    }
+    if (this.hasArtifactsTarget) {
+      this.artifactsTarget.textContent = finished.filter(entry => entry.dataset.artifact === "true").length
+    }
   }
 
   // The status word (design doc, section 4): a gate holds while active and is

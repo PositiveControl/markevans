@@ -22,6 +22,8 @@ main class="mx-auto max-w-page px-8" data-controller="playback filter" data-acti
     section class="min-w-0 flex-1 pt-6"
       h1 class="text-headline" = @thread.headline
       p class="mt-4 max-w-measure" = @thread.intro
+      div class="mt-6"
+        = render LogComponent.new(steps: @thread.steps)
 
   section class="pt-4 pb-16" aria-labelledby="thread-heading" data-playback-target="thread"
     h2#thread-heading class="sr-only" The thread

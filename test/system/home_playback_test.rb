@@ -241,6 +241,39 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[data-filter-target=option][aria-pressed=true]", count: 1, text: "All"
   end
 
+  test "the log is one line on step 1, then lists finished steps newest first with what they add up to" do
+    open_thread
+    assert_selector "[data-playback-target=logEmpty]", text: "Nothing completed yet."
+    assert_no_selector "[data-playback-target=logEntry]"
+    assert_log_counts 0, 0
+
+    target(@gate + 1).click
+
+    finished = @steps.first(@gate + 1)
+    names = all("[data-playback-target=logEntry]").map { |entry| entry.find("span.font-medium").text }
+    assert_equal finished.map(&:name).reverse, names
+    assert_selector "[data-playback-target=logEntry]", text: "CLEARED", count: finished.count(&:gate?)
+    assert_no_selector "[data-playback-target=logEmpty]"
+    assert_log_counts finished.count(&:gate?), finished.count(&:artifact)
+
+    click_control "Restart"
+    assert_selector "[data-playback-target=logEmpty]"
+    assert_log_counts 0, 0
+  end
+
+  test "the log scrolls inside 220 px once it fills" do
+    open_thread
+    target(@steps.size - 1).click
+
+    height, scroll = evaluate_script(<<~JS)
+      (r => [r.clientHeight, r.scrollHeight])(document.querySelector("[aria-label='Log entries']"))
+    JS
+    assert_operator height, :<=, 220
+    assert_operator scroll, :>, height
+    finished = @steps[0...-1]
+    assert_log_counts finished.count(&:gate?), finished.count(&:artifact)
+  end
+
   test "the remaining-time line runs on the active strip and freezes when paused" do
     open_thread
 
@@ -336,6 +369,11 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   def assert_bay(name)
     assert_selector "[data-playback-target=bay][data-current][aria-current=true]", count: 1, text: name.upcase
+  end
+
+  def assert_log_counts(gates, artifacts)
+    assert_selector "[data-playback-target=gatesCleared]", exact_text: gates.to_s
+    assert_selector "[data-playback-target=artifacts]", exact_text: artifacts.to_s
   end
 
   def assert_row(index, state: nil, open: nil, status: nil)

@@ -47,6 +47,15 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_equal 9, step.with(seconds: 9).duration
   end
 
+  test "a human or machine step is a gate; a command or optional step is not" do
+    step = DeliveryThread.fetch(:home).steps.first
+
+    assert step.with(kind: "human").gate?
+    assert step.with(kind: "machine").gate?
+    assert_not step.with(kind: "command").gate?
+    assert_not step.with(kind: "optional").gate?
+  end
+
   test "a cached thread is served without listing the directory again" do
     DeliveryThread.fetch(:home)
 

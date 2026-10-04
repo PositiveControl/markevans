@@ -106,6 +106,13 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "[aria-label='Strip bay']:not([hidden])", count: 0
     assert_select "[aria-labelledby=controller-filter][hidden] button", count: 4
     assert_select "[data-dim]", count: 0
+    assert_select "section[aria-labelledby=log-heading][hidden]", count: 1
+  end
+
+  test "the log counts gates out of the thread's own total" do
+    get root_url
+
+    assert_select "#log-heading ~ span", text: /Gates cleared\s+0\s+\/ #{@thread.steps.count(&:gate?)}/
   end
 
   test "self-hosted fonts are preloaded, not fetched from a third party" do

@@ -1,0 +1,21 @@
+section class="rounded-box border border-rule font-mono text-label" aria-labelledby="log-heading" hidden=true data-playback-target="live"
+  div class="flex flex-wrap justify-between gap-x-2 border-b border-rule px-2 py-1.5 uppercase text-quiet"
+    h2#log-heading class="text-ink" Log
+    span
+      ' Gates cleared
+      span class="text-ink"
+        span> data-playback-target="gatesCleared" 0
+        | / #{gates}
+    span
+      ' Artifacts
+      span class="text-ink" data-playback-target="artifacts" 0
+  div class="max-h-[220px] overflow-y-auto" tabindex="0" role="region" aria-label="Log entries"
+    p class="px-2 py-2 text-quiet" data-playback-target="logEmpty" Nothing completed yet. Entries appear here as each step finishes.
+    ol
+      - entries.each do |entry|
+        li class="flex flex-col border-b border-rule-faint px-2 py-1.5" hidden=true data-index=entry.index data-gate=entry.step.gate?.to_s data-artifact=entry.step.artifact.present?.to_s data-playback-target="logEntry"
+          span> class="flex gap-2"
+            span> class="text-quiet" = entry.number
+            span> class="font-medium wrap-anywhere" = entry.step.name
+            span class="ml-auto uppercase text-quiet" = status(entry.step)
+          span class="pl-5" = entry.step.outcome
