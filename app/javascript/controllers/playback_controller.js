@@ -44,11 +44,13 @@ export default class extends Controller {
     // (docs/rules/playback-yields.md): it comes back paused, and rows that
     // already carry a state (only render() writes one) mark it as a page the
     // reader has been on, so it does not start again on view either.
-    this.touched = this.rowTargets.some(row => row.dataset.state)
+    const restored = this.rowTargets.some(row => row.dataset.state)
+    this.touched = restored
     this.playingValue = false
     // A step's hash opens that step, paused, and it has been chosen, so the
-    // thread does not start on view either.
-    const linked = this.rowTargets.findIndex(row => location.hash === `#${row.id}`)
+    // thread does not start on view either. A restored page carries its own
+    // step and scroll, and the hash its URL gained along the way is not a link.
+    const linked = restored ? -1 : this.rowTargets.findIndex(row => location.hash === `#${row.id}`)
     if (linked >= 0) {
       this.stepValue = linked
       this.touched = true

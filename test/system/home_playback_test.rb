@@ -355,6 +355,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step 0, status: "paused"
   end
 
+  test "a restored page keeps the reader's scroll, though its URL now names a step" do
+    open_thread
+    target(@gate).click
+    assert_strip_top @gate
+    scroll_to_top
+    assert_scroll_at_rest
+    before = evaluate_script("window.scrollY")
+
+    restore_from_cache
+    sleep 0.5 # the reconnect, and a follow it must not make
+
+    assert_equal before, evaluate_script("window.scrollY")
+    assert_step @gate, status: "paused"
+  end
+
   test "a restored page whose thread had played out still counts the last step" do
     open_thread
     target(@steps.size - 2).click
