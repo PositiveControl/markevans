@@ -151,9 +151,9 @@ each a link to its step like a scope target and drawn the same way. Every
 part is a target playback already renders, so it is a second view, not a
 second player (`docs/rules/one-playback-state.md`). It shows only while the
 wrapper carries `data-docked`, so while the scope is in view its copies of the
-controls are out of the tab order. From 1400 px down to 1100 px wide it is
-92 px tall, under the 96 px the page follows to (system tests hold it there at
-both widths). At 1024 px it wraps to 128 px and covers the followed strip;
+controls are out of the tab order. From 1400 px down to 1100 px wide it
+measures 92 px tall, under the 96 px the page follows to; system tests hold it
+under 96 px at both widths. At 1024 px it wraps to 128 px and covers the followed strip;
 narrow screens are #19.
 
 ## The step hash

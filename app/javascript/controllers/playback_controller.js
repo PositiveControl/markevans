@@ -158,7 +158,7 @@ export default class extends Controller {
       if (gate !== undefined) return this.goToGate(gate)
     }
 
-    switch (event.key) {
+    switch (event.key.toLowerCase()) { // Caps Lock sends J, K and G
       case " ":
         // Shift+Space scrolls up, and on a link Space scrolls down: a link
         // takes Enter. On a button or summary it presses that.
