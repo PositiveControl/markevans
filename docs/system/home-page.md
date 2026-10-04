@@ -8,10 +8,12 @@ command palette, scroll reveals), which was deleted in #21.
 
 Without scripts the page reads as a document (design doc, section 6): every
 strip open, in order, with no status word and no controls. With scripts the
-`playback` controller plays it from the scope, one step at a time. How that
-works is `docs/system/home-thread-playback.md`. Beside each strip the chart
-cell draws that row of the git graph. What later slices add is in the table at
-the end.
+`playback` controller plays it from the scope, one step at a time, and the
+strip bay and the log read out where it is and what it has produced; the
+`filter` controller drops back every controller's rows but one. How both work
+is `docs/system/home-thread-playback.md`. Beside each strip the chart cell
+draws that row of the git graph. What later slices add is in the table at the
+end.
 
 ## Where the content lives
 
@@ -33,14 +35,14 @@ Every word on the page except the site name comes from
 
 `HomeController#index` sets `@thread`; `app/views/home/index.html.slim` lays
 it out in one `max-w-page` (1320 px) container. The container is `main`, which
-carries the `playback` controller:
+carries the `playback` and `filter` controllers:
 
 | Region | What | From |
 |---|---|---|
 | Header | The site name, linking to `/`. Nav links arrive with their pages | the view |
-| Top row, left (`w-column`, 400 px) | The scope, with the controls in its lower gap, then the legend | `ScopeComponent`, `ControlsComponent`, `LegendComponent` |
-| Top row, right | Headline and intro | the thread file |
-| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key; it is a playback `row` target and carries `--seconds` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
+| Top row, left (`w-column`, 400 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
+| Top row, right | Headline and intro, then the log | the thread file, `LogComponent` |
+| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key; it is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
 
 | Component | Renders |
 |---|---|
@@ -51,6 +53,9 @@ carries the `playback` controller:
 | `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value, then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note. Rolls up when its row's `data-open` is false |
 | `ScopeComponent` | The radar scope: route ring, crosshair, one target per step on a 270 degree arc (a link to the step), the leader, the centre block, the sweep. All but the ring, crosshair and targets render hidden until playback connects |
 | `ControlsComponent` | Restart, step back, play or pause, step forward: 44 px round icon buttons, hidden until playback connects |
+| `StripBayComponent` | Todo, In Progress, Up for Review, Done (`DeliveryThread::BAYS`) in four equal cells; the active step's bay fills ink. Hidden until playback connects |
+| `ControllerFilterComponent` | All, Human, Agent, CI as 44 px toggles with `aria-pressed`, labelled Controller. Hidden until the filter connects |
+| `LogComponent` | Header: Log, gates cleared out of the thread's gate count (`Step#gate?`), artifacts made. Body: an entry per step, newest first, each hidden until its step is done, behind a one-line empty state; scrolls inside 220 px and takes focus. Hidden until playback connects |
 
 Components take a `DeliveryThread::Step` and hold no copy. Their tests build
 steps inline rather than reading `home.yml`, so they show every word comes from
@@ -103,11 +108,28 @@ The template's stock `AlertComponent`, `ErrorSummaryComponent` and
 `EmptyStateComponent` are drawn from the same tokens: one neutral box, the
 alert's variant named in words.
 
+## Budget
+
+The page stays light, and everything it loads comes from this host (design
+doc, section 7). `test/integration/page_budget_test.rb` measures what the page
+references as it is served:
+
+| Limit | Measured | Today |
+|---|---|---|
+| Scripts, 60 kB gzipped | Every entry in the page's importmap, fetched and gzipped. Turbo is most of it | 47.2 kB |
+| Fonts, 120 kB | Every font the stylesheets' `url()`s name | 102.7 kB |
+| No third party | Every stylesheet, preload, script, image and frame the HTML names, every importmap entry and every font: no other host | — |
+
+A kB is 1,000 bytes. A new pin, controller or font counts the moment the page
+references it. `test/system/page_requests_test.rb` checks the same third-party
+rule against every request the browser made, which catches one a script or
+stylesheet starts on its own. Both run in `bin/test` and CI, not in `bin/gates`:
+Turbo and Stimulus are served from gems, so measuring them needs Rails.
+
 ## Not built yet
 
 | Piece | Slice |
 |---|---|
-| Strip bay, controller filter, log; the budget gate | 4 |
 | Follow, yield, docked bar, step hash, keyboard | 5 |
 | Narrow screens (84 px gutter, chart labels hidden) | 6 |
 | Work, Workflow, Background, Contact; header nav; Person JSON-LD | 7 |
@@ -116,9 +138,10 @@ alert's variant named in words.
 
 | File | Covers |
 |---|---|
-| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, targets as links), each row's seconds, self-hosted fonts, nothing of the old page |
-| `test/system/home_playback_test.rb` | Playback in a browser, and axe while playing, paused and without scripts (`bin/rails test:system`; see `home-thread-playback.md`) |
-| `test/components/{strip,step_body,legend,fix_mark,controls}_component_test.rb` | Each component from inline steps |
+| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, bay, filter and log, targets as links), each row's seconds, bay and lane, the log's gate total, self-hosted fonts, nothing of the old page |
+| `test/integration/page_budget_test.rb`, `test/system/page_requests_test.rb` | The budget (above) |
+| `test/system/home_playback_test.rb` | Playback, the bay, the filter and the log in a browser, and axe while playing, paused, filtered and without scripts (`bin/rails test:system`; see `home-thread-playback.md`) |
+| `test/components/{strip,step_body,legend,fix_mark,controls,strip_bay,controller_filter,log}_component_test.rb` | Each component from inline steps |
 | `test/components/scope_component_test.rb` | Targets, arc and marks from a fixture thread |
 | `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
 | `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |

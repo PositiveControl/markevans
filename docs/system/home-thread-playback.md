@@ -1,6 +1,6 @@
 # Home thread playback
 
-**Status:** Current through #16 (playback core). #18 adds follow, yield on
+**Status:** Current through #17 (bay, filter and log). #18 adds follow, yield on
 scroll, the docked bar, the step hash and the keyboard; rows marked *#18* below
 are not built yet.
 
@@ -20,8 +20,10 @@ and owns all playback state (`docs/rules/one-playback-state.md`):
 | `open` | Array | Indexes of done strips the reader has reopened |
 | `pace` | Number | Milliseconds per second of step time, default 1000. Only system tests change it |
 
-Nothing else holds state. The scope, the strips and the chart all render from
-these values, and the page renders without scripts as a document (below).
+Nothing else holds playback state. The scope, the strips, the chart, the bay
+and the log all render from these values, and the page renders without
+scripts as a document (below). The controller filter's lane is held apart
+(The filter, below).
 
 ## How state reaches the page
 
@@ -40,6 +42,10 @@ writes a class: the templates style from these attributes with Tailwind's
 | Each scope target | `data-state`, `aria-current="step"` on the active one | The target's mark fill |
 | Scope readout | Number and name, Ctl · Bay, status word, `data-kind` | The centre block |
 | Play button | `aria-label`: Play, Pause or Replay | Assistive tech |
+| The strip bay cell matching the active row's `data-bay` | `data-current`, `aria-current="true"` | The ink fill (`data-current:`) |
+| Each log entry (`data-index` below the step) | `hidden` removed; the rest hidden | The log, newest first |
+| Log empty line | `hidden` once any step is done | The one-line empty state |
+| Log header | Gates cleared and artifacts made: the shown entries with `data-gate` or `data-artifact` true | Read as text |
 
 The status word is the active step's state in words (`docs/rules/never-color-alone.md`):
 
@@ -52,6 +58,23 @@ The status word is the active step's state in words (`docs/rules/never-color-alo
 
 A row's seconds come from the server as `style="--seconds: N"` (`Step#duration`,
 6 unless the step sets `seconds`). The clock reads it, and so does the line.
+
+The log's entries are rendered by the server, one per step in reverse order,
+with the word its strip ends on (cleared for a gate, done otherwise) and its
+outcome. The controller only shows them, so it builds no markup.
+
+## The filter
+
+The controller filter is not playback state: picking a lane leaves the step,
+playing and reopened strips as they were. A second controller,
+`app/javascript/controllers/filter_controller.js`, sits on `main` beside
+`playback` and owns one value, `lane` (`all`, `human`, `agent` or `ci`;
+default `all`). Its `render()` writes `aria-pressed` on each option and
+`data-dim` on every row whose `data-lane` does not match. Nothing is hidden: a
+dimmed row's chart graph drops to 40 percent, its strip loses its ground and
+strong rule, and its strip and body text turn quiet. Text at 40 percent would
+fail axe's contrast check. An upcoming row that is also filtered out keeps its
+35 percent.
 
 ## The step clock
 
@@ -93,9 +116,11 @@ fall back to the document reading (design doc, section 6):
 - Every body is open, because no `data-open` is set.
 - Strips render in the done colours, `disabled`, with an empty status cell.
 - Scope targets are plain links to each step's `#key`.
-- The sweep, leader, centre block and controls carry the `hidden` attribute.
-  On connect the controller removes it from every `live` target and enables
-  the strips.
+- The sweep, leader, centre block, controls, strip bay and log carry the
+  `hidden` attribute. On connect the controller removes it from every `live`
+  target and enables the strips.
+- The controller filter is hidden too, and the filter controller reveals its
+  own `live` target. No row carries `data-dim`.
 
 ## Motion
 
@@ -104,7 +129,7 @@ does not animate. `connect()` holds `data-settling` on `main` until the browser
 has drawn it, and the roll-up, the row dimming and the leader are
 `in-data-settling:transition-none`.
 
-Roll-up, 200 ms. Leader, 300 ms. Row dimming, 150 ms. All ease out
+Roll-up, 200 ms. Leader, 300 ms. Row dimming and the bay's fill, 150 ms. All ease out
 (`docs/rules/motion-budget.md`). The sweep turns once every 6 s while playing,
 and under reduced motion it is hidden and the roll-up is instant. JavaScript's
 own reduced-motion handling stops at not starting on view; the rest (instant
@@ -117,10 +142,10 @@ labels. Text at that opacity fails axe's contrast check.
 
 | File | Covers |
 |---|---|
-| `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; every control at least 44 px; axe while playing, paused and without scripts |
+| `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; the bay following a jump; the filter dimming without hiding; the log's order, counts, empty state and 220 px scroll; every control at least 44 px; axe while playing, paused, filtered and without scripts |
 | `test/application_system_test_case.rb` | `assert_accessible` (axe-core-api, single-frame), and `without_scripts`, which blocks every `.js` URL over CDP. Chrome's own script switch also blocks axe |
-| `test/components/{strip,step_body,controls,scope,chart_cell}_component_test.rb` | The markup each state is styled from |
-| `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, targets as links, each row's seconds |
+| `test/components/{strip,step_body,controls,scope,chart_cell,strip_bay,controller_filter,log}_component_test.rb` | The markup each state is styled from |
+| `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, bay, filter and log, targets as links, each row's seconds, bay and lane |
 
-System tests are not part of `bin/test` or CI. Run them with
+System tests are not part of `bin/test`; CI's `test` job runs them. Locally,
 `bin/rails test:system`. They set `pace` to 50, so a 6 s step takes 300 ms.
