@@ -109,9 +109,10 @@ Command-driven lifecycle. Full spec and diagrams in `WORKFLOW.md`.
   why: `docs/adr/0014-slices-merge-on-the-agents-review-features-on-a-humans.md`
 - `/segue` is the escape valve — isolate a tangent, merge findings back without
   polluting the workstream
-- You invoke the chain. Four of the nineteen (`/run_lint`, `/test_fix`,
-  `/rails_code_review`, `/pr_fix_ci`) read and edit locally, so an agent may reach
-  for them when the situation fits; anything that posts, pushes, moves the board,
+- You invoke the chain. Ten of the twenty-five (`/run_lint`, `/test_fix`,
+  `/rails_code_review`, `/qa_walkthrough`, `/diagnose`, `/resolve_conflicts`,
+  `/grill`, `/research`, `/domain_model`, `/pr_fix_ci`) read and edit locally, so
+  an agent may reach for them when the situation fits; anything that posts, pushes, moves the board,
   or sits at a gate is yours to type. `WORKFLOW.md` has the table and the reason
   per command. No command invokes another one: "next: `/pr_submit`" is an
   instruction to you
