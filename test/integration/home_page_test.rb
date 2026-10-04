@@ -91,11 +91,11 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "[aria-label=Scope] [hidden] button", count: 4
   end
 
-  test "each row carries its step's seconds for the playback clock, and its bay" do
+  test "each row carries its step's seconds for the playback clock, its bay and its lane" do
     get root_url
 
     @thread.steps.each do |step|
-      assert_select "##{step.key}[style=?][data-bay=?]", "--seconds: #{step.duration}", step.bay
+      assert_select "##{step.key}[style=?][data-bay=?][data-lane=?]", "--seconds: #{step.duration}", step.bay, step.lane
     end
   end
 
@@ -104,6 +104,8 @@ class HomePageTest < ActionDispatch::IntegrationTest
 
     assert_select "[aria-label='Strip bay'][hidden]", count: 1
     assert_select "[aria-label='Strip bay']:not([hidden])", count: 0
+    assert_select "[aria-labelledby=controller-filter][hidden] button", count: 4
+    assert_select "[data-dim]", count: 0
   end
 
   test "self-hosted fonts are preloaded, not fetched from a third party" do

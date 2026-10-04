@@ -53,9 +53,11 @@ class ChartCellComponent < ApplicationComponent
 
   # Playback writes data-state on the row (docs/system/home-thread-playback.md).
   # An upcoming row's graph dims; its words do not, since text at 35 percent
-  # fails contrast. Without scripts nothing is set and every row is full.
+  # fails contrast. The filter controller writes data-dim on a row it filters
+  # out, and its graph drops to 40 percent. Without scripts nothing is set and
+  # every row is full.
   GRAPH = "absolute inset-0 transition-opacity duration-150 ease-out in-data-settling:transition-none " \
-    "in-data-[state=pending]:opacity-35"
+    "in-data-[state=pending]:opacity-35 in-data-dim:opacity-40"
 
   FIX = "var(--spacing-fix)"
   ELBOW = "var(--spacing-elbow)"

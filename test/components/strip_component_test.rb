@@ -46,6 +46,13 @@ class StripComponentTest < ViewComponent::TestCase
     assert_selector "span.in-data-\\[state\\=pending\\]\\:hidden.in-data-\\[state\\=active\\]\\:hidden", text: "Routed."
   end
 
+  test "a strip the filter drops back loses its ground and turns quiet, but is never hidden" do
+    render_inline(StripComponent.new(step: step, number: 1))
+
+    assert_selector "button.in-data-dim\\:bg-transparent.in-data-dim\\:border-rule.in-data-dim\\:text-quiet"
+    assert_no_selector "[class*='in-data-dim:hidden'], [class*='in-data-dim:invisible']"
+  end
+
   test "the active strip is outlined, and its status word takes the kind's color" do
     { "command" => "text-command", "human" => "text-human",
       "machine" => "text-machine", "optional" => "text-quiet" }.each do |kind, color|

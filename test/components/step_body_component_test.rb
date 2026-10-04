@@ -53,6 +53,12 @@ class StepBodyComponentTest < ViewComponent::TestCase
     assert_includes body[:class], "in-data-[open=false]:invisible"
   end
 
+  test "a body the filter drops back turns quiet" do
+    render_inline(StepBodyComponent.new(step: step))
+
+    assert_selector "##{StepBodyComponent.id_for(step)}.in-data-dim\\:text-quiet"
+  end
+
   test "it rolls up in 200 ms, easing out, and at once under reduced motion" do
     render_inline(StepBodyComponent.new(step: step))
 

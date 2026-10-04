@@ -217,6 +217,30 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_bay @steps[later].bay
   end
 
+  test "the controller filter drops other controllers' rows back, never hides them, and leaves playback alone" do
+    open_thread
+    human = @steps.each_index.select { |index| @steps[index].lane == "human" }
+    others = @steps.each_index.to_a - human
+    target(others.first).click # a passed or active row: an upcoming one is dimmer still
+    click_control "Play"
+
+    click_filter "Human"
+
+    assert_equal "true", filter("Human")[:"aria-pressed"]
+    assert_equal "false", filter("All")[:"aria-pressed"]
+    assert_selector "[data-filter-target=row][data-dim]", count: others.size
+    others.each { |index| assert_selector "##{@steps[index].key}[data-dim]" }
+    human.each { |index| assert_selector "##{@steps[index].key}:not([data-dim])" }
+    @steps.each { |step| assert_selector "##{step.key} h3", visible: true }
+    assert_computed "0.4", @steps[others.first].key, "[data-chart=graph]", "opacity"
+    assert playing?
+
+    click_filter "All"
+
+    assert_no_selector "[data-dim]"
+    assert_selector "[data-filter-target=option][aria-pressed=true]", count: 1, text: "All"
+  end
+
   test "the remaining-time line runs on the active strip and freezes when paused" do
     open_thread
 
@@ -244,18 +268,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
         .filter(el => el.offsetParent)
         .map(el => { const r = el.getBoundingClientRect(); return [el.getAttribute("aria-label") || el.textContent.trim(), r.width, r.height] })
     JS
-    assert_equal 4 + @steps.size * 2, sizes.size
+    assert_equal 4 + 4 + @steps.size * 2, sizes.size
     sizes.each do |name, width, height|
       assert name.present?, "a control has no name"
       assert_operator [ width, height ].min, :>=, 44, "#{name} is #{width}×#{height}"
     end
   end
 
-  test "axe passes while playing and while paused" do
+  test "axe passes while playing, while paused, and with a filter on" do
     open_thread
     assert_accessible
 
     click_control "Pause"
+    assert_accessible
+
+    click_filter "Agent"
     assert_accessible
   end
 
@@ -270,7 +297,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   # Sets the playback pace. The controller restarts the current step's clock.
   def pace(ms)
-    execute_script("document.querySelector('[data-controller=playback]').dataset.playbackPaceValue = #{ms}")
+    execute_script("document.querySelector('[data-controller~=playback]').dataset.playbackPaceValue = #{ms}")
   end
 
   # What a cache restore does: the controller reconnects to markup that an
@@ -278,14 +305,19 @@ class HomePlaybackTest < ApplicationSystemTestCase
   def restore_from_cache
     execute_script(<<~JS)
       const main = document.querySelector("main")
+      const controllers = main.dataset.controller
       main.removeAttribute("data-controller")
-      setTimeout(() => main.setAttribute("data-controller", "playback"), 50)
+      setTimeout(() => main.setAttribute("data-controller", controllers), 50)
     JS
   end
 
   def playing? = has_selector?("main[data-playing]", wait: 0)
 
   def click_control(label) = find("[aria-label='#{label}']").click
+
+  def filter(label) = find("[data-filter-target=option]", exact_text: label)
+
+  def click_filter(label) = filter(label).click
 
   def target(index) = find("[data-playback-target=target][href='##{@steps[index].key}']")
 

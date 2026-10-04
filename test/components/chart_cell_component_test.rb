@@ -170,6 +170,12 @@ class ChartCellComponentTest < ViewComponent::TestCase
     assert_no_selector "[data-chart=graph] [data-chart=label]"
   end
 
+  test "a row the filter drops back dims its lines and fix to 40 percent" do
+    render_cell "plan"
+
+    assert_selector "[data-chart=graph].in-data-dim\\:opacity-40 [data-chart=fix]"
+  end
+
   test "reordering the file redraws the graph: the loop off main follows its step, not its row" do
     small = rows("small")
     reordered = rows("reordered")
