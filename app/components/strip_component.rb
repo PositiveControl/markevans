@@ -44,8 +44,8 @@ class StripComponent < ApplicationComponent
 
   # Ctl and Bay: a third of the second line on a phone, their own width from
   # 900 px (design doc, section 4).
-  CELL = "flex shrink-0 basis-1/3 flex-col justify-center self-stretch border-rule px-2 text-cell uppercase " \
-    "wrap-anywhere chart:basis-auto"
+  CELL = "flex shrink-0 basis-1/3 flex-col justify-center self-stretch border-rule px-1 text-cell uppercase " \
+    "wrap-anywhere chart:basis-auto chart:px-2"
 
   # @param step [DeliveryThread::Step]
   # @param number [Integer] the step's position, from 1
