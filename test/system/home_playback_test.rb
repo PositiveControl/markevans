@@ -269,6 +269,29 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "footer [aria-label=Keyboard]", text: "g then 1 – #{@steps.count(&:gate?)} a gate"
   end
 
+  test "reduced motion: loads paused, with no sweep, an instant roll-up and an instant follow" do
+    reduced_motion do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+      sleep 0.5 # the thread is in view: it must not start by itself
+      assert_not playing?
+      assert_no_selector "[data-scope=sweep]"
+
+      click_control "Step forward"
+      assert_step 1, status: "paused"
+      # Only motion that moves layout stops (docs/rules/motion-budget.md); a fade may stay.
+      assert_equal 0, evaluate_script("document.getAnimations().filter(a => a.transitionProperty === 'grid-template-rows').length")
+
+      click_control "Play"
+      top = evaluate_async_script(<<~JS)
+        const done = arguments[0]
+        const frame = () => new Promise(requestAnimationFrame)
+        frame().then(frame).then(frame).then(() => done(document.querySelector("##{@steps[1].key} h3 button").getBoundingClientRect().top))
+      JS
+      assert_in_delta 96, top, 2, "landed within three frames: no smooth scroll"
+    end
+  end
+
   test "tab becomes hidden: pauses, and does not resume by itself" do
     open_thread(pace: FAST)
 
@@ -588,6 +611,15 @@ class HomePlaybackTest < ApplicationSystemTestCase
   def press(*keys)
     execute_script("document.activeElement?.blur()")
     keys.each { |key| page.driver.browser.action.send_keys(key).perform }
+  end
+
+  # Runs the block as a reader who asked for reduced motion.
+  def reduced_motion
+    browser = page.driver.browser
+    browser.execute_cdp("Emulation.setEmulatedMedia", features: [ { name: "prefers-reduced-motion", value: "reduce" } ])
+    yield
+  ensure
+    browser.execute_cdp("Emulation.setEmulatedMedia", features: [])
   end
 
   def scroll_to_top = execute_script("window.scrollTo(0, 0)")
