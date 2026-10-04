@@ -38,7 +38,7 @@ The pattern is `Markevans::TAILNET_HOST` in `config/application.rb`, so
 TAILNET_HOST = /[a-z0-9-]+\.[a-z0-9-]+\.ts\.net/i
 ```
 
-It is a regex because Rails' leading-dot form (`".ts.net"`) matches exactly one
+It is a regex because Rails' leading-dot form (`".ts.net"`) matches at most one
 subdomain label, and a MagicDNS name has two. With the dot form every request
 still gets `Blocked hosts: <machine>.<tailnet>.ts.net:8443`. It matches any
 tailnet, not one machine, so it works for whoever runs the app.
