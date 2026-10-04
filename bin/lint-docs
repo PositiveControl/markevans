@@ -279,10 +279,11 @@ workflow_path = File.join(DOCS_ROOT, "WORKFLOW.md")
 agents_md = File.read(agents_path)
 workflow_md = File.read(workflow_path)
 invocation_table = workflow_md[/^## Who invokes what$.*?^## /m].to_s
+inventory_table = workflow_md[/^## Command inventory$.*?^## /m].to_s
 command_paths.each do |path|
   name = File.basename(path, ".md")
   findings << "#{rel(agents_path)}: no entry for /#{name}" unless agents_md.include?(name)
-  findings << "#{rel(workflow_path)}: 'Command inventory' has no entry for /#{name}" unless workflow_md.include?(name)
+  findings << "#{rel(workflow_path)}: 'Command inventory' has no entry for /#{name}" unless inventory_table.include?("`/#{name}`")
   findings << "#{rel(workflow_path)}: 'Who invokes what' does not say who invokes /#{name}" unless invocation_table.include?("`/#{name}`")
 end
 

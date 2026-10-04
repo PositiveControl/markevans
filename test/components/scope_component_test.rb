@@ -13,6 +13,7 @@ class ScopeComponentTest < ViewComponent::TestCase
     assert_equal "Go to step 1: /begin", targets.first[:"aria-label"]
     assert_equal "Go to step 8: /ship", targets.last[:"aria-label"]
     assert targets.all? { |target| target[:"data-action"] == "playback#jump" }
+    assert_equal steps.each_index.map(&:to_s), targets.map { |target| target[:"data-playback-index-param"] }
   end
 
   test "targets sit on a 270 degree arc, the first at 135 degrees and the last at 45" do

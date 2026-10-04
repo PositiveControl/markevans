@@ -5,13 +5,13 @@ applies_to: ["app/javascript/**"]
 triggers: ["autoplay", "scroll", "resume", "pause", "visibility"]
 see_also: ["one-playback-state", "motion-budget"]
 modes: [ web ]
-tokens: 310
-current_state: diverges
+tokens: 320
+current_state: matches
 ---
 
 # playback-yields
 
-Reader input always wins. Scrolling, leaving the tab or selecting a step pauses. Nothing resumes by itself.
+Reader input always wins. Scrolling by wheel, touch, keys or the scrollbar, leaving the tab or selecting a step pauses. Nothing resumes by itself.
 
 ## Why
 
@@ -31,8 +31,4 @@ Staying paused until the reader presses Play.
 
 ## Enforcement
 
-System tests: scroll during play pauses; no timer restarts it.
-
-## Where this app is
-
-Selecting a step (a target, a strip, back or forward) pauses, and leaving the tab pauses with nothing resuming it, both covered in `test/system/home_playback_test.rb` (#16). Playback starts by itself only once, when the thread first scrolls into view, and not after the reader has touched a control. Pause on reader scroll, and the follow that must not count as one, arrive with slice 5 (#18).
+System tests in `test/system/home_playback_test.rb`: a wheel, a touch scroll, a scroll key, a press on the scrollbar, leaving the tab and selecting a step each pause, and nothing resumes after two steps' time. Playback hears the reader's input, not the `scroll` event, so its own follow never counts as one (`docs/system/home-thread-playback.md`, *Follow and yield*). That also means a scroll with no input behind it, from moving focus or find-in-page, does not pause.

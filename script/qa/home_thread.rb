@@ -2,7 +2,8 @@
 
 # The home thread (#21): headline and intro, the legend, every strip with its
 # body, the git graph drawn beside the strips (#15), playback from the scope
-# (#16), and the strip bay, controller filter and log (#17). The page starts
+# (#16), the strip bay, controller filter and log (#17), and follow, yield,
+# the docked bar, the step hash and the keyboard (#18). The page starts
 # playing as the thread comes into view, so the walk pauses it first and the
 # reading steps run on a still page.
 #
@@ -12,12 +13,16 @@
 # merge, the last), never by key. Spotlights use text, the step's row id (its
 # key, from the file), an ARIA label, data-state, or the chart's data-git-event
 # and data-chart names: hooks that survive a restyle, never utility classes.
-# Clicks are the change being shown: a control, a target, a strip.
+# Clicks are the change being shown: a control, a target, a strip, a mark; so
+# are the wheel and the keys. Controls are pressed on the scope, or on the
+# docked bar where it is the point: once a jump has scrolled the scope away,
+# both are on screen.
 #
-# Not walked: the page without scripts (the system tests cover it, axe
-# included), the step timer running out (it would make the walk wait), and
-# what is not built yet: follow and the docked bar (5), narrow screens (6),
-# and the other pages (7). The page budget is a test, not a page to walk.
+# The follow step waits out one step's time (6 s) once, since following is
+# what happens when the timer runs out. Not walked: the page without scripts
+# and under reduced motion (the system tests cover both, axe included), and
+# what is not built yet: narrow screens (6) and the other pages (7). The page
+# budget is a test, not a page to walk.
 require Rails.root.join("lib/qa_walkthrough")
 
 thread = DeliveryThread.fetch(:home)
@@ -30,21 +35,29 @@ sector = thread.cells.drop(1).find(&:sector)
 last = thread.steps.last
 review = thread.steps.find { |step| step.bay == "Up for Review" }
 agent = thread.steps.find { |step| step.lane == "agent" }
+second = thread.steps.second
+gates = thread.steps.select(&:gate?)
+
+SCOPE = "[aria-label=Scope]"
+DOCK = "[aria-label='Docked playback']"
+PLAYER = "[data-controller~=playback]"
 
 QaWalkthrough.run("home_thread") do
   step "The page opens on the headline and the positive-control paragraph" do
+    # Desktop width: narrow screens are #19, and below this the docked bar wraps.
+    page.current_window.resize_to(1400, 1000)
     visit root_path
     spotlight text: thread.headline, note: "headline and intro in content/threads/home.yml"
   end
 
   step "As the thread comes into view it plays: the sweep turns and step 1 is outlined" do
     spotlight "##{first.key}"
-    find("main[data-playing]")
+    find("#{PLAYER}[data-playing]")
     spotlight "[aria-label=Scope]", note: "the centre block names the active step; the leader points at its target"
   end
 
   step "Pause: the sweep and step 1's remaining-time line freeze, and its status reads paused" do
-    find("[aria-label=Pause]").click
+    find("#{SCOPE} [aria-label=Pause]").click
     spotlight "##{first.key} [data-playback-target=status]", note: "the 2 px line along the strip's bottom edge is the time left"
   end
 
@@ -80,7 +93,7 @@ QaWalkthrough.run("home_thread") do
   end
 
   step "Step forward: #{fork.name}'s strip rolls up and shows its outcome on the Rmk line" do
-    find("[aria-label='Step forward']").click
+    find("#{SCOPE} [aria-label='Step forward']").click
     spotlight "##{fork.key}[data-state=done] h3", note: "status: done; the next step is active and paused"
   end
 
@@ -123,7 +136,46 @@ QaWalkthrough.run("home_thread") do
   end
 
   step "Restart: step 1, reopened strips closed, paused" do
-    find("[aria-label=Restart]").click
+    find("#{SCOPE} [aria-label=Restart]").click
     spotlight "##{first.key}[data-state=active]", note: "the bay is back on #{first.bay} and the log is empty; press Play to run the thread from the top"
+  end
+
+  step "Play: the page follows the active strip, its top 96 px from the top of the window, as each step comes up" do
+    find("#{SCOPE} [aria-label=Play]").click
+    find("##{second.key}[data-state=active]", wait: 10) # one step's time
+    # The bar is fixed, so its spotlight leaves the followed page where it is.
+    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "the scope has scrolled away, and the docked bar holds the controls"
+  end
+
+  step "Scroll with the wheel: playback pauses, and nothing resumes it" do
+    page.driver.browser.action.scroll_by(0, 600).perform
+    find("#{PLAYER}:not([data-playing])")
+    spotlight "#{DOCK} [aria-label=Play]", note: "the reader has the page; Play reads Play, and stays so"
+  end
+
+  step "A mark on the docked bar jumps to #{gate.name} and the page goes to it" do
+    find("#{DOCK} [data-playback-target=mark][href='##{gate.key}']").click
+    spotlight "#{DOCK} [data-playback-target=mark][aria-current=step]", note: "the bar's name and bay follow the step; it is a second view of one state"
+  end
+
+  step "Scroll away, then Play on the docked bar: the page returns to #{gate.name} before it plays" do
+    page.driver.browser.action.scroll_by(0, 1500).perform
+    find("#{DOCK} [aria-label=Play]").click
+    find("#{PLAYER}[data-playing]")
+    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "#{gate.name}'s strip is back 96 px from the top, and holds"
+  end
+
+  step "Keys: Space pauses, j steps forward, k steps back, g then 2 jumps to #{gates.second.name}" do
+    execute_script("document.activeElement.blur()") # keys on the page, not on the Play just pressed
+    [ :space, "j", "k", "g", "2" ].each { |key| page.driver.browser.action.send_keys(key).perform }
+    find("##{gates.second.key}[data-state=active]")
+    sleep 1 # the follow waits out the roll-up, then glides
+    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "the page footer lists these keys, g with 1 to #{gates.size}, the thread's gate count"
+  end
+
+  step "The URL names the active step; loading it opens #{gates.second.name}, paused" do
+    visit current_url
+    find("##{gates.second.key}[data-state=active]")
+    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "URL ends ##{gates.second.key}; the page did not start by itself"
   end
 end

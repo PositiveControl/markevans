@@ -17,8 +17,17 @@ import { Controller } from "@hotwired/stimulus"
  * The event table it implements is in docs/system/home-thread-playback.md.
  */
 
+// Keys the browser scrolls the page with. Space is left out: it plays and pauses.
+const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"])
+
+// Keys that only change what the next key types.
+const MODIFIERS = new Set(["Shift", "CapsLock", "AltGraph"])
+
+// How long g waits for its number, in milliseconds.
+const GATE_WINDOW = 1500
+
 export default class extends Controller {
-  static targets = ["thread", "row", "strip", "status", "line", "target", "live", "play",
+  static targets = ["thread", "scope", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
     "logEntry", "logEmpty", "gatesCleared", "artifacts"]
 
@@ -38,8 +47,17 @@ export default class extends Controller {
     // (docs/rules/playback-yields.md): it comes back paused, and rows that
     // already carry a state (only render() writes one) mark it as a page the
     // reader has been on, so it does not start again on view either.
-    this.touched = this.rowTargets.some(row => row.dataset.state)
+    const restored = this.rowTargets.some(row => row.dataset.state)
+    this.touched = restored
     this.playingValue = false
+    // A step's hash opens that step, paused, and it has been chosen, so the
+    // thread does not start on view either. A restored page carries its own
+    // step and scroll, and the hash its URL gained along the way is not a link.
+    const linked = restored ? -1 : this.rowTargets.findIndex(row => location.hash === `#${row.id}`)
+    if (linked >= 0) {
+      this.stepValue = linked
+      this.touched = true
+    }
     this.connected = true
     this.resetClock()
     // The clock is not in an attribute, so a thread that had played out says
@@ -48,38 +66,49 @@ export default class extends Controller {
     if (this.element.hasAttribute("data-ended") && this.onLastStep) this.remaining = 0
     this.settle()
     this.watchForThread()
+    this.watchScope()
+    // The browser scrolled to the hash before the bodies above it closed, so
+    // the page goes to the step again, at once.
+    if (linked >= 0) this.follow({ instant: true })
   }
 
   disconnect() {
     clearTimeout(this.timer)
     this.observer?.disconnect()
+    this.dock?.disconnect()
     this.connected = false
   }
 
   // Actions
 
+  // Play scrolls back to the active strip first, wherever the reader left
+  // the page (docs/rules/playback-yields.md).
   toggle() {
     this.touched = true
     if (this.playingValue) {
       this.playingValue = false
-    } else if (this.onLastStep) {
+      return
+    }
+    if (this.onLastStep) {
       this.openValue = []
       if (this.stepValue === 0) this.resetClock() // a one-step thread: go(0) stays put
       this.go(0)
-      this.playingValue = true
-    } else {
-      this.playingValue = true
     }
+    this.follow()
+    this.playingValue = true
   }
 
   back() { this.jumpTo(this.stepValue - 1) }
 
   forward() { this.jumpTo(this.stepValue + 1) }
 
-  // A scope target: a link to its step without scripts, a jump with them.
+  // A scope target or a docked mark: a link to its step without scripts, a
+  // jump with them, and the page goes there. Each says which step in
+  // data-playback-index-param.
   jump(event) {
     event.preventDefault()
-    this.jumpTo(this.targetTargets.indexOf(event.currentTarget))
+    this.jumpTo(event.params.index)
+    this.follow()
   }
 
   // A strip: a done one opens or closes and playback carries on; any other
@@ -102,6 +131,70 @@ export default class extends Controller {
     this.go(0)
   }
 
+  // The reader scrolling, by wheel, touch, keys or the scrollbar, pauses, and
+  // drops a follow still on its way and a g still waiting for its number.
+  // Their input, not the scroll event: the controller's own scrolls fire none
+  // of these, so following can never read as the reader. Before playback has
+  // started, a scroll is how the thread comes into view, so it counts as
+  // nothing.
+  yield() {
+    this.followingStep = null
+    this.gateArmedAt = null
+    if (!this.playingValue) return
+
+    this.touched = true
+    this.playingValue = false
+  }
+
+  // A press on the page's scrollbar: Chrome and Safari report it on <html>,
+  // where nothing else on the page can be pressed.
+  press(event) {
+    if (event.target === document.documentElement) this.yield()
+  }
+
+  // The keyboard, listed in the footer: Space plays and pauses, j and k step,
+  // and g then a number jumps to that gate. The keys that scroll the page
+  // yield. Keys in a text field are the field's, and Space on a focused
+  // button presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through. g
+  // waits 1.5 s for its number, and a scroll drops it.
+  key(event) {
+    if (event.ctrlKey || event.altKey || event.metaKey || this.typing(event)) return
+
+    // A modifier pressed on its own is not the next key: on some layouts
+    // the digit after g needs Shift.
+    if (MODIFIERS.has(event.key)) return
+
+    if (this.gateArmedAt != null) {
+      const armed = performance.now() - this.gateArmedAt < GATE_WINDOW
+      this.gateArmedAt = null
+      const gate = armed ? this.gates[Number(event.key) - 1] : undefined
+      if (gate !== undefined) return this.goToGate(gate)
+    }
+
+    switch (event.key.toLowerCase()) { // Caps Lock sends J, K and G
+      case " ":
+        // Shift+Space scrolls up, and on a link Space scrolls down: a link
+        // takes Enter. On a button or summary it presses that.
+        if (event.shiftKey || event.target.closest?.("a[href]")) return this.yield()
+        if (event.target.closest?.("button, summary")) return
+        event.preventDefault()
+        if (event.repeat) return // held down: one press, not a flicker
+        return this.toggle()
+      case "j": return this.forward()
+      case "k": return this.back()
+      case "g":
+        this.gateArmedAt = performance.now()
+        return
+      default:
+        if (SCROLL_KEYS.has(event.key)) this.yield()
+    }
+  }
+
+  goToGate(index) {
+    this.jumpTo(index)
+    this.follow()
+  }
+
   // Leaving the tab pauses. Nothing resumes by itself (docs/rules/playback-yields.md).
   hide() {
     if (document.visibilityState === "hidden") this.playingValue = false
@@ -114,6 +207,7 @@ export default class extends Controller {
     if (!this.connected) return
     this.resetClock()
     this.render()
+    this.writeHash()
   }
 
   playingValueChanged(playing) {
@@ -164,6 +258,7 @@ export default class extends Controller {
       this.playingValue = false
     } else {
       this.stepValue += 1
+      this.follow()
     }
   }
 
@@ -187,6 +282,39 @@ export default class extends Controller {
     }
   }
 
+  // Follow: the page scrolls the active strip to 96 px below the viewport's
+  // top (the rows' scroll margin). Only the controller calls this: on a step
+  // the clock moves to, on Play, and on an explicit jump. Nothing else moves
+  // the page.
+  //
+  // A value change renders a moment later (Stimulus hears it as an attribute
+  // change), so this waits a frame for that render. Then a body above that is
+  // rolling up still has its height, and the strip will rise by it, so the
+  // scroll waits for the roll-up to end too. Anything that happens meanwhile
+  // (another step, or the reader taking over) drops it.
+  follow({ instant = this.reducedMotion } = {}) {
+    const step = this.followingStep = this.stepValue
+    const current = () => this.connected && this.followingStep === step && this.stepValue === step
+
+    requestAnimationFrame(async () => {
+      const rollUps = this.element.getAnimations({ subtree: true })
+        .filter(animation => animation.transitionProperty === "grid-template-rows")
+      await Promise.allSettled(rollUps.map(animation => animation.finished))
+      if (!current()) return
+
+      this.followingStep = null
+      this.rowTargets[step].scrollIntoView({ block: "start", behavior: instant ? "instant" : "smooth" })
+    })
+  }
+
+  // Each step has its own hash, the row's id: a link to it opens it. A step
+  // change rewrites the URL in place, so the back button still leaves the
+  // page. Turbo's own entry in history.state is kept.
+  writeHash() {
+    const hash = `#${this.rowTargets[this.stepValue].id}`
+    if (location.hash !== hash) history.replaceState(history.state, "", hash)
+  }
+
   // The first render closes every body but the active one. That is the page
   // taking its starting state, not a change of state, so it must not animate
   // (docs/rules/motion-budget.md): data-settling turns transitions off until
@@ -200,7 +328,7 @@ export default class extends Controller {
   // Starts playing the first time the thread scrolls into view, unless the
   // reader has already taken the controls or asked for reduced motion.
   watchForThread() {
-    if (!this.hasThreadTarget || matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (!this.hasThreadTarget || this.reducedMotion) return
 
     this.observer = new IntersectionObserver(entries => {
       if (!entries.some(entry => entry.isIntersecting)) return
@@ -208,6 +336,19 @@ export default class extends Controller {
       if (!this.touched) this.playingValue = true
     })
     this.observer.observe(this.threadTarget)
+  }
+
+  // Docks the bar while the scope is out of view: data-docked on this element
+  // shows it. Where the reader is looking is not playback state; the bar is a
+  // second view of the same three values.
+  watchScope() {
+    if (!this.hasScopeTarget) return
+
+    // One callback can carry several crossings (Home then End); the last is now.
+    this.dock = new IntersectionObserver(entries => {
+      this.element.toggleAttribute("data-docked", !entries.at(-1).isIntersecting)
+    })
+    this.dock.observe(this.scopeTarget)
   }
 
   // Render: state onto the page
@@ -230,17 +371,19 @@ export default class extends Controller {
       this.statusTargets[index].textContent = this.word(state, this.gateAt(index), playing)
     })
 
-    this.targetTargets.forEach((target, index) => {
-      target.dataset.state = index < step ? "done" : index === step ? "active" : "pending"
-      index === step ? target.setAttribute("aria-current", "step") : target.removeAttribute("aria-current")
-    })
+    // The scope's targets and the docked bar's marks: one per step, each.
+    for (const marks of [this.targetTargets, this.markTargets]) {
+      marks.forEach((mark, index) => {
+        mark.dataset.state = index < step ? "done" : index === step ? "active" : "pending"
+        index === step ? mark.setAttribute("aria-current", "step") : mark.removeAttribute("aria-current")
+      })
+    }
 
     this.renderReadout(step, playing)
     this.renderBay(step)
     this.renderLog(step)
-    if (this.hasPlayTarget) {
-      this.playTarget.setAttribute("aria-label", playing ? "Pause" : this.onLastStep ? "Replay" : "Play")
-    }
+    const label = playing ? "Pause" : this.onLastStep ? "Replay" : "Play"
+    this.playTargets.forEach(play => play.setAttribute("aria-label", label))
   }
 
   renderReadout(step, playing) {
@@ -249,7 +392,7 @@ export default class extends Controller {
 
     const { number, name, detail, kind, gate, angle } = target.dataset
     this.element.style.setProperty("--leader-angle", `${angle}deg`)
-    if (this.hasReadoutNameTarget) this.readoutNameTarget.textContent = `${number} ${name}`
+    this.readoutNameTargets.forEach(readout => { readout.textContent = `${number} ${name}` })
     if (this.hasReadoutDetailTarget) this.readoutDetailTarget.textContent = detail
     if (this.hasReadoutStatusTarget) {
       this.readoutStatusTarget.textContent = this.word("active", gate === "true", playing)
@@ -292,11 +435,23 @@ export default class extends Controller {
     return gate ? "hold" : "active"
   }
 
+  // The gates' step indexes, in order: g then 1 is the first.
+  get gates() {
+    return this.stripTargets.flatMap((strip, index) => strip.dataset.gate === "true" ? [index] : [])
+  }
+
   gateAt(index) { return this.stripTargets[index].dataset.gate === "true" }
 
   secondsOf(index) {
     return Number(this.rowTargets[index]?.style.getPropertyValue("--seconds")) || 6
   }
+
+  // Keys in a text field are the field's.
+  typing({ target }) {
+    return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+  }
+
+  get reducedMotion() { return matchMedia("(prefers-reduced-motion: reduce)").matches }
 
   get onLastStep() { return this.stepValue === this.rowTargets.length - 1 }
 

@@ -102,11 +102,29 @@ class HomePageTest < ActionDispatch::IntegrationTest
   test "without scripts the read-outs of playback state are not shown" do
     get root_url
 
-    assert_select "[aria-label='Strip bay'][hidden]", count: 1
+    assert_select "[aria-label='Strip bay'][hidden]", count: 2 # the aside's, and the docked bar's
     assert_select "[aria-label='Strip bay']:not([hidden])", count: 0
     assert_select "[aria-labelledby=controller-filter][hidden] button", count: 4
     assert_select "[data-dim]", count: 0
     assert_select "section[aria-labelledby=log-heading][hidden]", count: 1
+    assert_select "[aria-label='Docked playback'][hidden]", count: 1
+  end
+
+  test "the footer signs the page, and its key list waits for playback" do
+    get root_url
+
+    assert_select "footer", text: /Mark Evans · PositiveControl/
+    assert_select "footer", text: /This site is built with the workflow it describes\./
+    assert_select "footer ul[aria-label='Keyboard'][hidden][data-playback-target=live] kbd", count: 6
+    assert_select "footer [aria-label='Keyboard'] kbd", text: @thread.steps.count(&:gate?).to_s
+  end
+
+  test "playback and the filter sit on a wrapper around main and the footer, so both read one state" do
+    get root_url
+
+    assert_select "[data-controller='playback filter'] > main"
+    assert_select "[data-controller='playback filter'] > footer"
+    assert_select "main[data-controller]", count: 0
   end
 
   test "the log counts gates out of the thread's own total" do

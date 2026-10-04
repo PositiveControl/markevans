@@ -18,11 +18,13 @@
 # connects. Every element states something (docs/rules/every-element-answers.md):
 # the sweep turns only while playing.
 class ScopeComponent < ApplicationComponent
-  Target = Data.define(:step, :number, :angle, :style)
+  Target = Data.define(:step, :index, :number, :angle, :style)
 
   FIRST = 135.0
   ARC = 270.0
   RADIUS = 38.0 # percent of the scope, from its centre
+
+  MARK = "size-1.5 border bg-scope"
 
   # A target's mark: a square for a command, a rotated square for a gate, a
   # dashed square for an optional step; filled once its step is reached.
@@ -44,7 +46,7 @@ class ScopeComponent < ApplicationComponent
     gaps = [ @steps.size - 1, 1 ].max
     @steps.each_with_index.map do |step, index|
       angle = FIRST + ARC * index / gaps
-      Target.new(step:, number: format("%02d", index + 1), angle:, style: position(angle))
+      Target.new(step:, index:, number: format("%02d", index + 1), angle:, style: position(angle))
     end
   end
 
@@ -55,5 +57,5 @@ class ScopeComponent < ApplicationComponent
 
   def detail(step) = "#{DeliveryThread::LANE_NAMES.fetch(step.lane)} · #{step.bay}"
 
-  def mark_classes(step) = class_names("size-1.5 border bg-scope", MARKS.fetch(step.kind))
+  def mark_classes(step) = class_names(MARK, MARKS.fetch(step.kind))
 end

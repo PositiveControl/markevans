@@ -10,6 +10,12 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Milliseconds per second of step time: a 6 s step takes 300 ms here.
   FAST = 50
 
+  # The element the playback and filter controllers sit on: a wrapper around
+  # main and the footer.
+  PLAYER = "[data-controller~=playback]"
+
+  DOCK = "[aria-label='Docked playback']"
+
   setup do
     @thread = DeliveryThread.fetch(:home)
     @steps = @thread.steps
@@ -31,7 +37,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Restart]"
 
     assert_equal 0, evaluate_script("document.getAnimations().filter(a => a instanceof CSSTransition).length")
-    assert_no_selector "main[data-settling]"
+    assert_no_selector "#{PLAYER}[data-settling]"
   end
 
   test "thread first scrolls into view: it starts playing on step 1" do
@@ -42,7 +48,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
       scroll_to find("##{@steps.first.key}"), align: :center
 
-      assert_selector "main[data-playing]"
+      assert_selector "#{PLAYER}[data-playing]"
       assert_step 0, status: active_word(0)
     end
   end
@@ -56,7 +62,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Play]"
 
     click_control "Play"
-    assert_selector "main[data-playing]"
+    assert_selector "#{PLAYER}[data-playing]"
     assert_step 0, status: "active"
   end
 
@@ -82,7 +88,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step @gate, status: "paused"
     assert_row @gate - 1, state: "done", status: "done"
     assert_selector "[data-playback-target=target][aria-current=step]", count: 1
-    assert_equal "#{target(@gate)[:"data-angle"]}deg", evaluate_script("document.querySelector('main').style.getPropertyValue('--leader-angle')")
+    assert_equal "#{target(@gate)[:"data-angle"]}deg", evaluate_script("document.querySelector('#{PLAYER}').style.getPropertyValue('--leader-angle')")
     assert_equal root_path, URI(current_url).request_uri, "a jump moves no hash"
   end
 
@@ -136,6 +142,220 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row 1, state: "pending", open: "false"
   end
 
+  test "reader scrolls by wheel: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    page.driver.browser.action.scroll_by(0, 300).perform
+
+    assert_stays_paused
+  end
+
+  test "reader scrolls by touch: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    execute_script("window.dispatchEvent(new Event('touchmove'))")
+
+    assert_stays_paused
+  end
+
+  test "reader scrolls by keys: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    page.driver.browser.action.send_keys(:page_down).perform
+
+    assert_stays_paused
+  end
+
+  test "reader presses the page's scrollbar: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    # Chrome and Safari report a press on the page's scrollbar on <html>.
+    # Selenium cannot press a scrollbar, so the event is dispatched.
+    execute_script("document.documentElement.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))")
+
+    assert_stays_paused
+  end
+
+  test "a reader's scroll before the thread is in view is how it comes into view, and still starts it" do
+    resize_to(400) do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+
+      page.driver.browser.action.scroll_by(0, 50).perform # the reader's wheel, the thread still below
+      assert_not playing?
+      scroll_to find("##{@steps.first.key}"), align: :center
+
+      assert_selector "#{PLAYER}[data-playing]"
+    end
+  end
+
+  test "resuming scrolls back to the active strip first" do
+    open_thread
+
+    page.driver.browser.action.scroll_by(0, 4000).perform
+    assert_not playing?
+    assert_selector DOCK
+
+    find("#{DOCK} [aria-label=Play]").click
+
+    assert_strip_top 0
+    assert_selector "#{PLAYER}[data-playing]"
+  end
+
+  test "each step has a hash: a step change writes it in place, and a fresh load writes none" do
+    open_thread
+    assert_nil URI(current_url).fragment
+    entries = evaluate_script("history.length")
+
+    pace FAST
+
+    # At this pace a step passes between two browser calls, so the hash and
+    # the active row are read together.
+    page.document.synchronize do
+      hash, active = evaluate_script("[location.hash.slice(1), document.querySelector('[data-playback-target=row][data-state=active]')?.id]")
+      raise Capybara::ExpectationNotMet, "hash #{hash.inspect}, active #{active.inspect}" unless hash.present? && hash != @steps[0].key && hash == active
+    end
+    assert_equal entries, evaluate_script("history.length"), "written with replaceState, not pushed"
+    target(@gate).click
+    assert_equal @steps[@gate].key, URI(current_url).fragment
+  end
+
+  test "page loads with a step hash: that step active, paused, scrolled into view" do
+    visit root_path(anchor: @steps[@gate].key)
+
+    assert_step @gate, status: "paused"
+    assert_strip_top @gate
+    sleep 0.5 # the thread is in view: it must not start by itself
+    assert_not playing?
+  end
+
+  test "keys: Space plays and pauses, j steps forward, k steps back" do
+    open_thread
+
+    press :space
+    assert_not playing?
+    assert_step 0, status: "paused"
+    press :space
+    assert_selector "#{PLAYER}[data-playing]"
+
+    press "j"
+    assert_step 1, status: "paused"
+    press "k"
+    assert_step 0, status: "paused"
+  end
+
+  test "keys: g then a number jumps to that gate, and the page goes to it" do
+    open_thread
+    gates = @steps.each_index.select { |index| @steps[index].gate? }
+
+    press "g", "3"
+
+    assert_step gates[2], status: "paused"
+    assert_strip_top gates[2]
+  end
+
+  test "keys: g then a digit typed with Shift, as on AZERTY, still jumps to that gate" do
+    open_thread
+    gates = @steps.each_index.select { |index| @steps[index].gate? }
+
+    # What such a keyboard sends: Shift's own keydown, then the digit. A US
+    # layout would send "@" for Shift+2, so the events are dispatched.
+    execute_script(<<~JS)
+      for (const [key, shiftKey] of [["g", false], ["Shift", true], ["2", true]]) {
+        document.body.dispatchEvent(new KeyboardEvent("keydown", { key, shiftKey, bubbles: true }))
+      }
+    JS
+
+    assert_step gates[1], status: "paused"
+  end
+
+  test "keys: g then anything else is dropped, and that key keeps its meaning" do
+    open_thread
+    click_control "Pause"
+
+    press "g", "j", "2"
+
+    assert_step 1, status: "paused"
+  end
+
+  test "keys: g left for 1.5 s is dropped, and the number after it jumps nowhere" do
+    open_thread
+    click_control "Pause"
+
+    press "g"
+    # Moves the page's clock on two seconds, rather than waiting them out.
+    execute_script(<<~JS)
+      const now = performance.now.bind(performance)
+      performance.now = () => now() + 2000
+    JS
+    press "2"
+
+    assert_step 0, status: "paused"
+  end
+
+  test "keys: g then a scroll by wheel is dropped, and the number after it jumps nowhere" do
+    open_thread
+    click_control "Pause"
+
+    press "g"
+    page.driver.browser.action.scroll_by(0, 300).perform
+    press "2"
+
+    assert_step 0, status: "paused"
+  end
+
+  test "keys: Space on a focused link scrolls the page, so it yields like any scroll key" do
+    open_thread
+
+    execute_script("document.querySelector('[aria-label=Scope] [data-playback-target=target]').focus()")
+    page.driver.browser.action.send_keys(:space).perform
+
+    assert_stays_paused
+  end
+
+  test "keys: Space on a focused control presses it, and keys in a text field are the field's" do
+    open_thread
+    click_control "Pause"
+
+    find("[aria-label=Scope] [aria-label='Step forward']").send_keys(:space)
+    assert_step 1, status: "paused"
+
+    execute_script("document.querySelector('footer').insertAdjacentHTML('beforeend', '<input aria-label=Note>')")
+    find("[aria-label=Note]").send_keys("jk g1 ")
+    sleep 0.2
+    assert_step 1, status: "paused"
+  end
+
+  test "the footer lists the keys once playback runs" do
+    open_thread
+
+    assert_selector "footer [aria-label=Keyboard]", text: "Space play or pause"
+    assert_selector "footer [aria-label=Keyboard]", text: "g then 1 – #{@steps.count(&:gate?)} a gate"
+  end
+
+  test "reduced motion: loads paused, with no sweep, an instant roll-up and an instant follow" do
+    reduced_motion do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+      sleep 0.5 # the thread is in view: it must not start by itself
+      assert_not playing?
+      assert_no_selector "[data-scope=sweep]"
+
+      click_control "Step forward"
+      assert_step 1, status: "paused"
+      # Only motion that moves layout stops (docs/rules/motion-budget.md); a fade may stay.
+      assert_equal 0, evaluate_script("document.getAnimations().filter(a => a.transitionProperty === 'grid-template-rows').length")
+
+      click_control "Play"
+      top = evaluate_async_script(<<~JS)
+        const done = arguments[0]
+        const frame = () => new Promise(requestAnimationFrame)
+        frame().then(frame).then(frame).then(() => done(document.querySelector("##{@steps[1].key} h3 button").getBoundingClientRect().top))
+      JS
+      assert_in_delta 96, top, 2, "landed within three frames: no smooth scroll"
+    end
+  end
+
   test "tab becomes hidden: pauses, and does not resume by itself" do
     open_thread(pace: FAST)
 
@@ -155,11 +375,11 @@ class HomePlaybackTest < ApplicationSystemTestCase
     resize_to(400) do # the thread out of view, so only the restored value could start it
       visit root_path
       click_control "Play"
-      assert_selector "main[data-playing]"
+      assert_selector "#{PLAYER}[data-playing]"
 
       restore_from_cache
 
-      assert_no_selector "main[data-playing]"
+      assert_no_selector "#{PLAYER}[data-playing]"
       assert_selector "[aria-label=Play]"
     end
   end
@@ -173,6 +393,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
     assert_not playing?
     assert_step 0, status: "paused"
+  end
+
+  test "a restored page keeps the reader's scroll, though its URL now names a step" do
+    open_thread
+    target(@gate).click
+    assert_strip_top @gate
+    scroll_to_top
+    assert_scroll_at_rest
+    before = evaluate_script("window.scrollY")
+
+    restore_from_cache
+    sleep 0.5 # the reconnect, and a follow it must not make
+
+    assert_equal before, evaluate_script("window.scrollY")
+    assert_step @gate, status: "paused"
   end
 
   test "a restored page whose thread had played out still counts the last step" do
@@ -195,6 +430,32 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
     assert_step 1, status: "active"
     assert_row 0, state: "done", open: "false", status: "done"
+  end
+
+  test "step timer ends: the page follows, the active strip's top 96 px from the viewport's" do
+    open_thread(pace: 150) # a 6 s step takes 900 ms
+
+    assert_step 1, status: active_word(1)
+    assert_strip_top 1
+    assert_selector DOCK # the scope has scrolled out of view
+  end
+
+  test "a target selected is an explicit jump: the page goes to it; step back and forward leave the page where it is" do
+    open_thread
+    click_control "Pause"
+
+    target(@gate).click
+    assert_strip_top @gate
+
+    scroll_to_top
+    sleep 0.5 # let the jump's smooth scroll come to rest
+    before = evaluate_script("window.scrollY")
+    click_control "Step forward"
+    assert_step @gate + 1, status: "paused"
+    click_control "Step back"
+    assert_step @gate, status: "paused"
+    sleep 0.5 # the time a follow would take to start and land
+    assert_equal before, evaluate_script("window.scrollY")
   end
 
   test "a gate holds while active and reads cleared once passed" do
@@ -221,7 +482,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_log_counts @steps.count(&:gate?), @steps.count(&:artifact)
 
     click_control "Replay"
-    assert_selector "main[data-playing]"
+    assert_selector "#{PLAYER}[data-playing]"
     assert_step 0, status: "active"
     assert_selector "[data-playback-target=logEmpty]"
   end
@@ -315,6 +576,70 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_no_selector "##{@steps[1].key} [data-chart=ring]"
   end
 
+  test "docked bar: shows once the scope leaves view, under the 96 px line, and drives the same state" do
+    open_thread
+    assert_no_selector DOCK
+
+    scroll_past_scope
+
+    assert_selector DOCK
+    assert_operator evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom"), :<=, 96
+    find("#{DOCK} [aria-label=Pause]").click
+    assert_not playing?
+    assert_step 0, status: "paused"
+
+    find("#{DOCK} [data-playback-target=mark][href='##{@steps[@gate].key}']").click
+    assert_step @gate, status: "paused"
+    assert_selector "#{DOCK} [data-playback-target=readoutName]", text: "#{format("%02d", @gate + 1)} #{@steps[@gate].name}"
+    assert_selector "#{DOCK} [data-playback-target=mark][aria-current=step][href='##{@steps[@gate].key}']"
+    assert_selector "#{DOCK} [data-playback-target=bay][data-current]", text: @steps[@gate].bay.upcase
+
+    find("#{DOCK} [aria-label=Play]").click
+    assert_selector "#{PLAYER}[data-playing]"
+
+    scroll_to_top
+    assert_no_selector DOCK
+  end
+
+  test "docked bar: still under the 96 px line at 1100 px wide" do
+    # Narrower, it wraps past it (#19, narrow screens).
+    window = page.driver.browser.manage.window
+    original = window.size
+    window.resize_to(1100, original.height)
+    open_thread
+    scroll_past_scope
+
+    assert_selector DOCK
+    assert_operator evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom"), :<=, 96
+  ensure
+    window.resize_to(original.width, original.height)
+  end
+
+  test "focus lands below the docked bar: the page keeps 96 px clear at its top" do
+    # A focused element scrolled into view would otherwise land under the bar
+    # (WCAG 2.4.11). Rows sit 6 px above it, so their strips land on it.
+    visit root_path
+
+    assert_equal "96px", evaluate_script("getComputedStyle(document.documentElement).scrollPaddingTop")
+  end
+
+  test "every docked control is a named target of at least 44 px, and axe passes while docked" do
+    open_thread
+    scroll_past_scope
+    assert_selector DOCK
+
+    sizes = evaluate_script(<<~JS)
+      [...document.querySelectorAll("#{DOCK} button, #{DOCK} a")]
+        .map(el => { const r = el.getBoundingClientRect(); return [el.getAttribute("aria-label"), r.width, r.height] })
+    JS
+    assert_equal 4 + @steps.size, sizes.size
+    sizes.each do |name, width, height|
+      assert name.present?, "a docked control has no name"
+      assert_operator [ width, height ].min, :>=, 44, "#{name} is #{width}×#{height}"
+    end
+    assert_accessible
+  end
+
   test "every control is a named target of at least 44 px" do
     open_thread
     click_control "Pause"
@@ -347,7 +672,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Opens the page and waits for the thread to start playing on step 1.
   def open_thread(pace: nil)
     visit root_path
-    assert_selector "main[data-playing]"
+    assert_selector "#{PLAYER}[data-playing]"
     self.pace(pace) if pace
   end
 
@@ -360,28 +685,91 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # earlier render wrote, value attributes included.
   def restore_from_cache
     execute_script(<<~JS)
-      const main = document.querySelector("main")
-      const controllers = main.dataset.controller
-      main.removeAttribute("data-controller")
-      setTimeout(() => main.setAttribute("data-controller", controllers), 50)
+      const player = document.querySelector("#{PLAYER}")
+      const controllers = player.dataset.controller
+      player.removeAttribute("data-controller")
+      setTimeout(() => player.setAttribute("data-controller", controllers), 50)
     JS
+    assert_selector PLAYER # reconnected: until then, no assertion on it means anything
   end
 
-  def playing? = has_selector?("main[data-playing]", wait: 0)
+  # Scrolls the page, as a script and not as a reader, until the scope is out of view.
+  def scroll_past_scope
+    execute_script("window.scrollTo(0, document.querySelector('[aria-label=Scope]').getBoundingClientRect().bottom + window.scrollY + 1)")
+  end
 
-  def click_control(label) = find("[aria-label='#{label}']").click
+  # Paused, and still paused on the same step after two steps' time: no timer
+  # may resume it (docs/rules/playback-yields.md).
+  def assert_stays_paused
+    assert_no_selector "#{PLAYER}[data-playing]"
+    step = current_step
+    sleep FAST * 6 * 2 / 1000.0
+    assert_not playing?
+    assert_equal step, current_step
+  end
+
+  # Keys pressed with focus on the page itself, not on a control.
+  def press(*keys)
+    execute_script("document.activeElement?.blur()")
+    keys.each { |key| page.driver.browser.action.send_keys(key).perform }
+  end
+
+  # Runs the block as a reader who asked for reduced motion.
+  def reduced_motion
+    browser = page.driver.browser
+    browser.execute_cdp("Emulation.setEmulatedMedia", features: [ { name: "prefers-reduced-motion", value: "reduce" } ])
+    yield
+  ensure
+    browser.execute_cdp("Emulation.setEmulatedMedia", features: [])
+  end
+
+  def scroll_to_top = execute_script("window.scrollTo(0, 0)")
+
+  # The followed line (design doc, section 6): a strip's top 96 px below the
+  # viewport's. Retries while a smooth scroll is still on its way.
+  def assert_strip_top(index, expected = 96)
+    script = "document.querySelector('##{@steps[index].key} h3 button').getBoundingClientRect().top"
+    page.document.synchronize do
+      actual = evaluate_script(script)
+      raise Capybara::ExpectationNotMet, "step #{index + 1}'s strip is #{actual} px from the top" unless (actual - expected).abs <= 2
+    end
+  end
+
+  def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
+
+  def click_control(label)
+    assert_scroll_at_rest
+    find("[aria-label=Scope] [aria-label='#{label}']").click
+  end
 
   def filter(label) = find("[data-filter-target=option]", exact_text: label)
 
   def click_filter(label) = filter(label).click
 
-  def target(index) = find("[data-playback-target=target][href='##{@steps[index].key}']")
+  def target(index)
+    assert_scroll_at_rest
+    find("[data-playback-target=target][href='##{@steps[index].key}']")
+  end
 
-  # A strip, once the bodies above it have finished opening or closing: a
-  # click while they move lands on whichever strip has slid under the pointer.
+  # A strip, once the bodies above it have finished opening or closing and a
+  # follow has landed: a click while they move lands on whichever strip has
+  # slid under the pointer.
   def strip(index)
     assert_no_transitions
+    assert_scroll_at_rest
     find("##{@steps[index].key} h3 button")
+  end
+
+  # The page has stopped moving: two reads a few frames apart agree.
+  def assert_scroll_at_rest
+    last = nil
+    page.document.synchronize do
+      sleep 0.05
+      now = evaluate_script("window.scrollY")
+      at_rest = now == last
+      last = now
+      raise Capybara::ExpectationNotMet, "the page is still scrolling" unless at_rest
+    end
   end
 
   def assert_no_transitions
