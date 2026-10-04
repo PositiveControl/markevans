@@ -203,6 +203,32 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row 0, state: "done", open: "false", status: "done"
   end
 
+  test "step timer ends: the page follows, the active strip's top 96 px from the viewport's" do
+    open_thread(pace: 150) # a 6 s step takes 900 ms
+
+    assert_step 1, status: active_word(1)
+    assert_strip_top 1
+    assert_selector DOCK # the scope has scrolled out of view
+  end
+
+  test "a target selected is an explicit jump: the page goes to it; step back and forward leave the page where it is" do
+    open_thread
+    click_control "Pause"
+
+    target(@gate).click
+    assert_strip_top @gate
+
+    scroll_to_top
+    sleep 0.5 # let the jump's smooth scroll come to rest
+    before = evaluate_script("window.scrollY")
+    click_control "Step forward"
+    assert_step @gate + 1, status: "paused"
+    click_control "Step back"
+    assert_step @gate, status: "paused"
+    sleep 0.5 # the time a follow would take to start and land
+    assert_equal before, evaluate_script("window.scrollY")
+  end
+
   test "a gate holds while active and reads cleared once passed" do
     open_thread
     target(@gate).click
@@ -342,7 +368,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     find("#{DOCK} [aria-label=Play]").click
     assert_selector "#{PLAYER}[data-playing]"
 
-    execute_script("window.scrollTo(0, 0)")
+    scroll_to_top
     assert_no_selector DOCK
   end
 
@@ -419,6 +445,18 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Scrolls the page, as a script and not as a reader, until the scope is out of view.
   def scroll_past_scope
     execute_script("window.scrollTo(0, document.querySelector('[aria-label=Scope]').getBoundingClientRect().bottom + window.scrollY + 1)")
+  end
+
+  def scroll_to_top = execute_script("window.scrollTo(0, 0)")
+
+  # The followed line (design doc, section 6): a strip's top 96 px below the
+  # viewport's. Retries while a smooth scroll is still on its way.
+  def assert_strip_top(index, expected = 96)
+    script = "document.querySelector('##{@steps[index].key} h3 button').getBoundingClientRect().top"
+    page.document.synchronize do
+      actual = evaluate_script(script)
+      raise Capybara::ExpectationNotMet, "step #{index + 1}'s strip is #{actual} px from the top" unless (actual - expected).abs <= 2
+    end
   end
 
   def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)

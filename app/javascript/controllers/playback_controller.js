@@ -60,18 +60,21 @@ export default class extends Controller {
 
   // Actions
 
+  // Play scrolls back to the active strip first, wherever the reader left
+  // the page (docs/rules/playback-yields.md).
   toggle() {
     this.touched = true
     if (this.playingValue) {
       this.playingValue = false
-    } else if (this.onLastStep) {
+      return
+    }
+    if (this.onLastStep) {
       this.openValue = []
       if (this.stepValue === 0) this.resetClock() // a one-step thread: go(0) stays put
       this.go(0)
-      this.playingValue = true
-    } else {
-      this.playingValue = true
     }
+    this.follow()
+    this.playingValue = true
   }
 
   back() { this.jumpTo(this.stepValue - 1) }
@@ -79,10 +82,12 @@ export default class extends Controller {
   forward() { this.jumpTo(this.stepValue + 1) }
 
   // A scope target or a docked mark: a link to its step without scripts, a
-  // jump with them. Each says which step in data-playback-index-param.
+  // jump with them, and the page goes there. Each says which step in
+  // data-playback-index-param.
   jump(event) {
     event.preventDefault()
     this.jumpTo(event.params.index)
+    this.follow()
   }
 
   // A strip: a done one opens or closes and playback carries on; any other
@@ -167,6 +172,7 @@ export default class extends Controller {
       this.playingValue = false
     } else {
       this.stepValue += 1
+      this.follow()
     }
   }
 
@@ -190,6 +196,31 @@ export default class extends Controller {
     }
   }
 
+  // Follow: the page scrolls the active strip to 96 px below the viewport's
+  // top (the rows' scroll margin). Only the controller calls this: on a step
+  // the clock moves to, on Play, and on an explicit jump. Nothing else moves
+  // the page.
+  //
+  // A value change renders a moment later (Stimulus hears it as an attribute
+  // change), so this waits a frame for that render. Then a body above that is
+  // rolling up still has its height, and the strip will rise by it, so the
+  // scroll waits for the roll-up to end too. Anything that happens meanwhile
+  // (another step, or the reader taking over) drops it.
+  follow() {
+    const step = this.followingStep = this.stepValue
+    const current = () => this.connected && this.followingStep === step && this.stepValue === step
+
+    requestAnimationFrame(async () => {
+      const rollUps = this.element.getAnimations({ subtree: true })
+        .filter(animation => animation.transitionProperty === "grid-template-rows")
+      await Promise.allSettled(rollUps.map(animation => animation.finished))
+      if (!current()) return
+
+      this.followingStep = null
+      this.rowTargets[step].scrollIntoView({ block: "start", behavior: this.reducedMotion ? "instant" : "smooth" })
+    })
+  }
+
   // The first render closes every body but the active one. That is the page
   // taking its starting state, not a change of state, so it must not animate
   // (docs/rules/motion-budget.md): data-settling turns transitions off until
@@ -203,7 +234,7 @@ export default class extends Controller {
   // Starts playing the first time the thread scrolls into view, unless the
   // reader has already taken the controls or asked for reduced motion.
   watchForThread() {
-    if (!this.hasThreadTarget || matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (!this.hasThreadTarget || this.reducedMotion) return
 
     this.observer = new IntersectionObserver(entries => {
       if (!entries.some(entry => entry.isIntersecting)) return
@@ -314,6 +345,8 @@ export default class extends Controller {
   secondsOf(index) {
     return Number(this.rowTargets[index]?.style.getPropertyValue("--seconds")) || 6
   }
+
+  get reducedMotion() { return matchMedia("(prefers-reduced-motion: reduce)").matches }
 
   get onLastStep() { return this.stepValue === this.rowTargets.length - 1 }
 

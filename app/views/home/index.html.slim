@@ -29,9 +29,11 @@ div data-controller="playback filter" data-action="visibilitychange@document->pl
 
     section class="pt-4 pb-16" aria-labelledby="thread-heading" data-playback-target="thread"
       h2#thread-heading class="sr-only" The thread
+      / scroll-mt-15 (90 px) puts a strip, 6 px into its row, 96 px below the
+      / viewport's top when the page follows it or a link lands on it.
       - @thread.cells.each.with_index(1) do |cell, number|
         - step = cell.step
-        div class="flex" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-lane=step.lane data-playback-target="row" data-filter-target="row"
+        div class="flex scroll-mt-15" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-lane=step.lane data-playback-target="row" data-filter-target="row"
           = render ChartCellComponent.new(cell:)
           div class="min-w-0 flex-1 py-1 pl-strip-gap"
             = render StripComponent.new(step:, number:)
