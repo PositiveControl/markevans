@@ -98,15 +98,25 @@ Development mail is captured by Letter Opener at `/letter_opener`.
 
 ### Deployment
 
-Deployed with Kamal 2. Fill in `config/deploy.yml` (image, server hosts,
-domain) and `.kamal/secrets`, then:
+Deployed with Kamal 2. First replace the placeholders in `config/deploy.yml`
+(`your-username`, `YOUR_SERVER_IP`, `your-domain.com`), then define every
+secret it declares in `.kamal/secrets`. Kamal stops on any that is missing:
+
+| Secret | Used by |
+|---|---|
+| `KAMAL_REGISTRY_PASSWORD` | Pushing the image to the registry |
+| `RAILS_MASTER_KEY` | The app's credentials |
+| `DATABASE_URL` | The primary database |
+| `QUEUE_DATABASE_URL`, `CABLE_DATABASE_URL`, `CACHE_DATABASE_URL` | The Solid Queue, Cable and Cache databases |
+| `POSTGRES_PASSWORD` | The Postgres accessory |
+
+Then:
 
 ```bash
 kamal setup            # first deploy: provisions the server and accessories
 kamal deploy           # every deploy after that
 ```
 
-Production needs `RAILS_MASTER_KEY`, `DATABASE_URL`, and `POSTGRES_PASSWORD`.
 Kamal checks `/up` for health. Server hardening is in
 [docs/sop/harden-a-kamal-server.md](docs/sop/harden-a-kamal-server.md).
 
