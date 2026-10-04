@@ -17,6 +17,9 @@
 # Named DeliveryThread, not Thread: Thread is a Ruby core class.
 module DeliveryThread
   ROOT = Rails.root.join("content/threads")
+  # The threads a route reads. Each must exist: content:schema fails without
+  # one, rather than leave its route to raise on the live site.
+  ROUTED = %w[home].freeze
 
   KINDS = %w[command human machine optional].freeze
   # The kinds that are a gate: a step that clears or holds, not a command.

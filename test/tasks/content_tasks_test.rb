@@ -62,7 +62,7 @@ class ContentTasksTest < ActiveSupport::TestCase
     assert_includes err, "home.yml: step 1: must be a mapping"
   end
 
-  test "content:check passes a valid thread with no placeholders" do
+  test "content:check passes the content tree once every placeholder is written" do
     FileUtils.cp_r(Rails.root.join("content/."), @root)
     # Every placeholder written, as the live content will be: a link's url
     # becomes an address, everything else a word.
@@ -85,14 +85,16 @@ class ContentTasksTest < ActiveSupport::TestCase
     assert_includes err, "contact.yml: missing description"
   end
 
-  test "content:schema fails when the work list or a page a route reads is missing" do
+  test "content:schema fails when a thread, the work list or a page a route reads is missing" do
     FileUtils.cp_r(Rails.root.join("content/."), @root)
+    FileUtils.rm(File.join(@root, "threads/home.yml"))
     FileUtils.rm(File.join(@root, "work.yml"))
     FileUtils.rm(File.join(@root, "pages/contact.yml"))
     schema = Rake::Task["content:schema"]
     schema.reenable
 
     _, err = capture_io { assert_raises(SystemExit) { with_root { schema.invoke } } }
+    assert_includes err, "threads/home.yml: missing, and a route reads it"
     assert_includes err, "work.yml: missing, and a route reads it"
     assert_includes err, "pages/contact.yml: missing, and a route reads it"
   end

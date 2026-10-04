@@ -31,7 +31,9 @@ namespace :content do
 
     # A missing file a route reads would pass every check below and then 500
     # on the live site, so its absence is an error too.
-    missing = ([ "work.yml" ] + SitePage::ROUTED.map { |key| "pages/#{key}.yml" }).reject { |path| root.join(path).exist? }
+    required = DeliveryThread::ROUTED.map { |key| "threads/#{key}.yml" } + [ "work.yml" ] +
+      SitePage::ROUTED.map { |key| "pages/#{key}.yml" }
+    missing = required.reject { |path| root.join(path).exist? }
     errors = missing.map { |path| "#{path}: missing, and a route reads it" }
 
     errors += loads.filter_map do |path, reader|
