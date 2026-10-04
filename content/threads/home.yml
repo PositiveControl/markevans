@@ -126,6 +126,8 @@ steps:
             v: "Recorded so every later command diffs against the right base."
           - k: "draft PR to main"
             v: "Opened with the first slice, so CI runs on the feature from day one."
+          - k: "last action: the walkthrough"
+            v: "The steps this change adds to the reviewer walkthrough, or one line on why it has nothing to show."
       - title: "How rules are selected"
         rows:
           - k: "CLAUDE.md"
@@ -242,8 +244,8 @@ steps:
             v: "Must be green before anything is pushed."
           - k: "docs"
             v: "Every placeholder is completed or deleted. The index is checked for duplicates and dead links."
-          - k: "bin/qa-walkthrough"
-            v: "A user-facing branch needs a script that drives a browser through the pages it touched."
+          - k: "/qa_walkthrough"
+            v: "A user-facing branch carries a reviewer walkthrough: a script in script/qa/ that builds the data, drives a browser to each page the branch touched and spotlights what changed. Skipping it is my call, and the PR body says why."
           - k: "PR"
             v: "Title carries the issue number. Body carries Closes #n."
   - key: g3
@@ -308,7 +310,7 @@ steps:
           - k: "/pr_review"
             v: "Full-context diff review. Posts comments."
           - k: "/pr_qa"
-            v: "A guided manual QA pass with a structured report."
+            v: "A guided manual QA pass with a structured report. It starts from the walkthrough's screenshots, and the hands-on part begins where the walkthrough stops."
           - k: "/pr_fix_ci"
             v: "Reads a failed run and fixes it locally. Pushing the fix is mine."
     note: "[Review comments from the example. TBD.]"
