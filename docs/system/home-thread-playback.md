@@ -135,13 +135,13 @@ finish, then scrolls: smoothly, or at once under reduced motion. If the step
 changes or the reader takes over in the meantime, the scroll is dropped.
 
 Reader input always wins (`docs/rules/playback-yields.md`). The wrapper listens
-on the window for `wheel`, `touchmove` and the keys that scroll a page
-(arrows, Page Up and Down, Home, End, Shift+Space), and each pauses and drops a
-follow on its way. It is the reader's input, not the `scroll` event, so the
-controller's own scrolls never count. `touchmove` rather than `touchstart`,
-so a tap on a done strip mid-play leaves playback alone. Before playback has
-first started, a scroll is how the thread comes into view, so it counts as
-nothing. Nothing resumes by itself; the reader presses Play.
+on the window for `wheel`, `touchmove` and the keys that scroll a page (arrows,
+Page Up and Down, Home, End, Shift+Space, and Space on a focused link), and
+each pauses and drops a follow on its way. It is the reader's input, not the
+`scroll` event, so the controller's own scrolls never count. `touchmove` rather
+than `touchstart`, so a tap on a done strip mid-play leaves playback alone.
+Before playback has first started, a scroll is how the thread comes into view,
+so it counts as nothing. Nothing resumes by itself; the reader presses Play.
 
 ## The docked bar
 
@@ -175,7 +175,7 @@ connects:
 
 | Key | Does |
 |---|---|
-| Space | Play or pause, as the play button. On a focused button, link or `summary` it presses that instead |
+| Space | Play or pause, as the play button. On a focused button or `summary` it presses that instead. On a focused link it scrolls the page, as a browser does, so it pauses like a scroll key |
 | `j` | Step forward |
 | `k` | Step back |
 | `g` then 1 to the gate count | Jumps to that gate, in thread order, and the page goes there. Any other key after `g` drops it and keeps its own meaning |

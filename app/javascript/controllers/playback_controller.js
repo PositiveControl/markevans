@@ -139,7 +139,7 @@ export default class extends Controller {
   // The keyboard, listed in the footer: Space plays and pauses, j and k step,
   // and g then a number jumps to that gate. The keys that scroll the page
   // yield. Keys in a text field are the field's, and Space on a focused
-  // control presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through.
+  // button presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through.
   key(event) {
     if (event.ctrlKey || event.altKey || event.metaKey || this.typing(event)) return
 
@@ -151,8 +151,10 @@ export default class extends Controller {
 
     switch (event.key) {
       case " ":
-        if (event.shiftKey) return this.yield() // Shift+Space scrolls up
-        if (event.target.closest?.("button, a[href], summary")) return
+        // Shift+Space scrolls up, and on a link Space scrolls down: a link
+        // takes Enter. On a button or summary it presses that.
+        if (event.shiftKey || event.target.closest?.("a[href]")) return this.yield()
+        if (event.target.closest?.("button, summary")) return
         event.preventDefault()
         return this.toggle()
       case "j": return this.forward()

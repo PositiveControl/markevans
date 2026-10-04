@@ -249,6 +249,15 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step 1, status: "paused"
   end
 
+  test "keys: Space on a focused link scrolls the page, so it yields like any scroll key" do
+    open_thread
+
+    execute_script("document.querySelector('[aria-label=Scope] [data-playback-target=target]').focus()")
+    page.driver.browser.action.send_keys(:space).perform
+
+    assert_stays_paused
+  end
+
   test "keys: Space on a focused control presses it, and keys in a text field are the field's" do
     open_thread
     click_control "Pause"
