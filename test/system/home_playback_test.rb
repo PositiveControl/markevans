@@ -209,8 +209,12 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
     pace FAST
 
-    assert_step 1, status: active_word(1)
-    assert_equal @steps[1].key, URI(current_url).fragment
+    # At this pace a step passes between two browser calls, so the hash and
+    # the active row are read together.
+    page.document.synchronize do
+      hash, active = evaluate_script("[location.hash.slice(1), document.querySelector('[data-playback-target=row][data-state=active]')?.id]")
+      raise Capybara::ExpectationNotMet, "hash #{hash.inspect}, active #{active.inspect}" unless hash.present? && hash != @steps[0].key && hash == active
+    end
     assert_equal entries, evaluate_script("history.length"), "written with replaceState, not pushed"
     target(@gate).click
     assert_equal @steps[@gate].key, URI(current_url).fragment
