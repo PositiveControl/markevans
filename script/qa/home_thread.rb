@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # The home thread (#21): headline and intro, the legend, every strip with its
-# body, the git graph drawn beside the strips (#15), and playback from the
-# scope (#16). The page starts playing as the thread comes into view, so the
+# body, the git graph drawn beside the strips (#15), playback from the scope
+# (#16), and the strip bay, controller filter and log (#17). The page starts playing as the thread comes into view, so the
 # walk pauses it first and the reading steps run on a still page.
 #
 # Builds no data: everything shown comes from content/threads/home.yml, read
@@ -15,8 +15,8 @@
 #
 # Not walked: the page without scripts (the system tests cover it, axe
 # included), the step timer running out (it would make the walk wait), and
-# what is not built yet: the bay, filter and log (4), follow and the docked
-# bar (5), narrow screens (6), and the other pages (7).
+# what is not built yet: follow and the docked bar (5), narrow screens (6),
+# and the other pages (7). The page budget is a test, not a page to walk.
 require Rails.root.join("lib/qa_walkthrough")
 
 thread = DeliveryThread.fetch(:home)
@@ -27,6 +27,8 @@ side = thread.steps.find { |step| step.git.event == "loop" }
 merge = thread.steps.find { |step| step.git.event == "merge" }
 sector = thread.cells.drop(1).find(&:sector)
 last = thread.steps.last
+review = thread.steps.find { |step| step.bay == "Up for Review" }
+agent = thread.steps.find { |step| step.lane == "agent" }
 
 QaWalkthrough.run("home_thread") do
   step "The page opens on the headline and the positive-control paragraph" do
@@ -43,6 +45,11 @@ QaWalkthrough.run("home_thread") do
   step "Pause: the sweep and step 1's remaining-time line freeze, and its status reads paused" do
     find("[aria-label=Pause]").click
     spotlight "##{first.key} [data-playback-target=status]", note: "the 2 px line along the strip's bottom edge is the time left"
+  end
+
+  step "The strip bay fills step 1's bay, #{first.bay}, and the log is still empty" do
+    spotlight "[aria-label='Strip bay'] [data-current]", note: "Todo, In Progress, Up for Review, Done"
+    spotlight "[aria-labelledby=log-heading]", note: "one line until a step finishes"
   end
 
   step "The legend names every symbol the chart and scope draw" do
@@ -81,6 +88,22 @@ QaWalkthrough.run("home_thread") do
     spotlight "##{gate.key}", note: "the leader swings to its target; the status reads paused, and hold while playing"
   end
 
+  step "Jump to #{review.name}: the bay moves to #{review.bay}, and the log lists every finished step, newest first" do
+    find("[data-playback-target=target][href='##{review.key}']").click
+    spotlight "[aria-label='Strip bay'] [data-current]", note: review.bay
+    spotlight "[aria-labelledby=log-heading]", note: "gates cleared out of #{thread.steps.count(&:gate?)}, and the artifacts made; it scrolls inside 220 px"
+  end
+
+  step "Controller filter, Human: every Agent and CI row drops back, none hidden" do
+    find("[data-filter-target=option]", exact_text: "Human").click
+    spotlight "##{agent.key}[data-dim]", note: "graph at 40 percent, strip ground gone, text quiet; playback state unchanged"
+  end
+
+  step "Controller filter, All: every row comes back" do
+    find("[data-filter-target=option]", exact_text: "All").click
+    spotlight "##{agent.key}:not([data-dim])"
+  end
+
   step "#{sector.step.name} opens the #{sector.sector} sector: a dashed edge and a darker band" do
     spotlight "##{sector.step.key} [data-chart=sector]", note: "where the bay changes from the row above"
   end
@@ -95,11 +118,11 @@ QaWalkthrough.run("home_thread") do
 
   step "Selecting a done strip reopens it; playback does not move" do
     find("##{first.key} h3 button").click
-    spotlight "##{first.key}[data-open=true]", note: "the active step is still #{gate.name}, paused"
+    spotlight "##{first.key}[data-open=true]", note: "the active step is still #{review.name}, paused"
   end
 
   step "Restart: step 1, reopened strips closed, paused" do
     find("[aria-label=Restart]").click
-    spotlight "##{first.key}[data-state=active]", note: "press Play to run the thread from the top"
+    spotlight "##{first.key}[data-state=active]", note: "the bay is back on #{first.bay} and the log is empty; press Play to run the thread from the top"
   end
 end
