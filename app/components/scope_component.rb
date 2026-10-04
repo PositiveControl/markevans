@@ -18,7 +18,7 @@
 # connects. Every element states something (docs/rules/every-element-answers.md):
 # the sweep turns only while playing.
 class ScopeComponent < ApplicationComponent
-  Target = Data.define(:step, :number, :angle, :style)
+  Target = Data.define(:step, :index, :number, :angle, :style)
 
   FIRST = 135.0
   ARC = 270.0
@@ -44,7 +44,7 @@ class ScopeComponent < ApplicationComponent
     gaps = [ @steps.size - 1, 1 ].max
     @steps.each_with_index.map do |step, index|
       angle = FIRST + ARC * index / gaps
-      Target.new(step:, number: format("%02d", index + 1), angle:, style: position(angle))
+      Target.new(step:, index:, number: format("%02d", index + 1), angle:, style: position(angle))
     end
   end
 

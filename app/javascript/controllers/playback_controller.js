@@ -18,7 +18,7 @@ import { Controller } from "@hotwired/stimulus"
  */
 
 export default class extends Controller {
-  static targets = ["thread", "row", "strip", "status", "line", "target", "live", "play",
+  static targets = ["thread", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
     "logEntry", "logEmpty", "gatesCleared", "artifacts"]
 
@@ -76,10 +76,11 @@ export default class extends Controller {
 
   forward() { this.jumpTo(this.stepValue + 1) }
 
-  // A scope target: a link to its step without scripts, a jump with them.
+  // A scope target or a docked mark: a link to its step without scripts, a
+  // jump with them. Each says which step in data-playback-index-param.
   jump(event) {
     event.preventDefault()
-    this.jumpTo(this.targetTargets.indexOf(event.currentTarget))
+    this.jumpTo(event.params.index)
   }
 
   // A strip: a done one opens or closes and playback carries on; any other
@@ -230,17 +231,19 @@ export default class extends Controller {
       this.statusTargets[index].textContent = this.word(state, this.gateAt(index), playing)
     })
 
-    this.targetTargets.forEach((target, index) => {
-      target.dataset.state = index < step ? "done" : index === step ? "active" : "pending"
-      index === step ? target.setAttribute("aria-current", "step") : target.removeAttribute("aria-current")
-    })
+    // The scope's targets and the docked bar's marks: one per step, each.
+    for (const marks of [this.targetTargets, this.markTargets]) {
+      marks.forEach((mark, index) => {
+        mark.dataset.state = index < step ? "done" : index === step ? "active" : "pending"
+        index === step ? mark.setAttribute("aria-current", "step") : mark.removeAttribute("aria-current")
+      })
+    }
 
     this.renderReadout(step, playing)
     this.renderBay(step)
     this.renderLog(step)
-    if (this.hasPlayTarget) {
-      this.playTarget.setAttribute("aria-label", playing ? "Pause" : this.onLastStep ? "Replay" : "Play")
-    }
+    const label = playing ? "Pause" : this.onLastStep ? "Replay" : "Play"
+    this.playTargets.forEach(play => play.setAttribute("aria-label", label))
   }
 
   renderReadout(step, playing) {
@@ -249,7 +252,7 @@ export default class extends Controller {
 
     const { number, name, detail, kind, gate, angle } = target.dataset
     this.element.style.setProperty("--leader-angle", `${angle}deg`)
-    if (this.hasReadoutNameTarget) this.readoutNameTarget.textContent = `${number} ${name}`
+    this.readoutNameTargets.forEach(readout => { readout.textContent = `${number} ${name}` })
     if (this.hasReadoutDetailTarget) this.readoutDetailTarget.textContent = detail
     if (this.hasReadoutStatusTarget) {
       this.readoutStatusTarget.textContent = this.word("active", gate === "true", playing)

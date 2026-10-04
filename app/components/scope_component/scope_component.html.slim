@@ -7,7 +7,7 @@ div class="relative aspect-square w-full overflow-hidden rounded-full border bor
   span class="absolute top-1/2 left-1/2 w-[38%] origin-left rotate-(--leader-angle) border-t border-ink transition-transform duration-300 ease-out motion-reduce:transition-none in-data-settling:transition-none" hidden=true aria-hidden="true" data-scope="leader" data-playback-target="live"
   - targets.each do |target|
     - step = target.step
-    a class="absolute flex size-target -translate-1/2 items-center justify-center" style=target.style href="##{step.key}" aria-label="Go to step #{target.number.to_i}: #{step.name}" data-playback-target="target" data-action="playback#jump" data-angle=target.angle data-number=target.number data-name=step.name data-detail=detail(step) data-kind=step.kind data-gate=step.gate?.to_s
+    a class="absolute flex size-target -translate-1/2 items-center justify-center" style=target.style href="##{step.key}" aria-label="Go to step #{target.number.to_i}: #{step.name}" data-playback-target="target" data-action="playback#jump" data-playback-index-param=target.index data-angle=target.angle data-number=target.number data-name=step.name data-detail=detail(step) data-kind=step.kind data-gate=step.gate?.to_s
       span class=mark_classes(step) aria-hidden="true"
   div class="absolute top-1/2 left-1/2 max-w-1/2 -translate-1/2 border border-rule-strong bg-paper px-2 py-1 text-center" hidden=true data-scope="readout" data-playback-target="live"
     p class="font-medium wrap-anywhere" data-playback-target="readoutName"
