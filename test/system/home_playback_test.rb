@@ -237,6 +237,8 @@ class HomePlaybackTest < ApplicationSystemTestCase
     human.each { |index| assert_selector "##{@steps[index].key}:not([data-dim])" }
     @steps.each { |step| assert_selector "##{step.key} h3", visible: true }
     assert_computed "0.4", @steps[others.first].key, "[data-chart=graph]", "opacity"
+    upcoming = others.find { |index| index > others.first }
+    assert_computed "0.35", @steps[upcoming].key, "[data-chart=graph]", "opacity" # dimmer already: never brighter for filtering
     assert playing?
 
     click_filter "All"
