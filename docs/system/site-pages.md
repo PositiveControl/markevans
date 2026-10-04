@@ -56,7 +56,10 @@ They report every schema problem in one error and read each file once outside
 development. `SitePage.fetch` matches a key only against files that exist, and
 never joins it into a path. `bin/rails content:schema` loads all of them, so a
 broken edit fails the production build (`docs/sop/edit-the-home-thread.md`
-describes the gates). Write lists one item per line. The placeholder gate reads
+describes the gates). It also fails when a file a route reads is missing:
+`content/work.yml`, each page in `SitePage::ROUTED` and each thread in
+`DeliveryThread::ROUTED`. A test in `test/tasks/content_tasks_test.rb` holds
+both lists to the keys the controllers pass to `fetch`. Write lists one item per line. The placeholder gate reads
 a flow list, `[a, b]`, as a placeholder.
 
 ### Change a project or a page
@@ -69,7 +72,8 @@ a flow list, `[a, b]`, as a placeholder.
 3. `bin/rails content:placeholders` lists what is still in brackets. It must be
    empty before a production build.
 
-A new page needs a route, a controller, a view and a sitemap entry. Copy one
+A new page needs a route, a controller, a view, a sitemap entry and its key
+in `SitePage::ROUTED`; the test above fails until the key is there. Copy one
 of the singular pages (`resource :contact`) and follow
 `docs/sop/add-seo-to-a-page.md`.
 
