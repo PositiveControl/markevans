@@ -67,6 +67,13 @@ class TokensTest < ActiveSupport::TestCase
     assert_token "--breakpoint-chart", "900px"
     assert_token "--container-gutter", "84px"
     { "lane-main" => "14px", "lane-feature" => "38px", "lane-side" => "62px" }.each { |name, value| assert_token "--spacing-#{name}", value }
+
+    # The gutter's lanes are the default; the full column's sit under chart:.
+    theme = TOKENS[/@theme \{.*?\n\}/m]
+    wide = TOKENS[/@variant chart \{(.*?)\}/m, 1]
+    assert_match(/--spacing-lane-main:\s*14px;/, theme)
+    assert_match(/--spacing-lane-main:\s*44px;/, wide)
+    assert_match(/--spacing-lane-side:\s*256px;/, wide)
   end
 
   test "the app stylesheet imports the tokens and defines no palette of its own" do

@@ -190,7 +190,7 @@ QaWalkthrough.run("home_thread") do
 
   step "Wheel the thread into view: it starts playing, and the rest of that scroll leaves it playing" do
     # One gesture, ticks 50 ms apart, sent as one chain as the system test does.
-    gesture = page.driver.browser.action
+    gesture = page.driver.browser.action.tap { |action| action.default_scroll_duration = 0 }
     30.times { gesture.scroll_by(0, 120).pause(duration: 0.05) }
     gesture.perform
     find("#{PLAYER}[data-playing]")
@@ -211,6 +211,8 @@ QaWalkthrough.run("home_thread") do
     page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride", width: 1024, height: 900, deviceScaleFactor: 1, mobile: false)
     bottom = evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom")
     spotlight "#{DOCK} [aria-label=Steps]", note: "bar bottom at #{bottom.round} px, above the 96 px line"
+  ensure
+    # Every step runs even after one fails, so this one always ends the emulation.
     page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 end

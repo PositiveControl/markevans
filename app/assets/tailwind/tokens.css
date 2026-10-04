@@ -113,9 +113,11 @@
   --spacing-strip-gap: 20px;       /* chart cell to strip */
   --container-gutter: 84px;        /* the chart cell below 900 px */
 
-  /* One breakpoint: from 900 px (chart:) the chart is the full column and the
-     top row sits side by side. Below it the page is a phone's (design doc,
-     section 4). Mobile first, as docs/rules/tailwind.md asks. */
+  /* The page's breakpoint: from 900 px (chart:) the chart is the full column
+     and the top row sits side by side. Below it the page is a phone's (design
+     doc, section 4). Mobile first, as docs/rules/tailwind.md asks. The docked
+     bar alone also steps at Tailwind's lg: and xl:, by what fits in its row
+     (docs/system/home-thread-playback.md, The docked bar). */
   --breakpoint-chart: 900px;
 
   /* Strip anatomy (design doc, section 4): w-step-number and so on */
