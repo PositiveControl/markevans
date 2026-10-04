@@ -75,6 +75,7 @@ Procedures somebody will need to repeat.
 - [Find slow tests](../docs/sop/find-slow-tests.md) — read the Slowpoke report and act on it
 - [Update from the template](../docs/sop/update-from-the-template.md) — three-way merge the alignment layer against a newer template
 - [Edit the home thread](../docs/sop/edit-the-home-thread.md) — change a step in content/threads/home.yml, the git block rules, and what the schema, placeholder and literal-color checks catch
+- [Serve the dev server over Tailscale](../docs/sop/serve-dev-over-tailscale.md) — `tailscale serve` route, allowed hosts, what breaks behind the proxy
 <!-- sop:end -->
 
 ## QA — `docs/qa/`
