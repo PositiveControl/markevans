@@ -120,9 +120,9 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [real-controls](real-controls.md) | 270 | Buttons and links, named, 44 px, ARIA state |
 | [motion-budget](motion-budget.md) | 350 | Motion on state change only, 150–300 ms |
 | [one-playback-state](one-playback-state.md) | 220 | One controller owns step, playing, reopened |
-| [playback-yields](playback-yields.md) | 320 | Reader input wins; nothing auto-resumes |
+| [playback-yields](playback-yields.md) | 450 | Reader input wins; nothing auto-resumes |
 
-**Total corpus:** ~26,310 tokens across 51 rules. Typical read: this index (~3000)
+**Total corpus:** ~26,440 tokens across 51 rules. Typical read: this index (~3000)
 plus one or two rules (190–1210). Reading the whole corpus is a bug, not thoroughness.
 
 These figures are generated from the files by `bin/doc-tokens`, not typed by hand —

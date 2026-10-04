@@ -109,7 +109,7 @@ rewinds the line's animation.
 | Step back, step forward | Moves one step and pauses | #16 |
 | A target, docked mark or pending strip selected | Jumps there and pauses. A target or mark is a link to its step; the controller cancels the navigation, and the page goes to the step. A strip is already in view | #16; docked mark and going there, #18 |
 | A done strip selected | Opens or closes it. Playback state unchanged | #16 |
-| Reader scrolls by wheel, touch or keys | Pauses, and drops a follow on its way. Before playback first starts it counts as nothing: that scroll is how the thread comes into view. The wheel or touch scroll that started it counts as nothing until it goes quiet for 300 ms | #18; arrival, #19 |
+| Reader scrolls by wheel, touch or keys | Pauses, and drops a follow on its way. Before playback first starts it counts as nothing: that scroll is how the thread comes into view. The wheel or touch scroll that started it does not pause until it goes quiet for 300 ms, though it drops a follow and a waiting `g` | #18; arrival, #19 |
 | Tab becomes hidden | Pauses. Does not resume by itself | #16 |
 | Restart | Step 1, reopened strips cleared, paused | #16 |
 | Page restored from Turbo's cache | Comes back on the step it left, paused, and does not start on view: the values persist in data attributes, so `connect()` sets playing false and counts rows that already carry a `data-state` as a page the reader has been on. A thread that had played out (`data-ended`) comes back played out, its last step still in the log | #16; played out, #17 |
@@ -150,8 +150,11 @@ so it counts as nothing. Where the thread starts below the fold, as on a
 phone, the wheel or touch scroll that brings it into view starts it and then
 goes on for a moment, momentum included. That is still the reader arriving,
 not taking over: `scroll()`, which `wheel` and `touchmove` call, lets their
-input pass as nothing until it has been quiet for 300 ms (`SCROLL_QUIET`),
-and the next one yields. Keys and a press on the scrollbar call `yield()`
+input pass without pausing until it has been quiet for 300 ms
+(`SCROLL_QUIET`), and the next one yields. It still drops a follow on its way
+and a waiting `g`: only the pause is spared. The grace applies only when a
+wheel or touch scroll heard in the last 300 ms is what started playback, so a
+thread already in view on load has none. Keys and a press on the scrollbar call `yield()`
 directly and pause at once. Nothing resumes by itself; the reader presses Play.
 
 ## The docked bar
