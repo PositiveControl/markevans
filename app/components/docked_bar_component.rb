@@ -14,8 +14,10 @@
 # Rendered hidden: without scripts there is nothing to dock (section 6). Once
 # playback connects, the bar still shows only while the controller marks the
 # page data-docked, so while the scope is in view its copies of the controls
-# are out of the tab order and the accessibility tree. It stays under 96 px
-# tall, the line the page follows the active strip to.
+# are out of the tab order and the accessibility tree. It is one row at every
+# width, under 96 px, the line the page follows the active strip to: below
+# 1280 px the bay gives way, below 1024 px the marks, and the name is cut to
+# one line. On a phone the strips are the way to jump (#19).
 class DockedBarComponent < ApplicationComponent
   Mark = Data.define(:step, :index)
 

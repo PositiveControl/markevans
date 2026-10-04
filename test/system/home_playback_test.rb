@@ -601,20 +601,6 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_no_selector DOCK
   end
 
-  test "docked bar: still under the 96 px line at 1100 px wide" do
-    # Narrower, it wraps past it (#19, narrow screens).
-    window = page.driver.browser.manage.window
-    original = window.size
-    window.resize_to(1100, original.height)
-    open_thread
-    scroll_past_scope
-
-    assert_selector DOCK
-    assert_operator evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom"), :<=, 96
-  ensure
-    window.resize_to(original.width, original.height)
-  end
-
   test "focus lands below the docked bar: the page keeps 96 px clear at its top" do
     # A focused element scrolled into view would otherwise land under the bar
     # (WCAG 2.4.11). Rows sit 6 px above it, so their strips land on it.

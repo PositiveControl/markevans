@@ -42,6 +42,11 @@ class StripComponent < ApplicationComponent
   # text turns quiet, so the strip stays legible (docs/rules/real-controls.md).
   DIM = "in-data-dim:bg-transparent in-data-dim:border-rule in-data-dim:text-quiet"
 
+  # Ctl and Bay: a third of the second line on a phone, their own width from
+  # 900 px (design doc, section 4).
+  CELL = "flex shrink-0 basis-1/3 flex-col justify-center self-stretch border-rule px-2 text-cell uppercase " \
+    "wrap-anywhere chart:basis-auto"
+
   # @param step [DeliveryThread::Step]
   # @param number [Integer] the step's position, from 1
   def initialize(step:, number:)
@@ -65,7 +70,8 @@ class StripComponent < ApplicationComponent
   end
 
   def status_classes
-    class_names("flex w-step-status shrink-0 items-center justify-center self-stretch border-l border-rule",
+    class_names("flex w-step-status shrink-0 basis-1/3 items-center justify-center self-stretch border-t border-l",
+      "border-rule chart:basis-auto chart:border-t-0",
       "text-label font-medium uppercase", STATUS.fetch(step.kind))
   end
 end
