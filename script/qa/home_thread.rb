@@ -189,13 +189,12 @@ QaWalkthrough.run("home_thread") do
   end
 
   step "Wheel the thread into view: it starts playing, and the rest of that scroll leaves it playing" do
-    40.times do
-      break if has_selector?("#{PLAYER}[data-playing]", wait: 0)
-      page.driver.browser.action.scroll_by(0, 120).perform
-    end
-    3.times { page.driver.browser.action.scroll_by(0, 120).perform }
+    # One gesture, ticks 50 ms apart, sent as one chain as the system test does.
+    gesture = page.driver.browser.action
+    30.times { gesture.scroll_by(0, 120).pause(duration: 0.05) }
+    gesture.perform
     find("#{PLAYER}[data-playing]")
-    spotlight "##{first.key}[data-state=active]", note: "still playing: the scroll that arrived is not a new one until it stops for 300 ms"
+    spotlight "[data-playback-target=row][data-state=active]", note: "still playing: the scroll that arrived is not a new one until it stops for 300 ms"
   end
 
   step "The chart is an 84 px gutter, lanes at 14, 38 and 62 px, no labels; each strip wraps to two lines" do
@@ -204,8 +203,8 @@ QaWalkthrough.run("home_thread") do
   end
 
   step "The docked bar is one row: the controls and the step's name, and nothing scrolls sideways" do
-    width = evaluate_script("document.documentElement.scrollWidth")
-    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "page #{width} px wide in a 390 px window; jump from the strips"
+    page_width, viewport = evaluate_script("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
+    spotlight "#{DOCK} [data-playback-target=readoutName]", note: "page #{page_width} px wide in a #{viewport} px viewport; jump from the strips"
   end
 
   step "At 1024 px the docked bar keeps its marks, drops the bay, and stays above the followed strip" do
