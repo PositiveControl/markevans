@@ -412,6 +412,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   test "a restored page whose thread had played out still counts the last step" do
     open_thread
+    hold 0
     target(@steps.size - 2).click
     pace FAST
     click_control "Play"
@@ -426,7 +427,9 @@ class HomePlaybackTest < ApplicationSystemTestCase
   end
 
   test "step timer ends: next step active, previous strip rolls up" do
-    open_thread(pace: FAST)
+    open_thread
+    hold 1
+    pace FAST
 
     assert_step 1, status: "active"
     assert_row 0, state: "done", open: "false", status: "done"
@@ -660,6 +663,12 @@ class HomePlaybackTest < ApplicationSystemTestCase
     visit root_path
     assert_selector "#{PLAYER}[data-playing]"
     self.pace(pace) if pace
+  end
+
+  # Gives a step ten minutes, so at FAST a test can read it as active before
+  # it ends. The controller reads a step's time from --seconds as it starts.
+  def hold(index)
+    execute_script("document.getElementById('#{@steps[index].key}').style.setProperty('--seconds', 600)")
   end
 
   # Sets the playback pace. The controller restarts the current step's clock.
