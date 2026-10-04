@@ -1,7 +1,9 @@
 # The content gates, run together by content:check ahead of a production build.
 #
 # content:schema loads every thread in content/threads/ through DeliveryThread,
-# so a broken edit fails the build instead of the first request to the page.
+# content/work.yml through Portfolio and every page in content/pages/ through
+# SitePage, so a broken edit fails the build instead of the first request to the
+# page.
 #
 # content:placeholders is the placeholder gate (docs/rules/no-invented-content.md).
 # Content still to be supplied is written in square brackets, "[n]",
@@ -18,23 +20,29 @@
 namespace :content do
   content_root = -> { Pathname(ENV.fetch("CONTENT_ROOT", Rails.root.join("content"))) }
 
-  desc "Fail if a thread in content/threads breaks the schema"
+  desc "Fail if a thread, the work list or a page in content/ breaks its schema"
   task schema: :environment do
-    threads = content_root.call.join("threads").glob("*.yml").sort
-    errors = threads.filter_map do |path|
-      DeliveryThread.load(path)
+    root = content_root.call
+    threads = root.join("threads").glob("*.yml").sort
+    pages = root.join("pages").glob("*.yml").sort
+    work = [ root.join("work.yml") ].select(&:exist?)
+    loads = threads.map { |path| [ path, DeliveryThread ] } + work.map { |path| [ path, Portfolio ] } +
+      pages.map { |path| [ path, SitePage ] }
+
+    errors = loads.filter_map do |path, reader|
+      reader.load(path)
       nil
-    rescue DeliveryThread::Invalid => e
+    rescue DeliveryThread::Invalid, Portfolio::Invalid, SitePage::Invalid => e
       e.message
     end
 
     if errors.any?
-      warn "Threads that break the schema (docs/sop/edit-the-home-thread.md):"
+      warn "Content that breaks its schema (docs/sop/edit-the-home-thread.md, docs/system/site-pages.md):"
       errors.each { |error| error.each_line { |line| warn "  #{line.chomp}" } }
       exit 1
     end
 
-    puts "content: threads: #{threads.size} valid"
+    puts "content: threads: #{threads.size} valid, work: #{work.size} valid, pages: #{pages.size} valid"
   end
 
   desc "Fail if content/ holds a [placeholder] or TBD"
@@ -57,7 +65,7 @@ namespace :content do
     puts "content: no placeholders"
   end
 
-  desc "Run every content gate: the thread schema, then placeholders"
+  desc "Run every content gate: the schemas, then placeholders"
   task check: %w[content:schema content:placeholders]
 end
 

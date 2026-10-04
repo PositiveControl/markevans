@@ -1,0 +1,11 @@
+# /contact: the ways to reach Mark. Read by app/lib/site_page.rb
+# (docs/system/site-pages.md). A link whose url is a [placeholder] renders as
+# text until the address is supplied.
+title: Contact
+description: "[One line for search results: how to get in touch]"
+intro: "[A line in your voice: what you are open to, and the best way to ask]"
+links:
+  - label: GitHub
+    url: https://github.com/PositiveControl
+  - label: Email
+    url: "[mailto:address]"

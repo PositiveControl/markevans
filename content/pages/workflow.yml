@@ -1,0 +1,13 @@
+# /workflow: the delivery chain explained. The chain itself is drawn from
+# content/threads/home.yml; this file is the copy around it. Read by
+# app/lib/site_page.rb (docs/system/site-pages.md).
+title: Workflow
+description: "[One line for search results: how every change is planned, gated, reviewed and shipped]"
+intro: "[A paragraph in your voice: what the delivery chain is, and why every change goes through it]"
+sections:
+  - heading: The gates
+    paragraphs:
+      - "[What each gate checks, and why a human holds two of them]"
+  - heading: Working with coding agents
+    paragraphs:
+      - "[How the agents are kept under positive control: plans before code, small slices, fresh-eyes review]"

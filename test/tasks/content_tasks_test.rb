@@ -71,6 +71,25 @@ class ContentTasksTest < ActiveSupport::TestCase
     assert_output(/threads: 1 valid.*no placeholders/m) { with_root { Rake::Task["content:check"].invoke } }
   end
 
+  test "content:schema fails on a work list or a page that breaks its schema, naming the file" do
+    write "work.yml", { "projects" => [ { "key" => "Bad Key", "name" => "x", "summary" => "x" } ] }.to_yaml
+    write "pages/contact.yml", { "title" => "Contact" }.to_yaml
+    schema = Rake::Task["content:schema"]
+    schema.reenable
+
+    _, err = capture_io { assert_raises(SystemExit) { with_root { schema.invoke } } }
+    assert_includes err, "work.yml: Bad Key: key must be lowercase letters"
+    assert_includes err, "contact.yml: missing description"
+  end
+
+  test "content:schema passes the work list and pages as they ship" do
+    FileUtils.cp_r(Rails.root.join("content/."), @root)
+    schema = Rake::Task["content:schema"]
+    schema.reenable
+
+    assert_output(/threads: 1 valid, work: 1 valid, pages: 3 valid/) { with_root { schema.invoke } }
+  end
+
   private
 
   def with_root

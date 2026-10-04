@@ -1,0 +1,141 @@
+# The projects /work lists, in this order (design doc, section 2). Read by
+# app/lib/portfolio.rb; the edit procedure is docs/system/site-pages.md.
+#
+# Copy not yet written stays in [brackets]: the placeholder gate fails a
+# production build until it is filled (docs/rules/no-invented-content.md).
+# Write lists one item per line; a flow list, [a, b], reads as a placeholder.
+projects:
+  - key: rails-rocket-sheep
+    name: rails-rocket-sheep
+    summary: "[One line: what rails-rocket-sheep is and who it is for]"
+    links:
+      - label: Repository
+        url: https://github.com/PositiveControl/rails-rocket-sheep
+    sections:
+      - heading: The project
+        paragraphs:
+          - "[What it is, the problem it answers, and why it was built]"
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: "[Your role]"
+              - k: Stack
+                v: "[Stack]"
+              - k: Status
+                v: "[Status]"
+      - heading: How it was built
+        paragraphs:
+          - "[How it moved through the delivery chain, and what came of it]"
+
+  - key: dopeempire
+    name: dopeempire
+    summary: "[One line: what dopeempire is and who it is for]"
+    links:
+      - label: "[Link label]"
+        url: "[https://…]"
+    sections:
+      - heading: The project
+        paragraphs:
+          - "[What it is, the problem it answers, and why it was built]"
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: "[Your role]"
+              - k: Stack
+                v: "[Stack]"
+              - k: Status
+                v: "[Status]"
+      - heading: How it was built
+        paragraphs:
+          - "[How it moved through the delivery chain, and what came of it]"
+
+  - key: harness
+    name: harness
+    summary: "[One line: what harness is and who it is for]"
+    links:
+      - label: "[Link label]"
+        url: "[https://…]"
+    sections:
+      - heading: The project
+        paragraphs:
+          - "[What it is, the problem it answers, and why it was built]"
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: "[Your role]"
+              - k: Stack
+                v: "[Stack]"
+              - k: Status
+                v: "[Status]"
+      - heading: How it was built
+        paragraphs:
+          - "[How it moved through the delivery chain, and what came of it]"
+
+  - key: kram
+    name: kraM
+    summary: "[One line: what kraM is and who it is for]"
+    links:
+      - label: "[Link label]"
+        url: "[https://…]"
+    sections:
+      - heading: The project
+        paragraphs:
+          - "[What it is, the problem it answers, and why it was built]"
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: "[Your role]"
+              - k: Stack
+                v: "[Stack]"
+              - k: Status
+                v: "[Status]"
+      - heading: How it was built
+        paragraphs:
+          - "[How it moved through the delivery chain, and what came of it]"
+
+  - key: dailydrop
+    name: DailyDrop
+    summary: "[One line: what DailyDrop is and who it is for]"
+    links:
+      - label: "[Link label]"
+        url: "[https://…]"
+    sections:
+      - heading: The project
+        paragraphs:
+          - "[What it is, the problem it answers, and why it was built]"
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: "[Your role]"
+              - k: Stack
+                v: "[Stack]"
+              - k: Status
+                v: "[Status]"
+      - heading: How it was built
+        paragraphs:
+          - "[How it moved through the delivery chain, and what came of it]"
+
+  - key: spamsandwich
+    name: spamsandwich
+    summary: "[One line: what spamsandwich is]"
+    links:
+      - label: "[Link label]"
+        url: "[https://…]"
+    sections:
+      - heading: The project
+        paragraphs:
+          - "[What spamsandwich is: still open in the design doc, section 1]"
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: "[Your role]"
+              - k: Stack
+                v: "[Stack]"
+              - k: Status
+                v: "[Status]"
