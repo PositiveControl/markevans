@@ -23,6 +23,9 @@ const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home
 // Keys that only change what the next key types.
 const MODIFIERS = new Set(["Shift", "CapsLock", "AltGraph"])
 
+// How long g waits for its number, in milliseconds.
+const GATE_WINDOW = 1500
+
 export default class extends Controller {
   static targets = ["thread", "scope", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
@@ -128,23 +131,32 @@ export default class extends Controller {
     this.go(0)
   }
 
-  // The reader scrolling, by wheel, touch or keys, pauses, and drops a follow
-  // still on its way. Their input, not the scroll event: the controller's own
-  // scrolls fire none of these, so following can never read as the reader.
-  // Before playback has started, a scroll is how the thread comes into view,
-  // so it counts as nothing.
+  // The reader scrolling, by wheel, touch, keys or the scrollbar, pauses, and
+  // drops a follow still on its way and a g still waiting for its number.
+  // Their input, not the scroll event: the controller's own scrolls fire none
+  // of these, so following can never read as the reader. Before playback has
+  // started, a scroll is how the thread comes into view, so it counts as
+  // nothing.
   yield() {
     this.followingStep = null
+    this.gateArmedAt = null
     if (!this.playingValue) return
 
     this.touched = true
     this.playingValue = false
   }
 
+  // A press on the page's scrollbar: Chrome and Safari report it on <html>,
+  // where nothing else on the page can be pressed.
+  press(event) {
+    if (event.target === document.documentElement) this.yield()
+  }
+
   // The keyboard, listed in the footer: Space plays and pauses, j and k step,
   // and g then a number jumps to that gate. The keys that scroll the page
   // yield. Keys in a text field are the field's, and Space on a focused
-  // button presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through.
+  // button presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through. g
+  // waits 1.5 s for its number, and a scroll drops it.
   key(event) {
     if (event.ctrlKey || event.altKey || event.metaKey || this.typing(event)) return
 
@@ -152,9 +164,10 @@ export default class extends Controller {
     // the digit after g needs Shift.
     if (MODIFIERS.has(event.key)) return
 
-    if (this.gateArmed) {
-      this.gateArmed = false
-      const gate = this.gates[Number(event.key) - 1]
+    if (this.gateArmedAt != null) {
+      const armed = performance.now() - this.gateArmedAt < GATE_WINDOW
+      this.gateArmedAt = null
+      const gate = armed ? this.gates[Number(event.key) - 1] : undefined
       if (gate !== undefined) return this.goToGate(gate)
     }
 
@@ -170,7 +183,7 @@ export default class extends Controller {
       case "j": return this.forward()
       case "k": return this.back()
       case "g":
-        this.gateArmed = true
+        this.gateArmedAt = performance.now()
         return
       default:
         if (SCROLL_KEYS.has(event.key)) this.yield()
@@ -331,8 +344,9 @@ export default class extends Controller {
   watchScope() {
     if (!this.hasScopeTarget) return
 
-    this.dock = new IntersectionObserver(([entry]) => {
-      this.element.toggleAttribute("data-docked", !entry.isIntersecting)
+    // One callback can carry several crossings (Home then End); the last is now.
+    this.dock = new IntersectionObserver(entries => {
+      this.element.toggleAttribute("data-docked", !entries.at(-1).isIntersecting)
     })
     this.dock.observe(this.scopeTarget)
   }

@@ -120,12 +120,15 @@ rewinds the line's animation.
 ## Follow and yield
 
 The page follows the active strip while it plays: on each step the clock
-moves to, `follow()` scrolls the row to the top of the viewport. Rows carry
-`scroll-mt-15` (90 px), and the strip sits 6 px into its row, so its top lands
+moves to, `follow()` scrolls the row to the top of the viewport. The page
+keeps 96 px clear at its top (`scroll-pt-16` on `<html>`), rows carry
+`-scroll-mt-1` (-6 px), and the strip sits 6 px into its row, so its top lands
 96 px down, clear of the docked bar. Play scrolls back to the active strip
 before it starts the clock, and an explicit jump (a scope target, a docked
 mark, `g` then a number) goes to its step. Back, forward, `j`, `k` and strips
-leave the page where it is. Nothing else moves the page.
+leave the page where it is. Nothing else moves the page. The same
+96 px padding lands an element focused by Tab below the docked bar too (WCAG
+2.4.11).
 
 A step change renders a moment later, because Stimulus hears a value change
 as an attribute change, and the body above the new strip then rolls up over
@@ -135,9 +138,11 @@ finish, then scrolls: smoothly, or at once under reduced motion. If the step
 changes or the reader takes over in the meantime, the scroll is dropped.
 
 Reader input always wins (`docs/rules/playback-yields.md`). The wrapper listens
-on the window for `wheel`, `touchmove` and the keys that scroll a page (arrows,
-Page Up and Down, Home, End, Shift+Space, and Space on a focused link), and
-each pauses and drops a follow on its way. It is the reader's input, not the
+on the window for `wheel`, `touchmove`, a `pointerdown` on `<html>` (a press on
+the page's scrollbar, in Chrome and Safari) and the keys that scroll a page
+(arrows, Page Up and Down, Home, End, Shift+Space, and Space on a focused
+link), and each pauses and drops a follow on its way. A scroll with no input
+behind it, from moving focus or find-in-page, is not heard. It is the reader's input, not the
 `scroll` event, so the controller's own scrolls never count. `touchmove` rather
 than `touchstart`, so a tap on a done strip mid-play leaves playback alone.
 Before playback has first started, a scroll is how the thread comes into view,
@@ -179,7 +184,7 @@ connects:
 | Space | Play or pause, as the play button. On a focused button or `summary` it presses that instead. On a focused link it scrolls the page, as a browser does, so it pauses like a scroll key |
 | `j` | Step forward |
 | `k` | Step back |
-| `g` then 1 to the gate count | Jumps to that gate, in thread order, and the page goes there. Any other key after `g` drops it and keeps its own meaning |
+| `g` then 1 to the gate count | Jumps to that gate, in thread order, and the page goes there. Any other key after `g` drops it and keeps its own meaning, and so does a number after 1.5 s or after a scroll |
 
 Keys typed in a text field (`input`, `textarea`, `select`, contenteditable)
 are the field's, and any key held with Ctrl, Alt or Cmd passes through. The
@@ -223,7 +228,7 @@ labels. Text at that opacity fails axe's contrast check.
 
 | File | Covers |
 |---|---|
-| `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; the bay following a jump; the filter dimming without hiding; the log's order, counts, empty state and 220 px scroll; the follow landing at 96 px; wheel, touch and key yields; the docked bar driving state; the hash written and read; each key; reduced motion; every control, docked ones too, at least 44 px; axe while playing, paused, filtered, docked and without scripts |
+| `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; the bay following a jump; the filter dimming without hiding; the log's order, counts, empty state and 220 px scroll; the follow landing at 96 px; wheel, touch, key and scrollbar yields; the 96 px scroll padding; the docked bar driving state; the hash written and read; each key; reduced motion; every control, docked ones too, at least 44 px; axe while playing, paused, filtered, docked and without scripts |
 | `test/application_system_test_case.rb` | `assert_accessible` (axe-core-api, single-frame), and `without_scripts`, which blocks every `.js` URL over CDP. Chrome's own script switch also blocks axe |
 | `test/components/{strip,step_body,controls,scope,chart_cell,strip_bay,controller_filter,log,docked_bar}_component_test.rb` | The markup each state is styled from |
 | `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, bay, filter, log and docked bar, targets as links, each row's seconds, bay and lane, the wrapper, the footer and its hidden key list |

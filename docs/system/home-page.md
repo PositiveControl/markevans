@@ -47,7 +47,7 @@ list is in their reach:
 | Top row, left (`w-column`, 400 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
 | Top row, right | Headline and intro, then the log | the thread file, `LogComponent` |
 | Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay, a mark per step; shown only while the scope is out of view | `DockedBarComponent` |
-| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `scroll-mt-15` puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
+| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `-scroll-mt-1`, under the page's 96 px `scroll-pt-16`, puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
 | Footer | The site's signature and line, from the mock, and the keyboard's keys, hidden until playback connects; the gate count is the thread's | the view |
 
 | Component | Renders |

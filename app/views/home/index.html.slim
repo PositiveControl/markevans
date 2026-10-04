@@ -12,9 +12,9 @@ header class="border-b border-rule"
   div class="mx-auto flex min-h-10 max-w-page items-center px-8"
     a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
-/ Playback hears the reader anywhere on the page: a wheel, a touch scroll or a
-/ scroll key while it plays hands the page back (docs/rules/playback-yields.md).
-div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#yield:passive touchmove@window->playback#yield:passive keydown@window->playback#key"
+/ Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
+/ scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).
+div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#yield:passive touchmove@window->playback#yield:passive pointerdown@window->playback#press keydown@window->playback#key"
   = render DockedBarComponent.new(steps: @thread.steps)
   main class="mx-auto max-w-page px-8"
     div class="flex items-start gap-x-8 pt-6"
@@ -31,11 +31,12 @@ div data-controller="playback filter" data-action="visibilitychange@document->pl
 
     section class="pt-4 pb-16" aria-labelledby="thread-heading" data-playback-target="thread"
       h2#thread-heading class="sr-only" The thread
-      / scroll-mt-15 (90 px) puts a strip, 6 px into its row, 96 px below the
-      / viewport's top when the page follows it or a link lands on it.
+      / The page keeps 96 px clear at its top (scroll-pt-16 on html), and
+      / -scroll-mt-1 (-6 px) lifts each row so its strip, 6 px into it, lands
+      / on that line when the page follows it or a link lands on it.
       - @thread.cells.each.with_index(1) do |cell, number|
         - step = cell.step
-        div class="flex scroll-mt-15" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-lane=step.lane data-playback-target="row" data-filter-target="row"
+        div class="flex -scroll-mt-1" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-lane=step.lane data-playback-target="row" data-filter-target="row"
           = render ChartCellComponent.new(cell:)
           div class="min-w-0 flex-1 py-1 pl-strip-gap"
             = render StripComponent.new(step:, number:)

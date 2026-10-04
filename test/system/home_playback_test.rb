@@ -166,6 +166,16 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_stays_paused
   end
 
+  test "reader presses the page's scrollbar: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    # Chrome and Safari report a press on the page's scrollbar on <html>.
+    # Selenium cannot press a scrollbar, so the event is dispatched.
+    execute_script("document.documentElement.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))")
+
+    assert_stays_paused
+  end
+
   test "a reader's scroll before the thread is in view is how it comes into view, and still starts it" do
     resize_to(400) do
       visit root_path
@@ -262,6 +272,32 @@ class HomePlaybackTest < ApplicationSystemTestCase
     press "g", "j", "2"
 
     assert_step 1, status: "paused"
+  end
+
+  test "keys: g left for 1.5 s is dropped, and the number after it jumps nowhere" do
+    open_thread
+    click_control "Pause"
+
+    press "g"
+    # Moves the page's clock on two seconds, rather than waiting them out.
+    execute_script(<<~JS)
+      const now = performance.now.bind(performance)
+      performance.now = () => now() + 2000
+    JS
+    press "2"
+
+    assert_step 0, status: "paused"
+  end
+
+  test "keys: g then a scroll by wheel is dropped, and the number after it jumps nowhere" do
+    open_thread
+    click_control "Pause"
+
+    press "g"
+    page.driver.browser.action.scroll_by(0, 300).perform
+    press "2"
+
+    assert_step 0, status: "paused"
   end
 
   test "keys: Space on a focused link scrolls the page, so it yields like any scroll key" do
@@ -573,6 +609,14 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_operator evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom"), :<=, 96
   ensure
     window.resize_to(original.width, original.height)
+  end
+
+  test "focus lands below the docked bar: the page keeps 96 px clear at its top" do
+    # A focused element scrolled into view would otherwise land under the bar
+    # (WCAG 2.4.11). Rows sit 6 px above it, so their strips land on it.
+    visit root_path
+
+    assert_equal "96px", evaluate_script("getComputedStyle(document.documentElement).scrollPaddingTop")
   end
 
   test "every docked control is a named target of at least 44 px, and axe passes while docked" do
