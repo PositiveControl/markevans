@@ -41,7 +41,7 @@ QaWalkthrough.run("site_pages") do
 
   step "A project page: #{first.name}, its links and its sections" do
     click_on first.name
-    spotlight "dl[aria-label=Links]", note: first.links.map(&:label).join(", ")
+    spotlight "[role=group][aria-label=Links]", note: first.links.map(&:label).join(", ")
     spotlight text: first.sections.first.heading, note: "#{first.sections.size} sections from the file"
   end
 

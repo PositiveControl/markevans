@@ -88,7 +88,7 @@ No controller rescues it (`docs/rules/exception-boundary.md`).
 | `SiteFooterComponent` | The signature and the line about how the site is built, with any content between them. Leaves the print | every page; the home page puts its key list in it |
 | `PageSectionsComponent` | Each section: a mono `h2` label over a hairline, serif paragraphs, then its groups | project, Workflow, Background, Contact |
 | `DetailGroupComponent` | A mono `h3`/`h4` label over a `dl` of mono key (260 px) and serif value. A value that would get under 180 px wraps beneath its key | `PageSectionsComponent`, `StepBodyComponent` |
-| `LinkListComponent` | A `dl` of mono label and address. Each address is shown without its scheme and is a 44 px tall, underlined link, or text if it is still a placeholder | project, Background, Contact |
+| `LinkListComponent` | A `dl` of mono label and address, inside a `role="group"` that carries the list's name. Each address is shown without its scheme and is a 44 px tall, underlined link, or text if it is still a placeholder | project, Background, Contact |
 
 The Workflow page draws its chain from `DeliveryThread.fetch(:home)`, the
 steps the home page plays, so the two pages cannot disagree. Each step shows:

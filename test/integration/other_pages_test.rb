@@ -28,7 +28,7 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1.font-mono", project.name
     assert_select "main > p", project.summary
-    assert_select "dl[aria-label=Links] a[href=?]", project.links.first.url
+    assert_select "[role=group][aria-label=Links] dl a[href=?]", project.links.first.url
     assert_equal project.sections.map(&:heading), css_select("main h2").map(&:text)
   end
 
@@ -38,8 +38,8 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
 
     assert_match(/\A\[.+\]\z/, project.summary)
     assert_select "main > p", project.summary
-    assert_select "dl[aria-label=Links] a", count: 0
-    assert_select "dl[aria-label=Links] span", project.links.first.url
+    assert_select "[role=group][aria-label=Links] dl a", count: 0
+    assert_select "[role=group][aria-label=Links] dl span", project.links.first.url
   end
 
   test "an unknown project is a 404" do
@@ -77,7 +77,7 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     get contact_url
 
     assert_response :success
-    assert_select "dl[aria-label='Contact routes'] dt", count: page.links.size
+    assert_select "[role=group][aria-label='Contact routes'] dt", count: page.links.size
     page.links.reject(&:placeholder?).each { |link| assert_select "dl a[href=?]", link.url }
     page.links.select(&:placeholder?).each { |link| assert_select "dl span", link.url }
   end

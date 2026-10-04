@@ -26,9 +26,10 @@ class LinkListComponentTest < ViewComponent::TestCase
     assert_includes classes, "underline"
   end
 
-  test "the list takes the name it is given, and renders nothing when empty" do
+  test "the list is named by a group around it, not on the dl, and renders nothing when empty" do
     render_inline(LinkListComponent.new(links: [ link("GitHub", "https://github.com/x") ], label: "Contact routes"))
-    assert_selector "dl[aria-label='Contact routes']"
+    assert_selector "[role=group][aria-label='Contact routes'] > dl"
+    assert_no_selector "dl[aria-label]"
 
     render_inline(LinkListComponent.new(links: []))
     assert_no_selector "dl"
