@@ -117,8 +117,8 @@ references as it is served:
 | Limit | Measured | Today |
 |---|---|---|
 | Scripts, 60 kB gzipped | Every entry in the page's importmap and every `script src`, fetched and gzipped. Turbo is most of it | 47.2 kB |
-| Fonts, 120 kB | Every font the stylesheets' `url()`s name | 102.7 kB |
-| No third party | Every stylesheet, preload, script, image and frame the HTML names, every importmap entry, and every `url()` and `@import` in the page's stylesheets: no other host | — |
+| Fonts, 120 kB | Every font (woff, woff2, ttf, otf, eot) the stylesheets' `url()`s name | 102.7 kB |
+| No third party | Every stylesheet, preload, script, image and frame the HTML names, every importmap entry, and every `url()` and `@import` in the page's stylesheets and in each local sheet they import, however deep: no other host | — |
 
 A kB is 1,000 bytes. A new pin, controller or font counts the moment the page
 references it. `test/system/page_requests_test.rb` checks the same third-party

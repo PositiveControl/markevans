@@ -22,6 +22,8 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
   # links to pages are not fetched, so they are not counted.
   LOADING_RELS = %w[stylesheet preload modulepreload icon apple-touch-icon manifest].freeze
 
+  FONT_FILES = /\.(woff2?|ttf|otf|eot)\z/
+
   test "the scripts the page can import come to 60 kB gzipped or less" do
     sizes = scripts.to_h { |url| [ url, Zlib.gzip(fetch(url)).bytesize ] }
 
@@ -60,6 +62,20 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
     assert_equal %w[https://cdn.example/y.png], urls_in(css)
   end
 
+  test "the gate follows a local @import however deep, and counts every font format" do
+    sheets = {
+      "http://www.example.com/a.css" => '@import "nested/b.css";',
+      "http://www.example.com/nested/b.css" => '@import url(c.css); @import "../a.css";',
+      "http://www.example.com/nested/c.css" => ".x { src: url(f.ttf) } .y { background: url(https://cdn.example/y.png) }"
+    }
+    define_singleton_method(:fetch) { |url| sheets.fetch(url) }
+
+    urls = urls_under(%w[/a.css], root_url)
+
+    assert_includes urls, "https://cdn.example/y.png"
+    assert_equal %w[http://www.example.com/nested/f.ttf], urls.select { |url| font?(url) }
+  end
+
   test "the gate counts a plain script tag as well as the importmap" do
     html = <<~HTML
       <script type="importmap">{"imports": {"app": "/assets/app.js"}}</script>
@@ -93,13 +109,23 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
   end
 
   # Every url() and @import in the page's own stylesheets, resolved.
-  def stylesheet_urls
-    stylesheets.select { |url| local?(url) }.flat_map do |sheet|
-      urls_in(fetch(sheet)).map { |url| URI.join(root_url, sheet, url).to_s }
+  def stylesheet_urls = @stylesheet_urls ||= urls_under(stylesheets.select { |url| local?(url) }, root_url)
+
+  # The urls in each sheet, then in each local sheet those import, however
+  # deep. A sheet is read once, so an import cycle ends.
+  def urls_under(sheets, base, seen = Set.new)
+    sheets.flat_map do |sheet|
+      sheet = URI.join(base, sheet).to_s
+      next [] unless seen.add?(sheet)
+
+      urls = urls_in(fetch(sheet)).map { |url| URI.join(sheet, url).to_s }
+      urls + urls_under(urls.select { |url| local?(url) && URI(url).path.end_with?(".css") }, sheet, seen)
     end.uniq
   end
 
-  def fonts = stylesheet_urls.select { |url| URI(url).path.match?(/\.woff2?\z/) }
+  def fonts = stylesheet_urls.select { |url| font?(url) }
+
+  def font?(url) = URI(url).path.match?(FONT_FILES)
 
   # A quoted url() runs to its closing quote, so quotes inside it do not cut it
   # short. An inline data: url is no request and is left out.
