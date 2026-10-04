@@ -136,10 +136,38 @@ export default class extends Controller {
     this.playingValue = false
   }
 
-  // The keys that scroll the page yield; Space is playback's own.
+  // The keyboard, listed in the footer: Space plays and pauses, j and k step,
+  // and g then a number jumps to that gate. The keys that scroll the page
+  // yield. Keys in a text field are the field's, and Space on a focused
+  // control presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through.
   key(event) {
-    if (this.typing(event)) return
-    if (SCROLL_KEYS.has(event.key)) this.yield()
+    if (event.ctrlKey || event.altKey || event.metaKey || this.typing(event)) return
+
+    if (this.gateArmed) {
+      this.gateArmed = false
+      const gate = this.gates[Number(event.key) - 1]
+      if (gate !== undefined) return this.goToGate(gate)
+    }
+
+    switch (event.key) {
+      case " ":
+        if (event.shiftKey) return this.yield() // Shift+Space scrolls up
+        if (event.target.closest?.("button, a[href], summary")) return
+        event.preventDefault()
+        return this.toggle()
+      case "j": return this.forward()
+      case "k": return this.back()
+      case "g":
+        this.gateArmed = true
+        return
+      default:
+        if (SCROLL_KEYS.has(event.key)) this.yield()
+    }
+  }
+
+  goToGate(index) {
+    this.jumpTo(index)
+    this.follow()
   }
 
   // Leaving the tab pauses. Nothing resumes by itself (docs/rules/playback-yields.md).
@@ -379,6 +407,11 @@ export default class extends Controller {
     if (state === "pending") return "pending"
     if (!playing) return "paused"
     return gate ? "hold" : "active"
+  }
+
+  // The gates' step indexes, in order: g then 1 is the first.
+  get gates() {
+    return this.stripTargets.flatMap((strip, index) => strip.dataset.gate === "true" ? [index] : [])
   }
 
   gateAt(index) { return this.stripTargets[index].dataset.gate === "true" }

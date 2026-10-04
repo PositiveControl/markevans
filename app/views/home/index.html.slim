@@ -61,6 +61,6 @@ div data-controller="playback filter" data-action="visibilitychange@document->pl
           | then
           kbd<> 1
           | –
-          kbd<> 4
+          kbd<> = @thread.steps.count(&:gate?)
           | a gate
       span This site is built with the workflow it describes.

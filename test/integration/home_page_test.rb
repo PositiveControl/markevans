@@ -116,6 +116,7 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "footer", text: /Mark Evans · PositiveControl/
     assert_select "footer", text: /This site is built with the workflow it describes\./
     assert_select "footer ul[aria-label='Keyboard'][hidden][data-playback-target=live] kbd", count: 6
+    assert_select "footer [aria-label='Keyboard'] kbd", text: @thread.steps.count(&:gate?).to_s
   end
 
   test "playback and the filter sit on a wrapper around main and the footer, so both read one state" do

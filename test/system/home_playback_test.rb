@@ -215,6 +215,60 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_not playing?
   end
 
+  test "keys: Space plays and pauses, j steps forward, k steps back" do
+    open_thread
+
+    press :space
+    assert_not playing?
+    assert_step 0, status: "paused"
+    press :space
+    assert_selector "#{PLAYER}[data-playing]"
+
+    press "j"
+    assert_step 1, status: "paused"
+    press "k"
+    assert_step 0, status: "paused"
+  end
+
+  test "keys: g then a number jumps to that gate, and the page goes to it" do
+    open_thread
+    gates = @steps.each_index.select { |index| @steps[index].gate? }
+
+    press "g", "3"
+
+    assert_step gates[2], status: "paused"
+    assert_strip_top gates[2]
+  end
+
+  test "keys: g then anything else is dropped, and that key keeps its meaning" do
+    open_thread
+    click_control "Pause"
+
+    press "g", "j", "2"
+
+    assert_step 1, status: "paused"
+  end
+
+  test "keys: Space on a focused control presses it, and keys in a text field are the field's" do
+    open_thread
+    click_control "Pause"
+
+    find("[aria-label=Scope] [aria-label='Step forward']").send_keys(:space)
+    assert_step 1, status: "paused"
+
+    execute_script("document.querySelector('footer').insertAdjacentHTML('beforeend', '<input aria-label=Note>')")
+    find("[aria-label=Note]").send_keys("jk g1 ")
+    sleep 0.2
+    assert_step 1, status: "paused"
+  end
+
+  test "the footer lists the keys once playback runs" do
+    open_thread
+
+    assert_selector "footer [aria-label=Keyboard]", text: "Space play or pause"
+    assert_selector "footer [aria-label=Keyboard]", text: "g then 1 – #{@steps.count(&:gate?)} a gate"
+  end
+
   test "tab becomes hidden: pauses, and does not resume by itself" do
     open_thread(pace: FAST)
 
@@ -528,6 +582,12 @@ class HomePlaybackTest < ApplicationSystemTestCase
     sleep FAST * 6 * 2 / 1000.0
     assert_not playing?
     assert_equal step, current_step
+  end
+
+  # Keys pressed with focus on the page itself, not on a control.
+  def press(*keys)
+    execute_script("document.activeElement?.blur()")
+    keys.each { |key| page.driver.browser.action.send_keys(key).perform }
   end
 
   def scroll_to_top = execute_script("window.scrollTo(0, 0)")
