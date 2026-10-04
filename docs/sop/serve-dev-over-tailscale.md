@@ -30,17 +30,27 @@ HTTPS and exposes a second, unproxied way in.
 
 ## What the app does to allow it
 
-`config/environments/development.rb` adds MagicDNS names to `config.hosts`:
+`config/environments/development.rb` adds MagicDNS names to `config.hosts`.
+The pattern is `Markevans::TAILNET_HOST` in `config/application.rb`, so
+`test/config/tailnet_host_test.rb` can check it:
 
 ```ruby
-config.hosts << /[a-z0-9-]+\.[a-z0-9-]+\.ts\.net/i
+TAILNET_HOST = /[a-z0-9-]+\.[a-z0-9-]+\.ts\.net/i
 ```
 
 It is a regex because Rails' leading-dot form (`".ts.net"`) matches exactly one
 subdomain label, and a MagicDNS name has two. With the dot form every request
-still gets `Blocked hosts: <machine>.<tailnet>.ts.net:8443`.
+still gets `Blocked hosts: <machine>.<tailnet>.ts.net:8443`. It matches any
+tailnet, not one machine, so it works for whoever runs the app.
 
-Development only. Production sets its own hosts in `config/environments/production.rb`.
+Development only. Production's `config.hosts` is separate, and is commented out
+in `config/environments/production.rb` today.
+
+Forms work through the proxy without any change: `tailscale serve` sends
+`X-Forwarded-Proto: https`, so Rails' CSRF origin check sees the same `https://`
+origin the browser does. Checked with Tailscale 1.102.4 by submitting the Devise
+sign-in form through the 8443 route: Devise answered the bad password, and the
+log showed no origin mismatch.
 
 ---
 

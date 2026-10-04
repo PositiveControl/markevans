@@ -7,6 +7,12 @@ require "rails/all"
 Bundler.require(*Rails.groups)
 
 module Markevans
+  # A Tailscale MagicDNS name, <machine>.<tailnet>.ts.net. Development allows it
+  # in config.hosts (docs/sop/serve-dev-over-tailscale.md). It lives here, not
+  # in development.rb, so test/config/tailnet_host_test.rb can reach it. A
+  # regex, not ".ts.net": Rails' dot form matches one subdomain label.
+  TAILNET_HOST = /[a-z0-9-]+\.[a-z0-9-]+\.ts\.net/i
+
   class Application < Rails::Application
     # Use UUIDs as primary keys by default
     config.generators do |g|
