@@ -4,9 +4,8 @@
 # body, the git graph drawn beside the strips (#15), playback from the scope
 # (#16), the strip bay, controller filter and log (#17), and follow, yield,
 # the docked bar, the step hash and the keyboard (#18), and narrow screens
-# (#19). The page starts
-# playing as the thread comes into view, so the walk pauses it first and the
-# reading steps run on a still page.
+# (#19). The page starts playing as the thread comes into view, so the walk
+# pauses it first and the reading steps run on a still page.
 #
 # Builds no data: everything shown comes from content/threads/home.yml, read
 # here through DeliveryThread so the captions follow the file. Steps are picked
@@ -22,8 +21,8 @@
 # The follow step waits out one step's time (6 s) once, since following is
 # what happens when the timer runs out. Not walked: the page without scripts
 # and under reduced motion (the system tests cover both, axe included), and
-# what is not built yet: the other pages (7). The page
-# budget is a test, not a page to walk.
+# what is not built yet: the other pages (7). The page budget is a test, not a
+# page to walk.
 require Rails.root.join("lib/qa_walkthrough")
 
 thread = DeliveryThread.fetch(:home)
