@@ -34,6 +34,7 @@ writes a class: the templates style from these attributes with Tailwind's
 | Written on | Attribute or text | Read by |
 |---|---|---|
 | `main` | `data-playing` while playing | Play's icon, the sweep and the remaining-time line (`in-data-playing:`) |
+| `main` | `data-ended` once the last step's time has run out | `connect()`, after a cache restore: the clock is not an attribute, so this is how a played-out thread comes back played out |
 | `main` | `--pace`, `--leader-angle` | The line's duration; the leader's rotation |
 | Each row (`data-playback-target="row"`) | `data-state`: `pending`, `active` or `done` | Strip ground, outline and Rmk line; the chart's dimming and ring |
 | Each row | `data-open`: `true` or `false` | The body's roll-up |
@@ -110,7 +111,7 @@ rewinds the line's animation.
 | Reader scrolls by wheel, touch or keys | Pauses | #18 |
 | Tab becomes hidden | Pauses. Does not resume by itself | #16 |
 | Restart | Step 1, reopened strips cleared, paused | #16 |
-| Page restored from Turbo's cache | Comes back on the step it left, paused, and does not start on view: the values persist in data attributes, so `connect()` sets playing false and counts rows that already carry a `data-state` as a page the reader has been on | #16 |
+| Page restored from Turbo's cache | Comes back on the step it left, paused, and does not start on view: the values persist in data attributes, so `connect()` sets playing false and counts rows that already carry a `data-state` as a page the reader has been on. A thread that had played out (`data-ended`) comes back played out, its last step still in the log | #16; played out, #17 |
 | Page loads with a step hash | That step active, paused, scrolled into view | #18 |
 
 ## Without scripts

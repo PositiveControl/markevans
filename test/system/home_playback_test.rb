@@ -175,6 +175,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step 0, status: "paused"
   end
 
+  test "a restored page whose thread had played out still counts the last step" do
+    open_thread
+    target(@steps.size - 2).click
+    pace FAST
+    click_control "Play"
+    assert_selector "[aria-label=Replay]"
+
+    restore_from_cache
+    sleep 0.5 # the reconnect
+
+    assert_selector "[aria-label=Replay]"
+    assert_selector "[data-playback-target=logEntry]", count: @steps.size
+    assert_log_counts @steps.count(&:gate?), @steps.count(&:artifact)
+  end
+
   test "step timer ends: next step active, previous strip rolls up" do
     open_thread(pace: FAST)
 
@@ -362,7 +377,16 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   def target(index) = find("[data-playback-target=target][href='##{@steps[index].key}']")
 
-  def strip(index) = find("##{@steps[index].key} h3 button")
+  # A strip, once the bodies above it have finished opening or closing: a
+  # click while they move lands on whichever strip has slid under the pointer.
+  def strip(index)
+    assert_no_transitions
+    find("##{@steps[index].key} h3 button")
+  end
+
+  def assert_no_transitions
+    assert_selector("main") { evaluate_script("document.getAnimations().filter(a => a instanceof CSSTransition).length").zero? }
+  end
 
   # What an active step's strip reads while playing: a gate holds.
   def active_word(index) = %w[human machine].include?(@steps[index].kind) ? "hold" : "active"

@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
  * The one owner of playback state (docs/rules/one-playback-state.md): the
  * step index, whether it is playing, and which done strips the reader has
  * reopened. Every view renders from these three values. render() writes them
- * onto the page as data-playing on this element, data-state and data-open on
+ * onto the page as data-playing and data-ended on this element, data-state and data-open on
  * each row, data-state on each scope target, and ARIA state and words, and
  * the templates' in-data-* variants do the styling. No class name lives here.
  *
@@ -42,6 +42,10 @@ export default class extends Controller {
     this.playingValue = false
     this.connected = true
     this.resetClock()
+    // The clock is not in an attribute, so a thread that had played out says
+    // so in data-ended, and comes back played out rather than with the last
+    // step's time full again.
+    if (this.element.hasAttribute("data-ended") && this.onLastStep) this.remaining = 0
     this.settle()
     this.watchForThread()
   }
@@ -214,6 +218,7 @@ export default class extends Controller {
     const open = new Set(this.openValue)
 
     this.element.toggleAttribute("data-playing", playing)
+    this.element.toggleAttribute("data-ended", this.ended)
     this.element.style.setProperty("--pace", this.paceValue)
 
     this.rowTargets.forEach((row, index) => {
