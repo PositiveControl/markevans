@@ -195,14 +195,6 @@ class HomeNarrowTest < ApplicationSystemTestCase
 
   # The viewport at that size. Headless Chrome will not size a window under
   # about 500 px, so the page is emulated at it, as DevTools' device mode does.
-  def at_size(width, height)
-    browser = page.driver.browser
-    browser.execute_cdp("Emulation.setDeviceMetricsOverride", width:, height:, deviceScaleFactor: 1, mobile: false)
-    yield
-  ensure
-    browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
-  end
-
   def wheel = page.driver.browser.action.scroll_by(0, 120).perform
 
   # Ticks with no duration of their own, so each lands as one wheel event, as
@@ -210,11 +202,6 @@ class HomeNarrowTest < ApplicationSystemTestCase
   def wheel_gesture = page.driver.browser.action.tap { |action| action.default_scroll_duration = 0 }
 
   def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
-
-  def assert_no_sideways_scroll
-    widths = evaluate_script("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
-    assert_operator widths.first, :<=, widths.last, "the page is #{widths.first} px wide in a #{widths.last} px viewport"
-  end
 
   def box(selector)
     evaluate_script("(r => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width }))" \
