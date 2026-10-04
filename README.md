@@ -70,6 +70,13 @@ bin/setup              # bundle install, db:prepare, then starts bin/dev
 `bin/setup` is idempotent; run it again after pulling. Pass `--skip-server` to
 stop before the server starts, or `--reset` to rebuild the databases.
 
+Then turn on the pre-push hook, which runs `bin/gates` before every push.
+`bin/setup` does not do this, and a clone does not inherit it:
+
+```bash
+git config core.hooksPath bin/hooks
+```
+
 ### Database connection
 
 `config/database.yml` reads its connection from the environment, with defaults
@@ -90,7 +97,7 @@ bin/test               # Unit and integration tests
 bin/rails test:system  # System tests (Chrome): playback, narrow screens, axe
 bin/rubocop            # Lint
 bin/brakeman           # Security scan
-bin/gates              # The repo's mechanical convention checks (also a pre-push hook)
+bin/gates              # The repo's mechanical convention checks (the pre-push hook runs them)
 bin/rails content:check  # Validate everything under content/
 ```
 
