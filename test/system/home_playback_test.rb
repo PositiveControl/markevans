@@ -561,6 +561,20 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_no_selector DOCK
   end
 
+  test "docked bar: still under the 96 px line at 1100 px wide" do
+    # Narrower, it wraps past it (#19, narrow screens).
+    window = page.driver.browser.manage.window
+    original = window.size
+    window.resize_to(1100, original.height)
+    open_thread
+    scroll_past_scope
+
+    assert_selector DOCK
+    assert_operator evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom"), :<=, 96
+  ensure
+    window.resize_to(original.width, original.height)
+  end
+
   test "every docked control is a named target of at least 44 px, and axe passes while docked" do
     open_thread
     scroll_past_scope
