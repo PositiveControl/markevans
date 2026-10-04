@@ -73,8 +73,9 @@ default `all`). Its `render()` writes `aria-pressed` on each option and
 `data-dim` on every row whose `data-lane` does not match. Nothing is hidden: a
 dimmed row's chart graph drops to 40 percent, its strip loses its ground and
 strong rule, and its strip and body text turn quiet. Text at 40 percent would
-fail axe's contrast check. An upcoming row that is also filtered out keeps its
-35 percent.
+fail axe's contrast check. An upcoming row's strip already wears those
+colors, so filtering it out shows only in its graph, which drops from 35
+percent to 15.
 
 ## The step clock
 

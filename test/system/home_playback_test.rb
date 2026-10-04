@@ -238,7 +238,9 @@ class HomePlaybackTest < ApplicationSystemTestCase
     @steps.each { |step| assert_selector "##{step.key} h3", visible: true }
     assert_computed "0.4", @steps[others.first].key, "[data-chart=graph]", "opacity"
     upcoming = others.find { |index| index > others.first }
-    assert_computed "0.35", @steps[upcoming].key, "[data-chart=graph]", "opacity" # dimmer already: never brighter for filtering
+    kept = human.find { |index| index > others.first }
+    assert_computed "0.35", @steps[kept].key, "[data-chart=graph]", "opacity"
+    assert_computed "0.15", @steps[upcoming].key, "[data-chart=graph]", "opacity" # below an upcoming row it keeps
     assert playing?
 
     click_filter "All"

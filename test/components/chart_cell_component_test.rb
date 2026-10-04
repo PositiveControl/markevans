@@ -165,7 +165,7 @@ class ChartCellComponentTest < ViewComponent::TestCase
   test "an upcoming row's lines and fix dim to 35 percent; its words stay legible" do
     render_cell "plan"
 
-    assert_selector "[data-chart=graph].in-data-\\[state\\=pending\\]\\:opacity-35 [data-chart=fix]"
+    assert_selector "[data-chart=graph].in-data-\\[state\\=pending\\]\\:not-in-data-dim\\:opacity-35 [data-chart=fix]"
     assert_selector "[data-chart=graph] [data-chart=main]"
     assert_no_selector "[data-chart=graph] [data-chart=label]"
   end
@@ -176,6 +176,12 @@ class ChartCellComponentTest < ViewComponent::TestCase
     assert_selector "[data-chart=graph].in-data-\\[state\\=done\\]\\:in-data-dim\\:opacity-40" \
       ".in-data-\\[state\\=active\\]\\:in-data-dim\\:opacity-40 [data-chart=fix]"
     assert_no_selector "[data-chart=graph].in-data-dim\\:opacity-40"
+  end
+
+  test "an upcoming row the filter drops back dims below 35 percent, so filtering shows" do
+    render_cell "plan"
+
+    assert_selector "[data-chart=graph].in-data-\\[state\\=pending\\]\\:in-data-dim\\:opacity-15"
   end
 
   test "reordering the file redraws the graph: the loop off main follows its step, not its row" do
