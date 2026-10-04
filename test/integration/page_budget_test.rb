@@ -18,6 +18,10 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
   SCRIPTS_LIMIT = 60_000
   FONTS_LIMIT = 120_000
 
+  # The link rels a browser fetches by itself. Canonical, alternate and other
+  # links to pages are not fetched, so they are not counted.
+  LOADING_RELS = %w[stylesheet preload modulepreload icon apple-touch-icon manifest].freeze
+
   test "the scripts the page can import come to 60 kB gzipped or less" do
     sizes = scripts.to_h { |url| [ url, Zlib.gzip(fetch(url)).bytesize ] }
 
@@ -71,7 +75,7 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
   # count, stylesheets, preloads, scripts, images and frames do.
   def references
     page = Nokogiri::HTML(home)
-    page.css("link[href]:not([rel=canonical])").map { |link| link["href"] } +
+    page.css(LOADING_RELS.map { |rel| "link[href][rel~=#{rel}]" }.join(", ")).map { |link| link["href"] } +
       page.css("script[src], img[src], iframe[src], source[src], video[src], audio[src]").map { |element| element["src"] }
   end
 
