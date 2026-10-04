@@ -1,0 +1,9 @@
+dl class="flex max-w-detail flex-col" aria-label=label
+  - links.each do |link|
+    div class="flex flex-wrap items-center gap-x-4 border-b border-rule"
+      dt class="w-row-key max-w-full shrink-0 font-mono text-key" = link.label
+      dd class="min-w-0 flex-1 font-mono text-key wrap-anywhere"
+        - if link.placeholder?
+          span class="inline-flex min-h-8 items-center text-quiet" = link.url
+        - else
+          a class="inline-flex min-h-8 items-center underline underline-offset-4" href=link.url = shown(link)

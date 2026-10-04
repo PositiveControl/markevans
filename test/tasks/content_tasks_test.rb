@@ -87,7 +87,7 @@ class ContentTasksTest < ActiveSupport::TestCase
     schema = Rake::Task["content:schema"]
     schema.reenable
 
-    assert_output(/threads: 1 valid, work: 1 valid, pages: 3 valid/) { with_root { schema.invoke } }
+    assert_output(/threads: 1 valid, work: 1 valid, pages: 4 valid/) { with_root { schema.invoke } }
   end
 
   private

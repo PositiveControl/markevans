@@ -4,6 +4,11 @@
 title: Background
 description: "[One line for search results: who Mark Evans is and what he builds]"
 intro: "[A short summary: what you build, for whom, and how]"
+links:
+  - label: GitHub
+    url: https://github.com/PositiveControl
+  - label: Email
+    url: "[mailto:address]"
 sections:
   - heading: Experience
     groups:

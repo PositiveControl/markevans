@@ -10,7 +10,7 @@ class SitePageTest < ActiveSupport::TestCase
   end
 
   test "every page in content/pages loads" do
-    assert_equal %w[background contact workflow], SitePage.all.map(&:key)
+    assert_equal %w[background contact work workflow], SitePage.all.map(&:key)
   end
 
   test "sections carry their heading, paragraphs and groups of rows as values" do

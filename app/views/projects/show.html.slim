@@ -1,0 +1,17 @@
+/ One project from content/work.yml: its name, summary, links and sections
+/ (docs/system/site-pages.md). The name is the repository's, so it is mono
+/ (docs/rules/typeface-means-speaker.md).
+- content_for :title, "#{@project.name} · Mark Evans"
+- content_for :meta_description, @project.summary.truncate(155, separator: " ")
+- content_for(:canonical_url) { project_url(@project.key) }
+- content_for(:head) { jsonld_tag(web_page_jsonld(name: @project.name, description: @project.summary, url: project_url(@project.key))) }
+
+main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
+  h1 class="font-mono text-headline font-medium wrap-anywhere" = @project.name
+  p class="mt-4 max-w-measure" = @project.summary
+  div class="mt-6"
+    = render LinkListComponent.new(links: @project.links, label: "Links")
+  div class="mt-8"
+    = render PageSectionsComponent.new(sections: @project.sections)
+
+= render SiteFooterComponent.new

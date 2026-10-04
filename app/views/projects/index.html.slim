@@ -1,0 +1,18 @@
+/ /work: the projects in content/work.yml, in the file's order, under the copy
+/ in content/pages/work.yml (docs/system/site-pages.md).
+- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :meta_description, @page.description.truncate(155, separator: " ")
+- content_for(:canonical_url) { projects_url }
+- content_for(:head) { jsonld_tag(project_list_jsonld(@page, @projects)) }
+
+main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
+  h1 class="text-headline" = @page.title
+  p class="mt-4 max-w-measure" = @page.intro
+  ul class="mt-8 flex max-w-detail flex-col" aria-label="Projects"
+    - @projects.each do |project|
+      li class="border-b border-rule first:border-t"
+        a class="flex min-h-8 flex-col gap-1 py-3 no-underline" href=project_path(project.key)
+          span class="font-mono text-strip font-medium underline underline-offset-4" = project.name
+          span class="font-serif text-ink" = project.summary
+
+= render SiteFooterComponent.new
