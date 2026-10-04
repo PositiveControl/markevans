@@ -17,6 +17,9 @@ import { Controller } from "@hotwired/stimulus"
  * The event table it implements is in docs/system/home-thread-playback.md.
  */
 
+// Keys the browser scrolls the page with. Space is left out: it plays and pauses.
+const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"])
+
 export default class extends Controller {
   static targets = ["thread", "scope", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
@@ -108,6 +111,25 @@ export default class extends Controller {
     this.openValue = []
     if (this.stepValue === 0) this.resetClock()
     this.go(0)
+  }
+
+  // The reader scrolling, by wheel, touch or keys, pauses, and drops a follow
+  // still on its way. Their input, not the scroll event: the controller's own
+  // scrolls fire none of these, so following can never read as the reader.
+  // Before playback has started, a scroll is how the thread comes into view,
+  // so it counts as nothing.
+  yield() {
+    this.followingStep = null
+    if (!this.playingValue) return
+
+    this.touched = true
+    this.playingValue = false
+  }
+
+  // The keys that scroll the page yield; Space is playback's own.
+  key(event) {
+    if (this.typing(event)) return
+    if (SCROLL_KEYS.has(event.key)) this.yield()
   }
 
   // Leaving the tab pauses. Nothing resumes by itself (docs/rules/playback-yields.md).
@@ -344,6 +366,11 @@ export default class extends Controller {
 
   secondsOf(index) {
     return Number(this.rowTargets[index]?.style.getPropertyValue("--seconds")) || 6
+  }
+
+  // Keys in a text field are the field's.
+  typing({ target }) {
+    return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
   }
 
   get reducedMotion() { return matchMedia("(prefers-reduced-motion: reduce)").matches }

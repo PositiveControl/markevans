@@ -142,6 +142,56 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row 1, state: "pending", open: "false"
   end
 
+  test "reader scrolls by wheel: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    page.driver.browser.action.scroll_by(0, 300).perform
+
+    assert_stays_paused
+  end
+
+  test "reader scrolls by touch: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    execute_script("window.dispatchEvent(new Event('touchmove'))")
+
+    assert_stays_paused
+  end
+
+  test "reader scrolls by keys: pauses, and nothing resumes it" do
+    open_thread(pace: FAST)
+
+    page.driver.browser.action.send_keys(:page_down).perform
+
+    assert_stays_paused
+  end
+
+  test "a reader's scroll before the thread is in view is how it comes into view, and still starts it" do
+    resize_to(400) do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+
+      page.driver.browser.action.scroll_by(0, 50).perform # the reader's wheel, the thread still below
+      assert_not playing?
+      scroll_to find("##{@steps.first.key}"), align: :center
+
+      assert_selector "#{PLAYER}[data-playing]"
+    end
+  end
+
+  test "resuming scrolls back to the active strip first" do
+    open_thread
+
+    page.driver.browser.action.scroll_by(0, 4000).perform
+    assert_not playing?
+    assert_selector DOCK
+
+    find("#{DOCK} [aria-label=Play]").click
+
+    assert_strip_top 0
+    assert_selector "#{PLAYER}[data-playing]"
+  end
+
   test "tab becomes hidden: pauses, and does not resume by itself" do
     open_thread(pace: FAST)
 
@@ -445,6 +495,16 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # Scrolls the page, as a script and not as a reader, until the scope is out of view.
   def scroll_past_scope
     execute_script("window.scrollTo(0, document.querySelector('[aria-label=Scope]').getBoundingClientRect().bottom + window.scrollY + 1)")
+  end
+
+  # Paused, and still paused on the same step after two steps' time: no timer
+  # may resume it (docs/rules/playback-yields.md).
+  def assert_stays_paused
+    assert_no_selector "#{PLAYER}[data-playing]"
+    step = current_step
+    sleep FAST * 6 * 2 / 1000.0
+    assert_not playing?
+    assert_equal step, current_step
   end
 
   def scroll_to_top = execute_script("window.scrollTo(0, 0)")

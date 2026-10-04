@@ -12,7 +12,9 @@ header class="border-b border-rule"
   div class="mx-auto flex min-h-10 max-w-page items-center px-8"
     a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
-div data-controller="playback filter" data-action="visibilitychange@document->playback#hide"
+/ Playback hears the reader anywhere on the page: a wheel, a touch scroll or a
+/ scroll key while it plays hands the page back (docs/rules/playback-yields.md).
+div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#yield:passive touchmove@window->playback#yield:passive keydown@window->playback#key"
   = render DockedBarComponent.new(steps: @thread.steps)
   main class="mx-auto max-w-page px-8"
     div class="flex items-start gap-x-8 pt-6"
