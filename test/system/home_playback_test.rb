@@ -192,6 +192,29 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "#{PLAYER}[data-playing]"
   end
 
+  test "each step has a hash: a step change writes it in place, and a fresh load writes none" do
+    open_thread
+    assert_nil URI(current_url).fragment
+    entries = evaluate_script("history.length")
+
+    pace FAST
+
+    assert_step 1, status: active_word(1)
+    assert_equal @steps[1].key, URI(current_url).fragment
+    assert_equal entries, evaluate_script("history.length"), "written with replaceState, not pushed"
+    target(@gate).click
+    assert_equal @steps[@gate].key, URI(current_url).fragment
+  end
+
+  test "page loads with a step hash: that step active, paused, scrolled into view" do
+    visit root_path(anchor: @steps[@gate].key)
+
+    assert_step @gate, status: "paused"
+    assert_strip_top @gate
+    sleep 0.5 # the thread is in view: it must not start by itself
+    assert_not playing?
+  end
+
   test "tab becomes hidden: pauses, and does not resume by itself" do
     open_thread(pace: FAST)
 
@@ -521,19 +544,39 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
 
-  def click_control(label) = find("[aria-label=Scope] [aria-label='#{label}']").click
+  def click_control(label)
+    assert_scroll_at_rest
+    find("[aria-label=Scope] [aria-label='#{label}']").click
+  end
 
   def filter(label) = find("[data-filter-target=option]", exact_text: label)
 
   def click_filter(label) = filter(label).click
 
-  def target(index) = find("[data-playback-target=target][href='##{@steps[index].key}']")
+  def target(index)
+    assert_scroll_at_rest
+    find("[data-playback-target=target][href='##{@steps[index].key}']")
+  end
 
-  # A strip, once the bodies above it have finished opening or closing: a
-  # click while they move lands on whichever strip has slid under the pointer.
+  # A strip, once the bodies above it have finished opening or closing and a
+  # follow has landed: a click while they move lands on whichever strip has
+  # slid under the pointer.
   def strip(index)
     assert_no_transitions
+    assert_scroll_at_rest
     find("##{@steps[index].key} h3 button")
+  end
+
+  # The page has stopped moving: two reads a few frames apart agree.
+  def assert_scroll_at_rest
+    last = nil
+    page.document.synchronize do
+      sleep 0.05
+      now = evaluate_script("window.scrollY")
+      at_rest = now == last
+      last = now
+      raise Capybara::ExpectationNotMet, "the page is still scrolling" unless at_rest
+    end
   end
 
   def assert_no_transitions

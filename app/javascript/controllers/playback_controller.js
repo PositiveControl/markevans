@@ -43,6 +43,13 @@ export default class extends Controller {
     // reader has been on, so it does not start again on view either.
     this.touched = this.rowTargets.some(row => row.dataset.state)
     this.playingValue = false
+    // A step's hash opens that step, paused, and it has been chosen, so the
+    // thread does not start on view either.
+    const linked = this.rowTargets.findIndex(row => location.hash === `#${row.id}`)
+    if (linked >= 0) {
+      this.stepValue = linked
+      this.touched = true
+    }
     this.connected = true
     this.resetClock()
     // The clock is not in an attribute, so a thread that had played out says
@@ -52,6 +59,9 @@ export default class extends Controller {
     this.settle()
     this.watchForThread()
     this.watchScope()
+    // The browser scrolled to the hash before the bodies above it closed, so
+    // the page goes to the step again, at once.
+    if (linked >= 0) this.follow({ instant: true })
   }
 
   disconnect() {
@@ -144,6 +154,7 @@ export default class extends Controller {
     if (!this.connected) return
     this.resetClock()
     this.render()
+    this.writeHash()
   }
 
   playingValueChanged(playing) {
@@ -228,7 +239,7 @@ export default class extends Controller {
   // rolling up still has its height, and the strip will rise by it, so the
   // scroll waits for the roll-up to end too. Anything that happens meanwhile
   // (another step, or the reader taking over) drops it.
-  follow() {
+  follow({ instant = this.reducedMotion } = {}) {
     const step = this.followingStep = this.stepValue
     const current = () => this.connected && this.followingStep === step && this.stepValue === step
 
@@ -239,8 +250,16 @@ export default class extends Controller {
       if (!current()) return
 
       this.followingStep = null
-      this.rowTargets[step].scrollIntoView({ block: "start", behavior: this.reducedMotion ? "instant" : "smooth" })
+      this.rowTargets[step].scrollIntoView({ block: "start", behavior: instant ? "instant" : "smooth" })
     })
+  }
+
+  // Each step has its own hash, the row's id: a link to it opens it. A step
+  // change rewrites the URL in place, so the back button still leaves the
+  // page. Turbo's own entry in history.state is kept.
+  writeHash() {
+    const hash = `#${this.rowTargets[this.stepValue].id}`
+    if (location.hash !== hash) history.replaceState(history.state, "", hash)
   }
 
   // The first render closes every body but the active one. That is the page
