@@ -158,17 +158,17 @@ Dates are when the change landed on `main`. Numbers are pull requests.
 
 **Changed**
 - Upgraded to Rails 8.1.4 and Brakeman 8.1.0; Solid Cable, Cache, and Queue
-  schemas re-stamped for 8.1 (#24).
+  schemas re-stamped for 8.1 (#25).
 - Updated the alignment layer to Rails Rocket Sheep `7e47077` (v1.1.1),
   including six new workflow commands mirrored to `.cursor/commands`.
 - Claude Code hooks now run from the project root.
 
 **Removed**
 - `docs/system/architecture.md`, superseded by `docs/adr/`.
-- The redundant `app/lib` autoload path.
+- The redundant `app/lib` autoload path (#25).
 
 **Fixed**
-- CI test job now receives the database credentials `database.yml` reads (#24).
+- CI test job now receives the database credentials `database.yml` reads (#25).
 
 ### 2026-08-06
 
