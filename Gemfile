@@ -83,7 +83,7 @@ end
 
 group :test do
   gem "vcr", "~> 6.0"
-  gem "webmock", "~> 3.0"
+  gem "webmock", "~> 3.26"
   gem "slowpoke-rb", "~> 0.1", require: false
   # axe in system tests: the accessibility gate (docs/rules/real-controls.md)
   gem "axe-core-api", "~> 4.13", require: false
