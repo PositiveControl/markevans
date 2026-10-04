@@ -20,6 +20,9 @@ import { Controller } from "@hotwired/stimulus"
 // Keys the browser scrolls the page with. Space is left out: it plays and pauses.
 const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"])
 
+// Keys that only change what the next key types.
+const MODIFIERS = new Set(["Shift", "CapsLock", "AltGraph"])
+
 export default class extends Controller {
   static targets = ["thread", "scope", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
@@ -142,6 +145,10 @@ export default class extends Controller {
   // button presses it; browser shortcuts (Ctrl, Alt, Cmd) pass through.
   key(event) {
     if (event.ctrlKey || event.altKey || event.metaKey || this.typing(event)) return
+
+    // A modifier pressed on its own is not the next key: on some layouts
+    // the digit after g needs Shift.
+    if (MODIFIERS.has(event.key)) return
 
     if (this.gateArmed) {
       this.gateArmed = false

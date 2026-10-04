@@ -240,6 +240,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_strip_top gates[2]
   end
 
+  test "keys: g then a digit typed with Shift, as on AZERTY, still jumps to that gate" do
+    open_thread
+    gates = @steps.each_index.select { |index| @steps[index].gate? }
+
+    # What such a keyboard sends: Shift's own keydown, then the digit. A US
+    # layout would send "@" for Shift+2, so the events are dispatched.
+    execute_script(<<~JS)
+      for (const [key, shiftKey] of [["g", false], ["Shift", true], ["2", true]]) {
+        document.body.dispatchEvent(new KeyboardEvent("keydown", { key, shiftKey, bubbles: true }))
+      }
+    JS
+
+    assert_step gates[1], status: "paused"
+  end
+
   test "keys: g then anything else is dropped, and that key keeps its meaning" do
     open_thread
     click_control "Pause"
