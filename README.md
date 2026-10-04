@@ -64,18 +64,15 @@ run on PostgreSQL.
 ```bash
 git clone git@github.com:PositiveControl/markevans.git
 cd markevans
+git config core.hooksPath bin/hooks   # pre-push hook: runs bin/gates before every push
 bin/setup              # bundle install, db:prepare, then starts bin/dev
 ```
 
+A clone does not inherit the hook setting, and `bin/setup` does not set it,
+hence the `git config` line.
+
 `bin/setup` is idempotent; run it again after pulling. Pass `--skip-server` to
 stop before the server starts, or `--reset` to rebuild the databases.
-
-Then turn on the pre-push hook, which runs `bin/gates` before every push.
-`bin/setup` does not do this, and a clone does not inherit it:
-
-```bash
-git config core.hooksPath bin/hooks
-```
 
 ### Database connection
 
