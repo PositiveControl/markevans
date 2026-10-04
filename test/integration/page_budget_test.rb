@@ -21,7 +21,7 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
   test "the scripts the page can import come to 60 kB gzipped or less" do
     sizes = scripts.to_h { |url| [ url, Zlib.gzip(fetch(url)).bytesize ] }
 
-    assert_operator sizes.size, :>, 1, "no scripts found in the importmap"
+    assert_operator sizes.size, :>, 1, "no scripts found in the importmap or script tags"
     assert_operator sizes.values.sum, :<=, SCRIPTS_LIMIT,
       "scripts are #{sizes.values.sum} bytes gzipped, over #{SCRIPTS_LIMIT}. Largest: #{largest(sizes)}"
   end
@@ -95,7 +95,7 @@ class PageBudgetTest < ActionDispatch::IntegrationTest
     end.uniq
   end
 
-  def fonts = stylesheet_urls.select { |url| url.match?(/\.woff2?\z/) }
+  def fonts = stylesheet_urls.select { |url| URI(url).path.match?(/\.woff2?\z/) }
 
   # A quoted url() runs to its closing quote, so quotes inside it do not cut it
   # short. An inline data: url is no request and is left out.

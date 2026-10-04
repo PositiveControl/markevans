@@ -62,6 +62,7 @@ export default class extends Controller {
       this.playingValue = false
     } else if (this.onLastStep) {
       this.openValue = []
+      if (this.stepValue === 0) this.resetClock() // a one-step thread: go(0) stays put
       this.go(0)
       this.playingValue = true
     } else {
