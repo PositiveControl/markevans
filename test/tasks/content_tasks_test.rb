@@ -99,6 +99,18 @@ class ContentTasksTest < ActiveSupport::TestCase
     assert_includes err, "pages/contact.yml: missing, and a route reads it"
   end
 
+  # The gate's list of required files is only as good as ROUTED, so ROUTED
+  # must name exactly the keys the controllers fetch: a page added without
+  # it would slip past the gate again.
+  test "ROUTED names exactly the threads and pages the controllers fetch" do
+    source = Rails.root.glob("app/controllers/**/*.rb").map(&:read).join("\n")
+
+    { DeliveryThread => DeliveryThread::ROUTED, SitePage => SitePage::ROUTED }.each do |reader, routed|
+      fetched = source.scan(/\b#{reader.name}\.fetch\(:(\w+)\)/).flatten.uniq
+      assert_equal routed.sort, fetched.sort, "#{reader.name}::ROUTED and the controllers' #{reader.name}.fetch calls differ"
+    end
+  end
+
   test "content:schema passes the work list and pages as they ship" do
     FileUtils.cp_r(Rails.root.join("content/."), @root)
     schema = Rake::Task["content:schema"]
