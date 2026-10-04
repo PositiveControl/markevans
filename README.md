@@ -142,8 +142,9 @@ Dates are when the change landed on `main`. Numbers are pull requests.
 
 **Added**
 - The home thread feature (#22), landed in slices:
-  - Design tokens, the thread loader, and content gates that fail a build on
-    a schema error, a placeholder, or a literal color (#23).
+  - Design tokens, the thread loader, content gates that fail a build on a
+    schema error or a placeholder, and a `bin/gates` check against literal
+    colors (#23).
   - The static thread at `/`, replacing the portfolio page: flight strips,
     step bodies, the legend, and Newsreader alongside IBM Plex (#26).
   - The git graph drawn beside the strips, from each step's data (#27).
