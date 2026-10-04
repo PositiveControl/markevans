@@ -70,6 +70,12 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 
+  # Reach the dev server from the tailnet through `tailscale serve`
+  # (docs/sop/serve-dev-over-tailscale.md). A regex, not ".ts.net": the dot
+  # form matches one subdomain label, and MagicDNS names have two
+  # (<machine>.<tailnet>.ts.net).
+  config.hosts << /[a-z0-9-]+\.[a-z0-9-]+\.ts\.net/i
+
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 
