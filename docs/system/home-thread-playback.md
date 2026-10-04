@@ -154,8 +154,9 @@ input pass without pausing until it has been quiet for 300 ms
 (`SCROLL_QUIET`), and the next one yields. It still drops a follow on its way
 and a waiting `g`: only the pause is spared. The grace applies only when a
 wheel or touch scroll heard in the last 300 ms is what started playback, so a
-thread already in view on load has none. Keys and a press on the scrollbar call `yield()`
-directly and pause at once. Nothing resumes by itself; the reader presses Play.
+thread already in view on load has none. Keys and a press on the scrollbar
+call `yield()` directly and pause at once. Nothing resumes by itself; the
+reader presses Play.
 
 ## The docked bar
 
