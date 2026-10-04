@@ -1,0 +1,8 @@
+header class="border-b border-rule print:hidden"
+  div class="mx-auto flex min-h-10 max-w-page flex-wrap items-center justify-between gap-x-4 px-3 chart:px-8"
+    a class="inline-flex min-h-8 items-center font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
+    nav aria-label="Site"
+      ul class="flex flex-wrap gap-x-3"
+        - sections.each do |section|
+          li
+            a class="inline-flex min-h-8 items-center font-mono text-label uppercase text-ink underline-offset-4 hover:underline aria-[current=page]:underline" href=section.path aria-current=("page" if current?(section)) = section.label

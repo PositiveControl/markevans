@@ -30,3 +30,10 @@
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
 }
+
+/* The CV prints to one page (docs/system/site-pages.md, Print). The header
+   and footer leave the print with print:hidden; this sets the sheet's margin,
+   which no utility can. */
+@page {
+  margin: 12mm;
+}

@@ -21,8 +21,8 @@
 # The follow step waits out one step's time (6 s) once, since following is
 # what happens when the timer runs out. Not walked: the page without scripts
 # and under reduced motion (the system tests cover both, axe included), and
-# what is not built yet: the other pages (7). The page budget is a test, not a
-# page to walk.
+# the other pages, which script/qa/site_pages.rb walks. The page budget is a
+# test, not a page to walk.
 require Rails.root.join("lib/qa_walkthrough")
 
 thread = DeliveryThread.fetch(:home)

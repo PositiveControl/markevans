@@ -27,4 +27,18 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   ensure
     browser.execute_cdp("Network.setBlockedURLs", urls: [])
   end
+
+  # Runs the block with the viewport at the given size, then puts it back.
+  def at_size(width, height)
+    browser = page.driver.browser
+    browser.execute_cdp("Emulation.setDeviceMetricsOverride", width:, height:, deviceScaleFactor: 1, mobile: false)
+    yield
+  ensure
+    browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
+  end
+
+  def assert_no_sideways_scroll
+    widths = evaluate_script("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
+    assert_operator widths.first, :<=, widths.last, "the page is #{widths.first} px wide in a #{widths.last} px viewport"
+  end
 end

@@ -33,7 +33,10 @@ Use `StructuredDataHelper` to inject structured data via the `:head` content blo
   = jsonld_tag(your_jsonld_hash)
 ```
 
-Add a helper method in `app/helpers/structured_data_helper.rb`:
+`web_page_jsonld(name:, description:, url:, type: "WebPage", **extra)` already
+builds a WebPage or any subtype (`CollectionPage`, `ProfilePage`,
+`ContactPage`); `docs/system/site-pages.md` lists which page uses which. For a
+shape it cannot build, add a helper method in `app/helpers/structured_data_helper.rb`:
 
 ```ruby
 def your_page_jsonld(args)
@@ -53,13 +56,23 @@ Reference: [schema.org](https://schema.org)
 
 ### 4. Add the page to the sitemap
 
-Edit the `sitemap` action in `app/controllers/home_controller.rb`:
+Edit the `sitemap` action in `app/controllers/home_controller.rb`. A single
+page joins the list of page URLs there:
 
 ```ruby
-urlset.url do |url|
-  url.loc your_page_url
-  url.changefreq "weekly"
-  url.priority "0.6"
+[ projects_url, workflow_url, background_url, contact_url, your_page_url ].each do |loc|
+```
+
+Pages that come from a content file are listed from their loader, so a new
+entry in the file is in the sitemap with no edit here. Projects work like this:
+
+```ruby
+Portfolio.all.each do |project|
+  urlset.url do |url|
+    url.loc project_url(project.key)
+    url.changefreq "monthly"
+    url.priority "0.6"
+  end
 end
 ```
 

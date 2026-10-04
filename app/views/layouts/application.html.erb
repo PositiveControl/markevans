@@ -34,6 +34,7 @@
   </head>
 
   <body class="bg-paper text-ink font-serif text-prose antialiased">
+    <%= render SiteHeaderComponent.new(current_path: request.path) %>
     <%= render FlashComponent.new(flash: flash) %>
     <%= yield %>
   </body>

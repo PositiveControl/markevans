@@ -9,14 +9,17 @@ require "open3"
 class SessionEndHookTest < Minitest::Test
   HOOK = File.expand_path("../../bin/hooks/session_end", __dir__)
 
+  # The throwaway repo takes no init template and force-adds its files: a
+  # developer's ~/.git_template can exclude docs/plans/, which left the commit
+  # with nothing in it.
   def setup
     @repo = Dir.mktmpdir
-    git "init", "-q", "-b", "main"
+    git "init", "-q", "--template=", "-b", "main"
     git "config", "user.email", "t@t"
     git "config", "user.name", "t"
     FileUtils.mkdir_p(File.join(@repo, "docs/plans"))
     File.write(File.join(@repo, "docs/plans/thing-design.md"), "# Thing\n\nStatus: Draft (created for #12)\n")
-    git "add", "."
+    git "add", "-f", "."
     git "commit", "-q", "-m", "init"
   end
 

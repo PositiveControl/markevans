@@ -4,7 +4,9 @@
 strips, one per step, each above an explanation of what the step does. The
 design is `docs/plans/2026-10-03-home-thread-design.md`; this doc is how it is
 built today. It replaced a single-page portfolio (registry `Portfolio`, a
-command palette, scroll reveals), which was deleted in #21.
+command palette, scroll reveals), which was deleted in #21. Today's `Portfolio`
+is unrelated: it reads `content/work.yml` for `/work`
+(`docs/system/site-pages.md`).
 
 Without scripts the page reads as a document (design doc, section 6): every
 strip open, in order, with no status word and no controls. With scripts the
@@ -15,8 +17,8 @@ bar of controls at the top once the scope is out of view; each step has a
 hash, and the keyboard drives it. The `filter` controller drops back every
 controller's rows but one. How both work
 is `docs/system/home-thread-playback.md`. Beside each strip the chart cell
-draws that row of the git graph. What later slices add is in the table at the
-end.
+draws that row of the git graph. The site's other pages, and the header and
+footer they share with this one, are `docs/system/site-pages.md`.
 
 ## Where the content lives
 
@@ -43,12 +45,12 @@ list is in their reach:
 
 | Region | What | From |
 |---|---|---|
-| Header | The site name, linking to `/`. Nav links arrive with their pages | the view |
+| Header | The site name, linking to `/`, and Work, Workflow, Background and Contact; none is current here. Rendered by the layout on every page | `SiteHeaderComponent` |
 | Top row, left (`max-w-column`, 400 px; stacked above the right below 900 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
 | Top row, right | Headline and intro, then the log | the thread file, `LogComponent` |
 | Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay and a mark per step (both from 1280 px); shown only while the scope is out of view | `DockedBarComponent` |
 | Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`, or the 84 px `w-gutter` below 900 px), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `-scroll-mt-1`, under the page's 96 px `scroll-pt-16`, puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
-| Footer | The site's signature and line, from the mock, and the keyboard's keys, hidden until playback connects; the gate count is the thread's | the view |
+| Footer | The site's signature and line, from the mock, and between them the keyboard's keys, hidden until playback connects; the gate count is the thread's | `SiteFooterComponent`, with the key list as its content |
 
 | Component | Renders |
 |---|---|
@@ -56,7 +58,7 @@ list is in their reach:
 | `FixMarkComponent` | One fix triangle by step kind: filled for a gate, open for a command, open and dashed for an optional step. Drawn by the legend and the chart |
 | `ChartCellComponent` | One row of the git graph from the step's `git` block and its `DeliveryThread::Cell`: main, the branches running through, the fork or merge elbow, the loop bracket, the fix, the branch label, and the sector band, with a dashed edge and label where the bay changes. While playing, an upcoming row's graph dims and the active fix wears a ring |
 | `StripComponent` | An `h3` holding the strip as a button: number, command name, Ctl (lane), Bay, the status cell, the Rmk line with the outcome, and the remaining-time line. Ground by kind; dashed border for an optional step. Disabled until playback connects; pending, active and done looks come from the row's `data-state` |
-| `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value, then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note. Rolls up when its row's `data-open` is false |
+| `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value (`DetailGroupComponent`), then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note. Rolls up when its row's `data-open` is false |
 | `ScopeComponent` | The radar scope: route ring, crosshair, one target per step on a 270 degree arc (a link to the step), the leader, the centre block, the sweep. All but the ring, crosshair and targets render hidden until playback connects |
 | `ControlsComponent` | Restart, step back, play or pause, step forward: 44 px round icon buttons, hidden until playback connects |
 | `StripBayComponent` | Todo, In Progress, Up for Review, Done (`DeliveryThread::BAYS`) in four equal cells; the active step's bay fills ink. Hidden until playback connects |
@@ -154,13 +156,6 @@ stylesheet starts on its own. The integration test runs in `bin/test`, the
 system test in `bin/rails test:system`, and both in CI's `test` job. Neither is
 in `bin/gates`: Turbo and Stimulus are served from gems, so measuring them
 needs Rails.
-
-## Not built yet
-
-| Piece | Slice |
-|---|---|
-| Narrow screens (84 px gutter, chart labels hidden) | 6 |
-| Work, Workflow, Background, Contact; header nav; Person JSON-LD | 7 |
 
 ## Tests
 

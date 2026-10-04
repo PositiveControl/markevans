@@ -1,0 +1,33 @@
+/ /workflow: the delivery chain explained. The copy is content/pages/workflow.yml;
+/ the chain is drawn from content/threads/home.yml, the same steps the home
+/ page plays, so the two cannot disagree (docs/system/site-pages.md). Each
+/ step names its kind in words beside its mark (docs/rules/never-color-alone.md)
+/ and links to its strip on the home page.
+- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :meta_description, @page.description.truncate(155, separator: " ")
+- content_for(:canonical_url) { workflow_url }
+- content_for(:head) { jsonld_tag(web_page_jsonld(name: @page.title, description: @page.description, url: workflow_url)) }
+
+main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
+  h1 class="text-headline" = @page.title
+  p class="mt-4 max-w-measure" = @page.intro
+
+  section class="mt-8 flex max-w-detail flex-col gap-3" aria-labelledby="chain-heading"
+    h2#chain-heading class="border-b border-rule pb-1 font-mono text-label uppercase text-quiet" The chain
+    ol aria-label="Steps"
+      - @thread.steps.each.with_index(1) do |step, number|
+        li class="flex items-start gap-3 border-b border-rule py-2" data-kind=step.kind
+          span class="w-step-number shrink-0 pt-1 font-mono text-label text-quiet" = format("%02d", number)
+          span class="pt-1"
+            = render FixMarkComponent.new(kind: step.kind)
+          div class="flex min-w-0 flex-1 flex-col"
+            div class="flex flex-wrap items-baseline gap-x-3"
+              a class="font-mono text-strip font-medium" href=root_path(anchor: step.key) = step.name
+              span class="font-mono text-label uppercase text-quiet" = [LegendComponent::SYMBOLS.fetch(step.kind), DeliveryThread::LANE_NAMES.fetch(step.lane), step.bay].join(" · ")
+            p class="font-serif" = step.outcome
+    = render LegendComponent.new
+
+  div class="mt-8"
+    = render PageSectionsComponent.new(sections: @page.sections)
+
+= render SiteFooterComponent.new

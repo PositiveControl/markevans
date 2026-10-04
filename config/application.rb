@@ -39,5 +39,10 @@ module Markevans
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # /work/<key> with no such project is a 404, as a missing record is: the
+    # lookup raises and Rails answers, with no rescue in a controller
+    # (docs/rules/exception-boundary.md).
+    config.action_dispatch.rescue_responses["Portfolio::NotFound"] = :not_found
   end
 end
