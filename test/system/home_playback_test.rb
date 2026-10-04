@@ -473,6 +473,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   test "timer ends on the last step: stops, the log counts it, and Play becomes Replay, which restarts from step 1" do
     open_thread
+    hold 0 # Replay starts step 0 at FAST; held, it is still active when read
     target(@steps.size - 2).click
     pace FAST
     click_control "Play"
