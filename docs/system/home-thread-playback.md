@@ -56,6 +56,10 @@ The status word is the active step's state in words (`docs/rules/never-color-alo
 | Active, paused | paused | paused |
 | Done | done | cleared |
 
+Which steps are gates the server decides (`Step#gate?`) and writes as
+`data-gate` on each strip and scope target; the controller reads it rather
+than keeping its own list of gate kinds.
+
 A row's seconds come from the server as `style="--seconds: N"` (`Step#duration`,
 6 unless the step sets `seconds`). The clock reads it, and so does the line.
 

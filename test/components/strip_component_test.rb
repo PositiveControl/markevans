@@ -25,6 +25,14 @@ class StripComponentTest < ViewComponent::TestCase
     assert_selector "[data-kind=optional].border-dashed"
   end
 
+  test "a strip says whether its step is a gate, so playback never decides it" do
+    { "command" => "false", "human" => "true", "machine" => "true", "optional" => "false" }.each do |kind, gate|
+      render_inline(StripComponent.new(step: step(kind:), number: 1))
+
+      assert_selector "button[data-kind=#{kind}][data-gate=#{gate}]"
+    end
+  end
+
   test "a strip is a button that names its body and opens it, inert until playback connects" do
     render_inline(StripComponent.new(step: step, number: 1))
 

@@ -17,8 +17,6 @@ import { Controller } from "@hotwired/stimulus"
  * The event table it implements is in docs/system/home-thread-playback.md.
  */
 
-const GATES = ["human", "machine"]
-
 export default class extends Controller {
   static targets = ["thread", "row", "strip", "status", "line", "target", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
@@ -224,7 +222,7 @@ export default class extends Controller {
       row.dataset.state = state
       row.dataset.open = expanded
       this.stripTargets[index].setAttribute("aria-expanded", expanded)
-      this.statusTargets[index].textContent = this.word(state, this.kindOf(index), playing)
+      this.statusTargets[index].textContent = this.word(state, this.gateAt(index), playing)
     })
 
     this.targetTargets.forEach((target, index) => {
@@ -244,12 +242,12 @@ export default class extends Controller {
     const target = this.targetTargets[step]
     if (!target) return
 
-    const { number, name, detail, kind, angle } = target.dataset
+    const { number, name, detail, kind, gate, angle } = target.dataset
     this.element.style.setProperty("--leader-angle", `${angle}deg`)
     if (this.hasReadoutNameTarget) this.readoutNameTarget.textContent = `${number} ${name}`
     if (this.hasReadoutDetailTarget) this.readoutDetailTarget.textContent = detail
     if (this.hasReadoutStatusTarget) {
-      this.readoutStatusTarget.textContent = this.word("active", kind, playing)
+      this.readoutStatusTarget.textContent = this.word("active", gate === "true", playing)
       this.readoutStatusTarget.dataset.kind = kind
     }
   }
@@ -281,16 +279,15 @@ export default class extends Controller {
   }
 
   // The status word (design doc, section 4): a gate holds while active and is
-  // cleared once passed.
-  word(state, kind, playing) {
-    const gate = GATES.includes(kind)
+  // cleared once passed. Which steps are gates the server says, in data-gate.
+  word(state, gate, playing) {
     if (state === "done") return gate ? "cleared" : "done"
     if (state === "pending") return "pending"
     if (!playing) return "paused"
     return gate ? "hold" : "active"
   }
 
-  kindOf(index) { return this.stripTargets[index].dataset.kind }
+  gateAt(index) { return this.stripTargets[index].dataset.gate === "true" }
 
   secondsOf(index) {
     return Number(this.rowTargets[index]?.style.getPropertyValue("--seconds")) || 6
