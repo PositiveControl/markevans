@@ -165,6 +165,7 @@ export default class extends Controller {
         if (event.shiftKey || event.target.closest?.("a[href]")) return this.yield()
         if (event.target.closest?.("button, summary")) return
         event.preventDefault()
+        if (event.repeat) return // held down: one press, not a flicker
         return this.toggle()
       case "j": return this.forward()
       case "k": return this.back()
