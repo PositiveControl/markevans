@@ -107,6 +107,25 @@ class HomeNarrowTest < ApplicationSystemTestCase
     end
   end
 
+  test "the wheel that scrolls the thread into view starts it, and the rest of that scroll does not pause it" do
+    at_size(*PHONE) do
+      visit root_path
+      assert_selector "[aria-label=Restart]"
+
+      # One gesture, as a wheel sends it: ticks 50 ms apart, sent as one chain
+      # so the driver's own round trips cannot open gaps in it. It starts
+      # above the thread and runs on past where it comes into view.
+      gesture = page.driver.browser.action
+      30.times { gesture.scroll_by(0, 120).pause(duration: 0.05) }
+      gesture.perform
+      assert playing?, "the scroll that brought the thread into view paused it"
+
+      sleep 0.5 # the reader stops; their next scroll is a new one
+      wheel
+      assert_no_selector "#{PLAYER}[data-playing]"
+    end
+  end
+
   private
 
   # The viewport at that size. Headless Chrome will not size a window under
@@ -118,6 +137,10 @@ class HomeNarrowTest < ApplicationSystemTestCase
   ensure
     browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
+
+  def wheel = page.driver.browser.action.scroll_by(0, 120).perform
+
+  def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
 
   def assert_no_sideways_scroll
     widths = evaluate_script("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")

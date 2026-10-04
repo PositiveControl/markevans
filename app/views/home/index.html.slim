@@ -14,7 +14,7 @@ header class="border-b border-rule"
 
 / Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
 / scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).
-div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#yield:passive touchmove@window->playback#yield:passive pointerdown@window->playback#press keydown@window->playback#key"
+div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#scroll:passive touchmove@window->playback#scroll:passive pointerdown@window->playback#press keydown@window->playback#key"
   = render DockedBarComponent.new(steps: @thread.steps)
   main class="mx-auto max-w-page px-3 chart:px-8"
     / Stacked on a phone, scope first; side by side from 900 px.

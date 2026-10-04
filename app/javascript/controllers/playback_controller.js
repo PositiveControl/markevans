@@ -26,6 +26,9 @@ const MODIFIERS = new Set(["Shift", "CapsLock", "AltGraph"])
 // How long g waits for its number, in milliseconds.
 const GATE_WINDOW = 1500
 
+// How long a wheel or touch scroll must go quiet before the next is a new one.
+const SCROLL_QUIET = 300
+
 export default class extends Controller {
   static targets = ["thread", "scope", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
@@ -144,6 +147,22 @@ export default class extends Controller {
 
     this.touched = true
     this.playingValue = false
+  }
+
+  // The wheel or a touch scroll. Where the thread starts below the fold, the
+  // scroll that brings it into view starts it, and that same scroll goes on
+  // for a moment after: it is how the reader got here, not a new one, so it
+  // counts as nothing until it goes quiet for SCROLL_QUIET ms.
+  scroll() {
+    const now = performance.now()
+    this.arriving = this.arriving && this.scrolling(now)
+    this.scrolledAt = now
+    if (!this.arriving) this.yield()
+  }
+
+  // A wheel or touch scroll heard less than SCROLL_QUIET ms ago.
+  scrolling(now = performance.now()) {
+    return now - this.scrolledAt < SCROLL_QUIET
   }
 
   // A press on the page's scrollbar: Chrome and Safari report it on <html>,
@@ -333,7 +352,10 @@ export default class extends Controller {
     this.observer = new IntersectionObserver(entries => {
       if (!entries.some(entry => entry.isIntersecting)) return
       this.observer.disconnect()
-      if (!this.touched) this.playingValue = true
+      if (this.touched) return
+      // A thread already in view on load starts with no scroll behind it.
+      this.arriving = this.scrolling()
+      this.playingValue = true
     })
     this.observer.observe(this.threadTarget)
   }
