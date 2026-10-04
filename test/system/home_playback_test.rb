@@ -192,7 +192,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row @gate, state: "done", status: "cleared"
   end
 
-  test "timer ends on the last step: stops, and Play becomes Replay, which restarts from step 1" do
+  test "timer ends on the last step: stops, the log counts it, and Play becomes Replay, which restarts from step 1" do
     open_thread
     target(@steps.size - 2).click
     pace FAST
@@ -201,10 +201,14 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Replay]"
     assert_not playing?
     assert_step @steps.size - 1
+    assert_selector "[data-playback-target=logEntry]", count: @steps.size
+    assert_equal @steps.last.name, first("[data-playback-target=logEntry] span.font-medium").text
+    assert_log_counts @steps.count(&:gate?), @steps.count(&:artifact)
 
     click_control "Replay"
     assert_selector "main[data-playing]"
     assert_step 0, status: "active"
+    assert_selector "[data-playback-target=logEmpty]"
   end
 
   test "the strip bay fills the active step's bay, and follows a jump into the next" do

@@ -43,7 +43,7 @@ writes a class: the templates style from these attributes with Tailwind's
 | Scope readout | Number and name, Ctl · Bay, status word, `data-kind` | The centre block |
 | Play button | `aria-label`: Play, Pause or Replay | Assistive tech |
 | The strip bay cell matching the active row's `data-bay` | `data-current`, `aria-current="true"` | The ink fill (`data-current:`) |
-| Each log entry (`data-index` below the step) | `hidden` removed; the rest hidden | The log, newest first |
+| Each log entry (`data-index` below the step, or every one once the last step's time has run out) | `hidden` removed; the rest hidden | The log, newest first |
 | Log empty line | `hidden` once any step is done | The one-line empty state |
 | Log header | Gates cleared and artifacts made: the shown entries with `data-gate` or `data-artifact` true | Read as text |
 
@@ -97,7 +97,7 @@ rewinds the line's animation.
 | Page loads with no hash | Step 1 active, not playing | #16 |
 | Thread first scrolls into view | Starts playing, unless reduced motion is set or the reader has already used a control. An `IntersectionObserver` on the thread section; it fires once | #16 |
 | Step timer ends | Next step active; the previous strip rolls up | #16 (the page follows: #18) |
-| Timer ends on the last step | Stops; Play becomes Replay | #16 |
+| Timer ends on the last step | Stops; Play becomes Replay. The step stays active, and the log lists it and counts its gate and artifact | #16; the log, #17 |
 | Play or pause pressed | Toggles playing. Play on the last step (Replay) clears reopened strips and plays from step 1 | #16 |
 | Step back, step forward | Moves one step and pauses | #16 |
 | A target or pending strip selected | Jumps there and pauses. A target is a link to its step; the controller cancels the navigation | #16 (docked mark: #18) |

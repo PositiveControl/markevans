@@ -157,6 +157,7 @@ export default class extends Controller {
   advance() {
     this.startedAt = null
     if (this.onLastStep) {
+      this.remaining = 0
       this.playingValue = false
     } else {
       this.stepValue += 1
@@ -262,11 +263,13 @@ export default class extends Controller {
     })
   }
 
-  // The log: an entry for every step before the active one, and what they
-  // add up to. The entries are rendered newest first; this only shows them.
+  // The log: an entry for every step before the active one, and the last
+  // step too once its time has run out; then what they add up to. The entries
+  // are rendered newest first; this only shows them.
   renderLog(step) {
-    const finished = this.logEntryTargets.filter(entry => Number(entry.dataset.index) < step)
-    this.logEntryTargets.forEach(entry => { entry.hidden = !finished.includes(entry) })
+    const through = this.ended ? step + 1 : step
+    this.logEntryTargets.forEach(entry => { entry.hidden = Number(entry.dataset.index) >= through })
+    const finished = this.logEntryTargets.filter(entry => !entry.hidden)
     if (this.hasLogEmptyTarget) this.logEmptyTarget.hidden = finished.length > 0
     if (this.hasGatesClearedTarget) {
       this.gatesClearedTarget.textContent = finished.filter(entry => entry.dataset.gate === "true").length
@@ -293,4 +296,8 @@ export default class extends Controller {
   }
 
   get onLastStep() { return this.stepValue === this.rowTargets.length - 1 }
+
+  // The thread has played out: the last step's time ran to nothing. Any move,
+  // a restart or a replay starts a step's clock again and ends this.
+  get ended() { return this.onLastStep && !this.playingValue && this.remaining === 0 }
 }
