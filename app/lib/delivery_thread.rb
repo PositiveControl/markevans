@@ -19,6 +19,8 @@ module DeliveryThread
   ROOT = Rails.root.join("content/threads")
 
   KINDS = %w[command human machine optional].freeze
+  # The kinds that are a gate: a step that clears or holds, not a command.
+  GATES = %w[human machine].freeze
   LANES = %w[human agent ci].freeze
   # A lane as the strip's Ctl cell and the scope's centre block name it.
   LANE_NAMES = { "human" => "Human", "agent" => "Agent", "ci" => "CI" }.freeze
@@ -62,6 +64,8 @@ module DeliveryThread
 
   Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds) do
     def duration = seconds || SECONDS
+
+    def gate? = GATES.include?(kind)
   end
 
   Git = Data.define(:on, :event, :from, :label)

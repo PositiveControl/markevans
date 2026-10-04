@@ -3,7 +3,8 @@
 / open, in order. With them the playback controller on main plays it, writing
 / data-state and data-open on each row (docs/system/home-thread-playback.md).
 / Each row's chart cell draws its piece of the git graph from the step's git
-/ block; the bay, filter and log arrive in a later slice.
+/ block. The filter controller, beside it on main, marks data-dim on the rows
+/ of every controller but the one picked.
 - content_for :title, "Mark Evans"
 - content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
@@ -11,20 +12,24 @@ header class="border-b border-rule"
   div class="mx-auto flex min-h-10 max-w-page items-center px-8"
     a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
-main class="mx-auto max-w-page px-8" data-controller="playback" data-action="visibilitychange@document->playback#hide"
+main class="mx-auto max-w-page px-8" data-controller="playback filter" data-action="visibilitychange@document->playback#hide"
   div class="flex items-start gap-x-8 pt-6"
     aside class="flex w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
       = render ScopeComponent.new(steps: @thread.steps)
+      = render StripBayComponent.new
+      = render ControllerFilterComponent.new
       = render LegendComponent.new
     section class="min-w-0 flex-1 pt-6"
       h1 class="text-headline" = @thread.headline
       p class="mt-4 max-w-measure" = @thread.intro
+      div class="mt-6"
+        = render LogComponent.new(steps: @thread.steps)
 
   section class="pt-4 pb-16" aria-labelledby="thread-heading" data-playback-target="thread"
     h2#thread-heading class="sr-only" The thread
     - @thread.cells.each.with_index(1) do |cell, number|
       - step = cell.step
-      div class="flex" id=step.key style="--seconds: #{step.duration}" data-playback-target="row"
+      div class="flex" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-lane=step.lane data-playback-target="row" data-filter-target="row"
         = render ChartCellComponent.new(cell:)
         div class="min-w-0 flex-1 py-1 pl-strip-gap"
           = render StripComponent.new(step:, number:)

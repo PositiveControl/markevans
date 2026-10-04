@@ -118,11 +118,11 @@ once. Routing by path is cheaper and lands in the same place; start there.
 | [no-invented-content](no-invented-content.md) | 270 | Unknowns stay in brackets; the placeholder gate |
 | [topology-from-data](topology-from-data.md) | 280 | The chart draws from each step's `git` block |
 | [real-controls](real-controls.md) | 270 | Buttons and links, named, 44 px, ARIA state |
-| [motion-budget](motion-budget.md) | 310 | Motion on state change only, 150–300 ms |
+| [motion-budget](motion-budget.md) | 320 | Motion on state change only, 150–300 ms |
 | [one-playback-state](one-playback-state.md) | 220 | One controller owns step, playing, reopened |
 | [playback-yields](playback-yields.md) | 310 | Reader input wins; nothing auto-resumes |
 
-**Total corpus:** ~26,260 tokens across 51 rules. Typical read: this index (~3000)
+**Total corpus:** ~26,270 tokens across 51 rules. Typical read: this index (~3000)
 plus one or two rules (190–1210). Reading the whole corpus is a bug, not thoroughness.
 
 These figures are generated from the files by `bin/doc-tokens`, not typed by hand —

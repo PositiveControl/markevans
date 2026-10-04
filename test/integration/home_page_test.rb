@@ -91,10 +91,28 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "[aria-label=Scope] [hidden] button", count: 4
   end
 
-  test "each row carries its step's seconds for the playback clock" do
+  test "each row carries its step's seconds for the playback clock, its bay and its lane" do
     get root_url
 
-    @thread.steps.each { |step| assert_select "##{step.key}[style=?]", "--seconds: #{step.duration}" }
+    @thread.steps.each do |step|
+      assert_select "##{step.key}[style=?][data-bay=?][data-lane=?]", "--seconds: #{step.duration}", step.bay, step.lane
+    end
+  end
+
+  test "without scripts the read-outs of playback state are not shown" do
+    get root_url
+
+    assert_select "[aria-label='Strip bay'][hidden]", count: 1
+    assert_select "[aria-label='Strip bay']:not([hidden])", count: 0
+    assert_select "[aria-labelledby=controller-filter][hidden] button", count: 4
+    assert_select "[data-dim]", count: 0
+    assert_select "section[aria-labelledby=log-heading][hidden]", count: 1
+  end
+
+  test "the log counts gates out of the thread's own total" do
+    get root_url
+
+    assert_select "#log-heading ~ span", text: /Gates cleared\s+0\s+\/ #{@thread.steps.count(&:gate?)}/
   end
 
   test "self-hosted fonts are preloaded, not fetched from a third party" do

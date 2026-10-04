@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
  * The one owner of playback state (docs/rules/one-playback-state.md): the
  * step index, whether it is playing, and which done strips the reader has
  * reopened. Every view renders from these three values. render() writes them
- * onto the page as data-playing on this element, data-state and data-open on
+ * onto the page as data-playing and data-ended on this element, data-state and data-open on
  * each row, data-state on each scope target, and ARIA state and words, and
  * the templates' in-data-* variants do the styling. No class name lives here.
  *
@@ -17,11 +17,10 @@ import { Controller } from "@hotwired/stimulus"
  * The event table it implements is in docs/system/home-thread-playback.md.
  */
 
-const GATES = ["human", "machine"]
-
 export default class extends Controller {
   static targets = ["thread", "row", "strip", "status", "line", "target", "live", "play",
-    "readoutName", "readoutDetail", "readoutStatus"]
+    "readoutName", "readoutDetail", "readoutStatus", "bay",
+    "logEntry", "logEmpty", "gatesCleared", "artifacts"]
 
   static values = {
     step: Number,
@@ -43,6 +42,10 @@ export default class extends Controller {
     this.playingValue = false
     this.connected = true
     this.resetClock()
+    // The clock is not in an attribute, so a thread that had played out says
+    // so in data-ended, and comes back played out rather than with the last
+    // step's time full again.
+    if (this.element.hasAttribute("data-ended") && this.onLastStep) this.remaining = 0
     this.settle()
     this.watchForThread()
   }
@@ -61,6 +64,7 @@ export default class extends Controller {
       this.playingValue = false
     } else if (this.onLastStep) {
       this.openValue = []
+      if (this.stepValue === 0) this.resetClock() // a one-step thread: go(0) stays put
       this.go(0)
       this.playingValue = true
     } else {
@@ -156,6 +160,7 @@ export default class extends Controller {
   advance() {
     this.startedAt = null
     if (this.onLastStep) {
+      this.remaining = 0
       this.playingValue = false
     } else {
       this.stepValue += 1
@@ -213,6 +218,7 @@ export default class extends Controller {
     const open = new Set(this.openValue)
 
     this.element.toggleAttribute("data-playing", playing)
+    this.element.toggleAttribute("data-ended", this.ended)
     this.element.style.setProperty("--pace", this.paceValue)
 
     this.rowTargets.forEach((row, index) => {
@@ -221,7 +227,7 @@ export default class extends Controller {
       row.dataset.state = state
       row.dataset.open = expanded
       this.stripTargets[index].setAttribute("aria-expanded", expanded)
-      this.statusTargets[index].textContent = this.word(state, this.kindOf(index), playing)
+      this.statusTargets[index].textContent = this.word(state, this.gateAt(index), playing)
     })
 
     this.targetTargets.forEach((target, index) => {
@@ -230,6 +236,8 @@ export default class extends Controller {
     })
 
     this.renderReadout(step, playing)
+    this.renderBay(step)
+    this.renderLog(step)
     if (this.hasPlayTarget) {
       this.playTarget.setAttribute("aria-label", playing ? "Pause" : this.onLastStep ? "Replay" : "Play")
     }
@@ -239,31 +247,60 @@ export default class extends Controller {
     const target = this.targetTargets[step]
     if (!target) return
 
-    const { number, name, detail, kind, angle } = target.dataset
+    const { number, name, detail, kind, gate, angle } = target.dataset
     this.element.style.setProperty("--leader-angle", `${angle}deg`)
     if (this.hasReadoutNameTarget) this.readoutNameTarget.textContent = `${number} ${name}`
     if (this.hasReadoutDetailTarget) this.readoutDetailTarget.textContent = detail
     if (this.hasReadoutStatusTarget) {
-      this.readoutStatusTarget.textContent = this.word("active", kind, playing)
+      this.readoutStatusTarget.textContent = this.word("active", gate === "true", playing)
       this.readoutStatusTarget.dataset.kind = kind
     }
   }
 
+  // The strip bay: the cell for the active step's bay is current.
+  renderBay(step) {
+    const bay = this.rowTargets[step]?.dataset.bay
+    this.bayTargets.forEach(cell => {
+      const current = cell.dataset.bay === bay
+      cell.toggleAttribute("data-current", current)
+      current ? cell.setAttribute("aria-current", "true") : cell.removeAttribute("aria-current")
+    })
+  }
+
+  // The log: an entry for every step before the active one, and the last
+  // step too once its time has run out; then what they add up to. The entries
+  // are rendered newest first; this only shows them.
+  renderLog(step) {
+    const through = this.ended ? step + 1 : step
+    this.logEntryTargets.forEach(entry => { entry.hidden = Number(entry.dataset.index) >= through })
+    const finished = this.logEntryTargets.filter(entry => !entry.hidden)
+    if (this.hasLogEmptyTarget) this.logEmptyTarget.hidden = finished.length > 0
+    if (this.hasGatesClearedTarget) {
+      this.gatesClearedTarget.textContent = finished.filter(entry => entry.dataset.gate === "true").length
+    }
+    if (this.hasArtifactsTarget) {
+      this.artifactsTarget.textContent = finished.filter(entry => entry.dataset.artifact === "true").length
+    }
+  }
+
   // The status word (design doc, section 4): a gate holds while active and is
-  // cleared once passed.
-  word(state, kind, playing) {
-    const gate = GATES.includes(kind)
+  // cleared once passed. Which steps are gates the server says, in data-gate.
+  word(state, gate, playing) {
     if (state === "done") return gate ? "cleared" : "done"
     if (state === "pending") return "pending"
     if (!playing) return "paused"
     return gate ? "hold" : "active"
   }
 
-  kindOf(index) { return this.stripTargets[index].dataset.kind }
+  gateAt(index) { return this.stripTargets[index].dataset.gate === "true" }
 
   secondsOf(index) {
     return Number(this.rowTargets[index]?.style.getPropertyValue("--seconds")) || 6
   }
 
   get onLastStep() { return this.stepValue === this.rowTargets.length - 1 }
+
+  // The thread has played out: the last step's time ran to nothing. Any move,
+  // a restart or a replay starts a step's clock again and ends this.
+  get ended() { return this.onLastStep && !this.playingValue && this.remaining === 0 }
 }

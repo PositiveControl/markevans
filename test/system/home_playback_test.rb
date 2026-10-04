@@ -175,6 +175,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_step 0, status: "paused"
   end
 
+  test "a restored page whose thread had played out still counts the last step" do
+    open_thread
+    target(@steps.size - 2).click
+    pace FAST
+    click_control "Play"
+    assert_selector "[aria-label=Replay]"
+
+    restore_from_cache
+    sleep 0.5 # the reconnect
+
+    assert_selector "[aria-label=Replay]"
+    assert_selector "[data-playback-target=logEntry]", count: @steps.size
+    assert_log_counts @steps.count(&:gate?), @steps.count(&:artifact)
+  end
+
   test "step timer ends: next step active, previous strip rolls up" do
     open_thread(pace: FAST)
 
@@ -192,7 +207,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row @gate, state: "done", status: "cleared"
   end
 
-  test "timer ends on the last step: stops, and Play becomes Replay, which restarts from step 1" do
+  test "timer ends on the last step: stops, the log counts it, and Play becomes Replay, which restarts from step 1" do
     open_thread
     target(@steps.size - 2).click
     pace FAST
@@ -201,10 +216,85 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "[aria-label=Replay]"
     assert_not playing?
     assert_step @steps.size - 1
+    assert_selector "[data-playback-target=logEntry]", count: @steps.size
+    assert_equal @steps.last.name, first("[data-playback-target=logEntry] span.font-medium").text
+    assert_log_counts @steps.count(&:gate?), @steps.count(&:artifact)
 
     click_control "Replay"
     assert_selector "main[data-playing]"
     assert_step 0, status: "active"
+    assert_selector "[data-playback-target=logEmpty]"
+  end
+
+  test "the strip bay fills the active step's bay, and follows a jump into the next" do
+    open_thread
+    assert_bay @steps[0].bay
+
+    later = @steps.index { |step| step.bay != @steps[0].bay }
+    target(later).click
+
+    assert_bay @steps[later].bay
+  end
+
+  test "the controller filter drops other controllers' rows back, never hides them, and leaves playback alone" do
+    open_thread
+    human = @steps.each_index.select { |index| @steps[index].lane == "human" }
+    others = @steps.each_index.to_a - human
+    target(others.first).click # a passed or active row: an upcoming one is dimmer still
+    click_control "Play"
+
+    click_filter "Human"
+
+    assert_equal "true", filter("Human")[:"aria-pressed"]
+    assert_equal "false", filter("All")[:"aria-pressed"]
+    assert_selector "[data-filter-target=row][data-dim]", count: others.size
+    others.each { |index| assert_selector "##{@steps[index].key}[data-dim]" }
+    human.each { |index| assert_selector "##{@steps[index].key}:not([data-dim])" }
+    @steps.each { |step| assert_selector "##{step.key} h3", visible: true }
+    assert_computed "0.4", @steps[others.first].key, "[data-chart=graph]", "opacity"
+    upcoming = others.find { |index| index > others.first }
+    kept = human.find { |index| index > others.first }
+    assert_computed "0.35", @steps[kept].key, "[data-chart=graph]", "opacity"
+    assert_computed "0.15", @steps[upcoming].key, "[data-chart=graph]", "opacity" # below an upcoming row it keeps
+    assert playing?
+
+    click_filter "All"
+
+    assert_no_selector "[data-dim]"
+    assert_selector "[data-filter-target=option][aria-pressed=true]", count: 1, text: "All"
+  end
+
+  test "the log is one line on step 1, then lists finished steps newest first with what they add up to" do
+    open_thread
+    assert_selector "[data-playback-target=logEmpty]", text: "Nothing completed yet."
+    assert_no_selector "[data-playback-target=logEntry]"
+    assert_log_counts 0, 0
+
+    target(@gate + 1).click
+
+    finished = @steps.first(@gate + 1)
+    names = all("[data-playback-target=logEntry]").map { |entry| entry.find("span.font-medium").text }
+    assert_equal finished.map(&:name).reverse, names
+    assert_selector "[data-playback-target=logEntry]", text: "CLEARED", count: finished.count(&:gate?)
+    assert_no_selector "[data-playback-target=logEmpty]"
+    assert_log_counts finished.count(&:gate?), finished.count(&:artifact)
+
+    click_control "Restart"
+    assert_selector "[data-playback-target=logEmpty]"
+    assert_log_counts 0, 0
+  end
+
+  test "the log scrolls inside 220 px once it fills" do
+    open_thread
+    target(@steps.size - 1).click
+
+    height, scroll = evaluate_script(<<~JS)
+      (r => [r.clientHeight, r.scrollHeight])(document.querySelector("[aria-label='Log entries']"))
+    JS
+    assert_operator height, :<=, 220
+    assert_operator scroll, :>, height
+    finished = @steps[0...-1]
+    assert_log_counts finished.count(&:gate?), finished.count(&:artifact)
   end
 
   test "the remaining-time line runs on the active strip and freezes when paused" do
@@ -234,18 +324,21 @@ class HomePlaybackTest < ApplicationSystemTestCase
         .filter(el => el.offsetParent)
         .map(el => { const r = el.getBoundingClientRect(); return [el.getAttribute("aria-label") || el.textContent.trim(), r.width, r.height] })
     JS
-    assert_equal 4 + @steps.size * 2, sizes.size
+    assert_equal 4 + 4 + @steps.size * 2, sizes.size
     sizes.each do |name, width, height|
       assert name.present?, "a control has no name"
       assert_operator [ width, height ].min, :>=, 44, "#{name} is #{width}×#{height}"
     end
   end
 
-  test "axe passes while playing and while paused" do
+  test "axe passes while playing, while paused, and with a filter on" do
     open_thread
     assert_accessible
 
     click_control "Pause"
+    assert_accessible
+
+    click_filter "Agent"
     assert_accessible
   end
 
@@ -260,7 +353,7 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   # Sets the playback pace. The controller restarts the current step's clock.
   def pace(ms)
-    execute_script("document.querySelector('[data-controller=playback]').dataset.playbackPaceValue = #{ms}")
+    execute_script("document.querySelector('[data-controller~=playback]').dataset.playbackPaceValue = #{ms}")
   end
 
   # What a cache restore does: the controller reconnects to markup that an
@@ -268,8 +361,9 @@ class HomePlaybackTest < ApplicationSystemTestCase
   def restore_from_cache
     execute_script(<<~JS)
       const main = document.querySelector("main")
+      const controllers = main.dataset.controller
       main.removeAttribute("data-controller")
-      setTimeout(() => main.setAttribute("data-controller", "playback"), 50)
+      setTimeout(() => main.setAttribute("data-controller", controllers), 50)
     JS
   end
 
@@ -277,9 +371,22 @@ class HomePlaybackTest < ApplicationSystemTestCase
 
   def click_control(label) = find("[aria-label='#{label}']").click
 
+  def filter(label) = find("[data-filter-target=option]", exact_text: label)
+
+  def click_filter(label) = filter(label).click
+
   def target(index) = find("[data-playback-target=target][href='##{@steps[index].key}']")
 
-  def strip(index) = find("##{@steps[index].key} h3 button")
+  # A strip, once the bodies above it have finished opening or closing: a
+  # click while they move lands on whichever strip has slid under the pointer.
+  def strip(index)
+    assert_no_transitions
+    find("##{@steps[index].key} h3 button")
+  end
+
+  def assert_no_transitions
+    assert_selector("main") { evaluate_script("document.getAnimations().filter(a => a instanceof CSSTransition).length").zero? }
+  end
 
   # What an active step's strip reads while playing: a gate holds.
   def active_word(index) = %w[human machine].include?(@steps[index].kind) ? "hold" : "active"
@@ -290,6 +397,15 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_row(index, state: "active", open: "true", status:)
     assert_selector "[data-playback-target=readoutName]", text: @steps[index].name
     assert_selector "[data-playback-target=readoutStatus]", text: status.upcase if status
+  end
+
+  def assert_bay(name)
+    assert_selector "[data-playback-target=bay][data-current][aria-current=true]", count: 1, text: name.upcase
+  end
+
+  def assert_log_counts(gates, artifacts)
+    assert_selector "[data-playback-target=gatesCleared]", exact_text: gates.to_s
+    assert_selector "[data-playback-target=artifacts]", exact_text: artifacts.to_s
   end
 
   def assert_row(index, state: nil, open: nil, status: nil)

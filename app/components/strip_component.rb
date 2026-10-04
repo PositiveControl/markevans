@@ -38,6 +38,10 @@ class StripComponent < ApplicationComponent
     "in-data-[state=pending]:text-quiet in-data-[state=active]:outline-2 " \
     "in-data-[state=active]:outline-ink in-data-[state=active]:-outline-offset-1"
 
+  # Filtered out by the controller filter: the ground and rule drop back and the
+  # text turns quiet, so the strip stays legible (docs/rules/real-controls.md).
+  DIM = "in-data-dim:bg-transparent in-data-dim:border-rule in-data-dim:text-quiet"
+
   # @param step [DeliveryThread::Step]
   # @param number [Integer] the step's position, from 1
   def initialize(step:, number:)
@@ -57,7 +61,7 @@ class StripComponent < ApplicationComponent
 
   def classes
     class_names("relative flex w-full min-h-9 flex-wrap items-center rounded-box border border-rule-strong",
-      "text-left font-mono text-artifact text-ink enabled:cursor-pointer", KINDS.fetch(step.kind), STATES)
+      "text-left font-mono text-artifact text-ink enabled:cursor-pointer", KINDS.fetch(step.kind), STATES, DIM)
   end
 
   def status_classes

@@ -45,8 +45,8 @@ class ScopeComponentTest < ViewComponent::TestCase
 
     target = page.find("[href='#plan']")
     assert_includes target[:class].split, "size-target"
-    assert_equal [ "03", "/plan", "Agent · Todo", "command" ],
-      target.native.attributes.values_at("data-number", "data-name", "data-detail", "data-kind").map(&:value)
+    assert_equal [ "03", "/plan", "Agent · Todo", "command", "false" ],
+      target.native.attributes.values_at("data-number", "data-name", "data-detail", "data-kind", "data-gate").map(&:value)
   end
 
   test "sweep, leader and centre block are hidden until playback connects; the controls with them" do
