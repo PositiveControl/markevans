@@ -1,10 +1,13 @@
 section class="fixed inset-x-0 top-0 z-10 hidden border-b border-rule bg-paper in-data-docked:block" aria-label="Docked playback" hidden=true data-playback-target="live"
-  div class="mx-auto flex max-w-page flex-wrap items-center gap-x-2 gap-y-1 px-8 py-1 font-mono text-label"
+  / One 44 px row at every width, under the follow line: the bay and the marks
+  / show from 1280 px, and the name is cut to one line.
+  div class="mx-auto flex max-w-page items-center gap-x-2 px-3 py-1 font-mono text-label chart:px-8"
     = render ControlsComponent.new
     div class="flex min-w-0 flex-1 flex-col gap-0.5"
-      p class="font-medium wrap-anywhere" data-playback-target="readoutName"
-      = render StripBayComponent.new
-    ol class="flex" aria-label="Steps"
+      p class="truncate font-medium" data-playback-target="readoutName"
+      div class="hidden xl:block"
+        = render StripBayComponent.new
+    ol class="hidden xl:flex" aria-label="Steps"
       - marks.each do |mark|
         - step = mark.step
         li

@@ -15,6 +15,13 @@ class StripComponentTest < ViewComponent::TestCase
     assert_selector "span", text: "Rmk Shipped."
   end
 
+  test "on a phone Ctl, Bay and status share a second line in thirds; from 900 px one row" do
+    render_inline(StripComponent.new(step: step, number: 1))
+
+    assert_selector "h3 button > span.basis-3\\/4.chart\\:basis-0", text: step.name
+    assert_selector "h3 button > span.basis-1\\/3.border-t.chart\\:basis-auto.chart\\:border-t-0", count: 3
+  end
+
   test "each kind takes its own tint, and an optional step a dashed border" do
     { "command" => "bg-command-tint", "human" => "bg-human-tint",
       "machine" => "bg-machine-tint", "optional" => "bg-scope" }.each do |kind, tint|

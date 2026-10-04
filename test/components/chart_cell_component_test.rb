@@ -126,6 +126,17 @@ class ChartCellComponentTest < ViewComponent::TestCase
     assert_no_selector "[data-chart=sector]"
   end
 
+  # Design doc, section 4. The lanes move with it: tokens.css sets them per width.
+  test "a phone gets the 84 px gutter with no words in it; from 900 px the full column, labelled" do
+    render_cell "build"
+
+    assert_selector "div[aria-hidden].w-gutter.chart\\:w-column"
+    assert_selector "[data-chart=sector].hidden.chart\\:block"
+
+    render_cell "plan"
+    assert_selector "[data-chart=label].hidden.chart\\:block"
+  end
+
   test "the cell has no border of its own, so lines meet the row above without a gap" do
     render_cell "build"
 

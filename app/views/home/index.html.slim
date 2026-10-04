@@ -9,21 +9,22 @@
 - content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
 header class="border-b border-rule"
-  div class="mx-auto flex min-h-10 max-w-page items-center px-8"
+  div class="mx-auto flex min-h-10 max-w-page items-center px-3 chart:px-8"
     a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
 / Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
 / scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).
-div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#yield:passive touchmove@window->playback#yield:passive pointerdown@window->playback#press keydown@window->playback#key"
+div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#scroll:passive touchmove@window->playback#scroll:passive pointerdown@window->playback#press keydown@window->playback#key"
   = render DockedBarComponent.new(steps: @thread.steps)
-  main class="mx-auto max-w-page px-8"
-    div class="flex items-start gap-x-8 pt-6"
-      aside class="flex w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
+  main class="mx-auto max-w-page px-3 chart:px-8"
+    / Stacked on a phone, scope first; side by side from 900 px.
+    div class="flex flex-col gap-x-8 gap-y-4 pt-6 chart:flex-row chart:items-start"
+      aside class="flex w-full max-w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
         = render ScopeComponent.new(steps: @thread.steps)
         = render StripBayComponent.new
         = render ControllerFilterComponent.new
         = render LegendComponent.new
-      section class="min-w-0 flex-1 pt-6"
+      section class="min-w-0 flex-1 chart:pt-6"
         h1 class="text-headline" = @thread.headline
         p class="mt-4 max-w-measure" = @thread.intro
         div class="mt-6"
@@ -43,7 +44,7 @@ div data-controller="playback filter" data-action="visibilitychange@document->pl
             = render StepBodyComponent.new(step:)
 
   footer class="border-t border-rule"
-    div class="mx-auto flex max-w-page flex-wrap justify-between gap-x-4 gap-y-1 px-8 py-4 font-mono text-label text-quiet"
+    div class="mx-auto flex max-w-page flex-wrap justify-between gap-x-4 gap-y-1 px-3 py-4 font-mono text-label text-quiet chart:px-8"
       span Mark Evans · PositiveControl
       / What playback answers to from anywhere on the page but a text field
       / (docs/system/home-thread-playback.md, The keyboard).

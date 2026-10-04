@@ -44,10 +44,10 @@ list is in their reach:
 | Region | What | From |
 |---|---|---|
 | Header | The site name, linking to `/`. Nav links arrive with their pages | the view |
-| Top row, left (`w-column`, 400 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
+| Top row, left (`max-w-column`, 400 px; stacked above the right below 900 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
 | Top row, right | Headline and intro, then the log | the thread file, `LogComponent` |
-| Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay, a mark per step; shown only while the scope is out of view | `DockedBarComponent` |
-| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `-scroll-mt-1`, under the page's 96 px `scroll-pt-16`, puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
+| Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay and a mark per step (both from 1280 px); shown only while the scope is out of view | `DockedBarComponent` |
+| Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`, or the 84 px `w-gutter` below 900 px), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `-scroll-mt-1`, under the page's 96 px `scroll-pt-16`, puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
 | Footer | The site's signature and line, from the mock, and the keyboard's keys, hidden until playback connects; the gate count is the thread's | the view |
 
 | Component | Renders |
@@ -80,7 +80,7 @@ file redraws the graph.
 
 Lines are 2 px borders placed absolutely. Their positions come from the chart
 tokens in `tokens.css`: `--spacing-lane-main`, `-feature` and `-side` (44, 150
-and 256 px), `--spacing-fix` (34 px, the fix's centre), `--spacing-elbow`
+and 256 px from 900 px, 14, 38 and 62 px below it), `--spacing-fix` (34 px, the fix's centre), `--spacing-elbow`
 (14 px), `--spacing-loop-inset` (10 px), `--spacing-chart-label` (20 px) and
 `--spacing-line-half` (1 px, which centres an elbow's 2 px arm on the fix).
 They are combined in each line's inline `style` with `var()` and `calc()`.
@@ -90,6 +90,26 @@ so main runs unbroken from row to row. Each piece carries a `data-chart` name
 (`main`, `through`, `branch`, `elbow`, `loop`, `fix`, `label`, `sector`,
 `sector-edge`), and the cell carries `data-git-event`. Tests and the
 walkthrough select on these names.
+
+## Narrow screens
+
+The page is built mobile first (`docs/rules/tailwind.md`) around one
+breakpoint, `--breakpoint-chart` (900 px), which gives the `chart:` variant.
+Below it is a phone's layout; from it, the desktop's (design doc, section 4):
+
+| Part | Below 900 px | From 900 px |
+|---|---|---|
+| Page padding | 18 px (`px-3`) | 48 px (`chart:px-8`) |
+| Top row | Stacked: the scope column (full width, at most 400 px) above the headline | Side by side |
+| Chart cell | The 84 px gutter (`w-gutter`), lanes at 14, 38 and 62 px; no sector or branch labels | The 400 px column, lanes at 44, 150 and 256 px, labelled |
+| Strip | Number and name on the first line; Ctl, Bay and status in thirds on the second | One row of ruled cells at their widths |
+
+The lanes are CSS variables the chart cell reads with `var()`, so they change
+with the width in `tokens.css` (an `@variant chart` block on `:root`) rather
+than in a utility. The docked bar has its own step (`xl:`), set by what
+fits in one 44 px row (`docs/system/home-thread-playback.md`, *The docked
+bar*). At 390 px nothing scrolls sideways; `test/system/home_narrow_test.rb`
+holds that with and without scripts.
 
 ## Design system
 

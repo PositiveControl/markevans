@@ -111,6 +111,14 @@
   --container-page: 1320px;        /* content max width */
   --container-column: 400px;       /* scope column, chart cell */
   --spacing-strip-gap: 20px;       /* chart cell to strip */
+  --container-gutter: 84px;        /* the chart cell below 900 px */
+
+  /* The page's breakpoint: from 900 px (chart:) the chart is the full column
+     and the top row sits side by side. Below it the page is a phone's (design
+     doc, section 4). Mobile first, as docs/rules/tailwind.md asks. The docked
+     bar alone also steps at Tailwind's lg: and xl:, by what fits in its row
+     (docs/system/home-thread-playback.md, The docked bar). */
+  --breakpoint-chart: 900px;
 
   /* Strip anatomy (design doc, section 4): w-step-number and so on */
   --container-step-number: 44px;
@@ -121,10 +129,12 @@
 
   /* Chart geometry (design doc, sections 4 and 5), measured from the cell's
      left and top edges: left-lane-main, top-fix and so on. A line's position
-     is composed from these with var() and calc() in ChartCellComponent. */
-  --spacing-lane-main: 44px;
-  --spacing-lane-feature: 150px;
-  --spacing-lane-side: 256px;
+     is composed from these with var() and calc() in ChartCellComponent. The
+     lanes are the 84 px gutter's; from 900 px they move out across the full
+     column (below this block). */
+  --spacing-lane-main: 14px;
+  --spacing-lane-feature: 38px;
+  --spacing-lane-side: 62px;
   --spacing-fix: 34px;             /* the fix's centre, from the row top */
   --spacing-elbow: 14px;           /* fork and merge corner radius */
   --spacing-loop-inset: 10px;      /* a loop's bracket, from top and bottom */
@@ -147,4 +157,14 @@
   --container-measure: 66ch;       /* a serif paragraph */
   --container-artifact: 80ch;      /* an artifact block */
   --container-detail: 880px;       /* a group of detail rows */
+}
+
+/* The full column's lanes. The chart cell places its lines with var(), so the
+   lanes change with the width here rather than in a utility. */
+:root {
+  @variant chart {
+    --spacing-lane-main: 44px;
+    --spacing-lane-feature: 150px;
+    --spacing-lane-side: 256px;
+  }
 }

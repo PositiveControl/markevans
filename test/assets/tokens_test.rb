@@ -62,6 +62,20 @@ class TokensTest < ActiveSupport::TestCase
       "elbow" => "14px", "loop-inset" => "10px", "chart-label" => "20px" }.each { |name, value| assert_token "--spacing-#{name}", value }
   end
 
+  # Design doc, section 4: below 900 px the chart narrows to a gutter.
+  test "the narrow gutter and its lanes are named, under one breakpoint" do
+    assert_token "--breakpoint-chart", "900px"
+    assert_token "--container-gutter", "84px"
+    { "lane-main" => "14px", "lane-feature" => "38px", "lane-side" => "62px" }.each { |name, value| assert_token "--spacing-#{name}", value }
+
+    # The gutter's lanes are the default; the full column's sit under chart:.
+    theme = TOKENS[/@theme \{.*?\n\}/m]
+    wide = TOKENS[/@variant chart \{(.*?)\}/m, 1]
+    assert_match(/--spacing-lane-main:\s*14px;/, theme)
+    assert_match(/--spacing-lane-main:\s*44px;/, wide)
+    assert_match(/--spacing-lane-side:\s*256px;/, wide)
+  end
+
   test "the app stylesheet imports the tokens and defines no palette of its own" do
     app = Rails.root.join("app/assets/tailwind/application.css").read
 

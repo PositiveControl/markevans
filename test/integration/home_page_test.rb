@@ -54,7 +54,7 @@ class HomePageTest < ActionDispatch::IntegrationTest
   test "each row draws its chart cell beside its strip, hidden from assistive tech" do
     get root_url
 
-    assert_select "section[aria-labelledby=thread-heading] > div[id] > div.w-column[aria-hidden=true] [data-chart=fix]", count: @thread.steps.size
+    assert_select "section[aria-labelledby=thread-heading] > div[id] > div[aria-hidden=true] [data-chart=fix]", count: @thread.steps.size
   end
 
   test "the graph follows the file: its forks, merges, loops, sectors and labels" do

@@ -1,6 +1,6 @@
 # Home thread playback
 
-**Status:** Current through #18 (follow, yield and dock).
+**Status:** Current through #19 (narrow screens).
 
 How the home thread plays. The design is section 6 of
 `docs/plans/2026-10-03-home-thread-design.md`; the page around it is
@@ -109,7 +109,7 @@ rewinds the line's animation.
 | Step back, step forward | Moves one step and pauses | #16 |
 | A target, docked mark or pending strip selected | Jumps there and pauses. A target or mark is a link to its step; the controller cancels the navigation, and the page goes to the step. A strip is already in view | #16; docked mark and going there, #18 |
 | A done strip selected | Opens or closes it. Playback state unchanged | #16 |
-| Reader scrolls by wheel, touch or keys | Pauses, and drops a follow on its way. Before playback first starts it counts as nothing: that scroll is how the thread comes into view | #18 |
+| Reader scrolls by wheel, touch or keys | Pauses, and drops a follow on its way. Before playback first starts it counts as nothing: that scroll is how the thread comes into view. The wheel or touch scroll that started it does not pause until it goes quiet for 300 ms, though it drops a follow and a waiting `g` | #18; arrival, #19 |
 | Tab becomes hidden | Pauses. Does not resume by itself | #16 |
 | Restart | Step 1, reopened strips cleared, paused | #16 |
 | Page restored from Turbo's cache | Comes back on the step it left, paused, and does not start on view: the values persist in data attributes, so `connect()` sets playing false and counts rows that already carry a `data-state` as a page the reader has been on. A thread that had played out (`data-ended`) comes back played out, its last step still in the log | #16; played out, #17 |
@@ -146,7 +146,17 @@ behind it, from moving focus or find-in-page, is not heard. It is the reader's i
 `scroll` event, so the controller's own scrolls never count. `touchmove` rather
 than `touchstart`, so a tap on a done strip mid-play leaves playback alone.
 Before playback has first started, a scroll is how the thread comes into view,
-so it counts as nothing. Nothing resumes by itself; the reader presses Play.
+so it counts as nothing. Where the thread starts below the fold, as on a
+phone, the wheel or touch scroll that brings it into view starts it and then
+goes on for a moment, momentum included. That is still the reader arriving,
+not taking over: `scroll()`, which `wheel` and `touchmove` call, lets their
+input pass without pausing until it has been quiet for 300 ms
+(`SCROLL_QUIET`), and the next one yields. It still drops a follow on its way
+and a waiting `g`: only the pause is spared. The grace applies only when a
+wheel or touch scroll heard in the last 300 ms is what started playback, so a
+thread already in view on load has none. Keys and a press on the scrollbar
+call `yield()` directly and pause at once. Nothing resumes by itself; the
+reader presses Play.
 
 ## The docked bar
 
@@ -156,10 +166,14 @@ each a link to its step like a scope target and drawn the same way. Every
 part is a target playback already renders, so it is a second view, not a
 second player (`docs/rules/one-playback-state.md`). It shows only while the
 wrapper carries `data-docked`, so while the scope is in view its copies of the
-controls are out of the tab order. From 1400 px down to 1100 px wide it
-measures 92 px tall, under the 96 px the page follows to; system tests hold it
-under 96 px at both widths. At 1024 px it wraps to 128 px and covers the followed strip;
-narrow screens are #19.
+controls are out of the tab order. It is one 44 px row at every width, under
+the 96 px the page follows to, so something gives way as the window narrows:
+the bay and the marks show from 1280 px (`xl:`; fifteen marks and the
+controls need about 880 px, and below 1280 px they left the name about
+50 px), and the name is cut to one line
+(`truncate`). On a phone the bar is the controls and the step's name, and the
+strips are the way to jump. `test/system/home_narrow_test.rb` holds it under
+96 px at 390, 1024, 1100, 1280 and 1400 px.
 
 ## The step hash
 
@@ -229,6 +243,7 @@ labels. Text at that opacity fails axe's contrast check.
 | File | Covers |
 |---|---|
 | `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; the bay following a jump; the filter dimming without hiding; the log's order, counts, empty state and 220 px scroll; the follow landing at 96 px; wheel, touch, key and scrollbar yields; the 96 px scroll padding; the docked bar driving state; the hash written and read; each key; reduced motion; every control, docked ones too, at least 44 px; axe while playing, paused, filtered, docked and without scripts |
+| `test/system/home_narrow_test.rb` | The narrow layout (`docs/system/home-page.md`, *Narrow screens*): no sideways scroll at 390 px with and without scripts, the 84 px gutter and its lanes, the stacked top row, 44 px targets, the docked bar under 96 px at five widths, and the arriving scroll that does not pause but still drops a follow and a waiting `g` |
 | `test/application_system_test_case.rb` | `assert_accessible` (axe-core-api, single-frame), and `without_scripts`, which blocks every `.js` URL over CDP. Chrome's own script switch also blocks axe |
 | `test/components/{strip,step_body,controls,scope,chart_cell,strip_bay,controller_filter,log,docked_bar}_component_test.rb` | The markup each state is styled from |
 | `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, bay, filter, log and docked bar, targets as links, each row's seconds, bay and lane, the wrapper, the footer and its hidden key list |

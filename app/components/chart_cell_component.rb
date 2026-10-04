@@ -90,7 +90,7 @@ class ChartCellComponent < ApplicationComponent
   def git = step.git
 
   def classes
-    class_names("relative w-column shrink-0 self-stretch", SECTORS.fetch(step.bay))
+    class_names("relative w-gutter shrink-0 self-stretch chart:w-column", SECTORS.fetch(step.bay))
   end
 
   def pieces
@@ -151,5 +151,6 @@ class ChartCellComponent < ApplicationComponent
       RINGS.fetch(step.kind))
   end
 
-  def label_classes = "absolute -translate-y-1/2 whitespace-nowrap font-mono text-label #{LABELS.fetch(git.on)}"
+  # A phone's 84 px gutter has no room for words (design doc, section 4).
+  def label_classes = "absolute hidden -translate-y-1/2 whitespace-nowrap font-mono text-label chart:block #{LABELS.fetch(git.on)}"
 end

@@ -15,6 +15,15 @@ class DockedBarComponentTest < ViewComponent::TestCase
     assert_selector "[data-playback-target=mark]", count: steps.size, visible: :all
   end
 
+  test "one row at every width: the bay and the marks from 1280 px, the name on one line" do
+    render_bar
+
+    assert_selector ".hidden.xl\\:block [aria-label='Strip bay']", visible: :all
+    assert_selector "ol.hidden.xl\\:flex[aria-label=Steps]", visible: :all
+    assert_selector "[data-playback-target=readoutName].truncate", visible: :all
+    assert_no_selector "[class*=flex-wrap]", visible: :all
+  end
+
   test "each mark is a 44 px link to its step that jumps there, named for it" do
     render_bar
 

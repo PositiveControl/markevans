@@ -128,7 +128,7 @@ and 62 px; sector and branch labels are hidden.
 | `ChartCellComponent` | Draws one row of the git graph from the step's `git` block. Lanes at 44, 150 and 256 px; the fix sits 34 px from the row top. Sector label and dashed top border on the first row of each bay, sector tint behind, branch label where a line starts. Upcoming rows at 35 percent opacity. `aria-hidden`. |
 | `StripComponent` | A button of ruled cells: number (44 px), command name (flexible), Ctl (92 px), Bay (132 px), status (96 px). Done strips add a full-width Rmk line with the outcome. |
 | `StepBodyComponent` | One serif paragraph, then groups: a mono label over a hairline, then rows of mono key (260 px) and serif value. Optional artifact block (source line, mono body) and optional italic note. |
-| `DockedBarComponent` | Not in the mock. Sticks to the top when the scope is out of view: controls, step number and name, strip bay, 15 marks for jumping. |
+| `DockedBarComponent` | Not in the mock. Sticks to the top when the scope is out of view: controls, step number and name, strip bay, 15 marks for jumping. As built (#19) it stays one row at every width: the bay and the marks show from 1280 px (`docs/system/home-thread-playback.md`, *The docked bar*). |
 
 Strip states:
 
@@ -177,7 +177,7 @@ from those.
 | Step back, step forward | Moves one step and pauses |
 | A target, docked mark or pending strip selected | Jumps there and pauses |
 | A done strip selected | Opens or closes it. Playback state unchanged |
-| Reader scrolls by wheel, touch or keys | Pauses |
+| Reader scrolls by wheel, touch or keys | Pauses. As built (#19), the wheel or touch scroll that brings the thread into view does not pause until it has been quiet for 300 ms (`docs/system/home-thread-playback.md`, *Follow and yield*) |
 | Tab becomes hidden | Pauses. Does not resume by itself |
 | Restart | Step 1, reopened strips cleared, paused |
 | Page loads with a step hash | That step active, paused, scrolled into view |
