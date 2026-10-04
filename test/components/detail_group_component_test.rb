@@ -12,6 +12,13 @@ class DetailGroupComponentTest < ViewComponent::TestCase
     assert_selector "dl > div", count: 2
   end
 
+  test "a value never narrows below 180 px: it wraps under its key instead" do
+    render_inline(DetailGroupComponent.new(group: group("Education", "Qualification" => "Institution")))
+
+    assert_includes page.find("dd")[:class].split, "basis-30"
+    assert_includes page.find("dl > div")[:class].split, "flex-wrap"
+  end
+
   test "the label takes the heading level it is given" do
     render_inline(DetailGroupComponent.new(group: group("Experience", "Role" => "Company"), level: 3))
 
