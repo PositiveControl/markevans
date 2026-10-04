@@ -18,7 +18,7 @@ import { Controller } from "@hotwired/stimulus"
  */
 
 export default class extends Controller {
-  static targets = ["thread", "row", "strip", "status", "line", "target", "mark", "live", "play",
+  static targets = ["thread", "scope", "row", "strip", "status", "line", "target", "mark", "live", "play",
     "readoutName", "readoutDetail", "readoutStatus", "bay",
     "logEntry", "logEmpty", "gatesCleared", "artifacts"]
 
@@ -48,11 +48,13 @@ export default class extends Controller {
     if (this.element.hasAttribute("data-ended") && this.onLastStep) this.remaining = 0
     this.settle()
     this.watchForThread()
+    this.watchScope()
   }
 
   disconnect() {
     clearTimeout(this.timer)
     this.observer?.disconnect()
+    this.dock?.disconnect()
     this.connected = false
   }
 
@@ -209,6 +211,18 @@ export default class extends Controller {
       if (!this.touched) this.playingValue = true
     })
     this.observer.observe(this.threadTarget)
+  }
+
+  // Docks the bar while the scope is out of view: data-docked on this element
+  // shows it. Where the reader is looking is not playback state; the bar is a
+  // second view of the same three values.
+  watchScope() {
+    if (!this.hasScopeTarget) return
+
+    this.dock = new IntersectionObserver(([entry]) => {
+      this.element.toggleAttribute("data-docked", !entry.isIntersecting)
+    })
+    this.dock.observe(this.scopeTarget)
   }
 
   // Render: state onto the page

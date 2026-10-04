@@ -102,11 +102,12 @@ class HomePageTest < ActionDispatch::IntegrationTest
   test "without scripts the read-outs of playback state are not shown" do
     get root_url
 
-    assert_select "[aria-label='Strip bay'][hidden]", count: 1
+    assert_select "[aria-label='Strip bay'][hidden]", count: 2 # the aside's, and the docked bar's
     assert_select "[aria-label='Strip bay']:not([hidden])", count: 0
     assert_select "[aria-labelledby=controller-filter][hidden] button", count: 4
     assert_select "[data-dim]", count: 0
     assert_select "section[aria-labelledby=log-heading][hidden]", count: 1
+    assert_select "[aria-label='Docked playback'][hidden]", count: 1
   end
 
   test "the footer signs the page, and its key list waits for playback" do

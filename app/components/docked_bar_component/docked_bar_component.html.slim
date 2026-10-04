@@ -1,0 +1,12 @@
+section class="fixed inset-x-0 top-0 z-10 hidden border-b border-rule bg-paper in-data-docked:block" aria-label="Docked playback" hidden=true data-playback-target="live"
+  div class="mx-auto flex max-w-page flex-wrap items-center gap-x-2 gap-y-1 px-8 py-1 font-mono text-label"
+    = render ControlsComponent.new
+    div class="flex min-w-0 flex-1 flex-col gap-0.5"
+      p class="font-medium wrap-anywhere" data-playback-target="readoutName"
+      = render StripBayComponent.new
+    ol class="flex" aria-label="Steps"
+      - marks.each do |mark|
+        - step = mark.step
+        li
+          a class="flex size-target items-center justify-center" href="##{step.key}" aria-label="Go to step #{mark.index + 1}: #{step.name}" data-playback-target="mark" data-action="playback#jump" data-playback-index-param=mark.index
+            span class=mark_classes(step) aria-hidden="true"

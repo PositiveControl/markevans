@@ -14,6 +14,8 @@ class HomePlaybackTest < ApplicationSystemTestCase
   # main and the footer.
   PLAYER = "[data-controller~=playback]"
 
+  DOCK = "[aria-label='Docked playback']"
+
   setup do
     @thread = DeliveryThread.fetch(:home)
     @steps = @thread.steps
@@ -319,6 +321,48 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_no_selector "##{@steps[1].key} [data-chart=ring]"
   end
 
+  test "docked bar: shows once the scope leaves view, under the 96 px line, and drives the same state" do
+    open_thread
+    assert_no_selector DOCK
+
+    scroll_past_scope
+
+    assert_selector DOCK
+    assert_operator evaluate_script("document.querySelector(\"#{DOCK}\").getBoundingClientRect().bottom"), :<=, 96
+    find("#{DOCK} [aria-label=Pause]").click
+    assert_not playing?
+    assert_step 0, status: "paused"
+
+    find("#{DOCK} [data-playback-target=mark][href='##{@steps[@gate].key}']").click
+    assert_step @gate, status: "paused"
+    assert_selector "#{DOCK} [data-playback-target=readoutName]", text: "#{format("%02d", @gate + 1)} #{@steps[@gate].name}"
+    assert_selector "#{DOCK} [data-playback-target=mark][aria-current=step][href='##{@steps[@gate].key}']"
+    assert_selector "#{DOCK} [data-playback-target=bay][data-current]", text: @steps[@gate].bay.upcase
+
+    find("#{DOCK} [aria-label=Play]").click
+    assert_selector "#{PLAYER}[data-playing]"
+
+    execute_script("window.scrollTo(0, 0)")
+    assert_no_selector DOCK
+  end
+
+  test "every docked control is a named target of at least 44 px, and axe passes while docked" do
+    open_thread
+    scroll_past_scope
+    assert_selector DOCK
+
+    sizes = evaluate_script(<<~JS)
+      [...document.querySelectorAll("#{DOCK} button, #{DOCK} a")]
+        .map(el => { const r = el.getBoundingClientRect(); return [el.getAttribute("aria-label"), r.width, r.height] })
+    JS
+    assert_equal 4 + @steps.size, sizes.size
+    sizes.each do |name, width, height|
+      assert name.present?, "a docked control has no name"
+      assert_operator [ width, height ].min, :>=, 44, "#{name} is #{width}×#{height}"
+    end
+    assert_accessible
+  end
+
   test "every control is a named target of at least 44 px" do
     open_thread
     click_control "Pause"
@@ -372,9 +416,14 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector PLAYER # reconnected: until then, no assertion on it means anything
   end
 
+  # Scrolls the page, as a script and not as a reader, until the scope is out of view.
+  def scroll_past_scope
+    execute_script("window.scrollTo(0, document.querySelector('[aria-label=Scope]').getBoundingClientRect().bottom + window.scrollY + 1)")
+  end
+
   def playing? = has_selector?("#{PLAYER}[data-playing]", wait: 0)
 
-  def click_control(label) = find("[aria-label='#{label}']").click
+  def click_control(label) = find("[aria-label=Scope] [aria-label='#{label}']").click
 
   def filter(label) = find("[data-filter-target=option]", exact_text: label)
 

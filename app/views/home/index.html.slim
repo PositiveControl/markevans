@@ -13,6 +13,7 @@ header class="border-b border-rule"
     a class="py-2 font-mono text-label uppercase text-ink no-underline" href=root_path Mark Evans
 
 div data-controller="playback filter" data-action="visibilitychange@document->playback#hide"
+  = render DockedBarComponent.new(steps: @thread.steps)
   main class="mx-auto max-w-page px-8"
     div class="flex items-start gap-x-8 pt-6"
       aside class="flex w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
