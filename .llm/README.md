@@ -19,7 +19,7 @@ what already exists — before writing a new doc that duplicates one.
 Design docs for features. Written before issues are created, approved at gate G1.
 
 <!-- plans:start -->
-*None yet.*
+- [Home thread](../docs/plans/2026-10-03-home-thread-design.md) — the home page as one feature moving through the delivery chain: flight strips on a git spine, radar scope as console (approved G1)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`
@@ -38,7 +38,9 @@ How things currently work. Architecture state, not intentions.
 
 <!-- system:start -->
 - [Models](../docs/system/models.md) — model reference
-- [Home page](../docs/system/home-page.md) — the single-page personal site: content registry, sections, motion, theme
+- [Home page](../docs/system/home-page.md) — `/` as the home thread: content from content/threads/home.yml, the scope, controls, strip bay, controller filter, log, docked bar, strip, step body, legend and chart cell components, the footer and its keys, the chart drawn from each git block, the narrow-screen layout under the 900 px `chart:` breakpoint, the tokens, the page budget
+- [Site pages](../docs/system/site-pages.md) — `/work`, `/work/:id`, `/workflow`, `/background`, `/contact`: content from content/work.yml and content/pages/, the Portfolio and SitePage loaders and schemas, the 404, the shared header, footer, section, detail group and link list components, SEO and JSON-LD per page, the one-page CV print
+- [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its three values, what it writes on the page (bay and log included), the filter controller, the step clock, follow and yield, the docked bar, the step hash, the keyboard and the event table
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
 - [QA walkthroughs](../docs/system/qa_walkthrough.md) — the reviewer script per change, and how to run one
 <!-- system:end -->
@@ -72,6 +74,7 @@ Procedures somebody will need to repeat.
 - [Set up the beads tracker tier](../docs/sop/beads-setup.md) — only if `/workflow_setup` chose tier `beads`
 - [Find slow tests](../docs/sop/find-slow-tests.md) — read the Slowpoke report and act on it
 - [Update from the template](../docs/sop/update-from-the-template.md) — three-way merge the alignment layer against a newer template
+- [Edit the home thread](../docs/sop/edit-the-home-thread.md) — change a step in content/threads/home.yml, the git block rules, and what the schema, placeholder and literal-color checks catch
 <!-- sop:end -->
 
 ## QA — `docs/qa/`

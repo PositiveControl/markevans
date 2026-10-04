@@ -16,7 +16,7 @@ Every command ends by naming the next one — the workflow self-navigates. `/pic
 
 ## 1. Lifecycle master map
 
-The filled node at top is the entry: every session starts at `/pick`. `/feature_plan` feeds new sub-issues back to it. `/segue` is the escape valve off planning and implementation — an isolated discussion thread whose findings merge back without polluting the workstream. `/grill` and `/diagnose` are the other two off-chain valves: one sharpens a design before a gate, the other hunts a bug behind a loop that goes red. On a multi-slice feature the bottom row runs once per slice into the feature branch, with `/pr_review` from a fresh session standing in for a second reader, and once more for the feature PR into `main`, where the reader is a person (*Feature branches*).
+The filled node at top is the entry: every session starts at `/pick`. `/feature_plan` feeds new sub-issues back to it. `/segue` is the escape valve off planning and implementation — an isolated discussion thread whose findings merge back without polluting the workstream. `/grill` and `/diagnose` are the other two off-chain valves: one sharpens a design before a gate, the other hunts a bug behind a loop that goes red. `/qa_walkthrough` hangs off the bottom row: `/task_plan` plans its steps as the last action, `/implement` writes them, `/pr_submit` gates on them, and `/pr_qa` starts from what it shows. On a multi-slice feature the bottom row runs once per slice into the feature branch, with `/pr_review` from a fresh session standing in for a second reader, and once more for the feature PR into `main`, where the reader is a person (*Feature branches*).
 
 ```mermaid
 flowchart TB
@@ -39,7 +39,7 @@ flowchart TB
     direction LR
     IM["/implement — code + tests — commit per logical unit — fresh-eyes review"]
     G3{"G3 — suite green"}
-    PS["/pr_submit — local suite + docs resolved — PR with Closes #35;n"]
+    PS["/pr_submit — local suite + walkthrough + docs resolved — PR with Closes #35;n"]
     RV["review — /pr_review · /pr_qa · /pr_comment_resolver"]
     G4{"G4 — comments resolved"}
     MG["human merges"]
@@ -55,6 +55,7 @@ flowchart TB
   SG2["/segue thread (implementation valve)"]
   GR["/grill — sharpen the design before the gate"]
   DG["/diagnose — loop-first bug hunt"]
+  QW["/qa_walkthrough — reviewer script in script/qa/"]
 
   G2 --> IM
   MG --> AUTO
@@ -65,6 +66,9 @@ flowchart TB
   FP -. "assumption unsettled" .-> GR -. "decisions settled" .-> FP
   TP -. "assumption unsettled" .-> GR
   IM -. "bug with no failing test" .-> DG -. "cause found" .-> IM
+  IM -. "last plan action: user-facing change" .-> QW
+  PS -. "Step 3b: branch carries none" .-> QW -. "script rides with the PR" .-> PS
+  QW -. "/pr_qa starts from its screenshots" .-> RV
 
   style E fill:#0F7480,stroke:#0F7480
   style PK fill:#0F7480,stroke:#0B3A40,color:#FFFFFF
@@ -84,6 +88,7 @@ flowchart TB
   style SG2 fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
   style GR fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
   style DG fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
+  style QW fill:#FDFDFB,stroke:#5F6E7C,stroke-dasharray:4 3,color:#3D4954
   style R1 fill:none,stroke:none
   style R2 fill:none,stroke:none
   style R3 fill:none,stroke:none
@@ -204,7 +209,8 @@ Under `beads` two edges change: the PR body carries **no** `Closes #n` line, and
 | Tier | Contents |
 |---|---|
 | **Core** (ships as-is) | `/pick`, `/feature_plan`, `/task_plan`, `/implement`, `/pr_submit`, `/pr_review`, `/pr_qa`, `/update_docs` + 4 gates + conventions |
-| **Optional** (adopt piecemeal) | `/segue` ×5, `/pr_comment_resolver`, `/pr_fix_ci`, `/test_fix`, `/run_lint` |
+| **Optional** (adopt piecemeal) | `/qa_walkthrough`, `/grill`, `/research`, `/domain_model`, `/diagnose`, `/resolve_conflicts`, `/rails_code_review`, `/segue` ×5, `/pr_comment_resolver`, `/pr_fix_ci`, `/test_fix`, `/run_lint` |
+| **Setup** (once) | `/workflow_setup` |
 | **Parameterized** (wizard fills) | org/repo/board IDs, default branch, branch + PR title prefixes, lint/test/scan commands, CI check names, review label, persona, iteration filter |
 | **Per-team slots** | conventions file (CLAUDE.md), deploy SOP |
 
@@ -343,7 +349,8 @@ A feature with more than one slice lands on a feature branch, not on `main`. Eac
 | `/segue`, `/segue_resume`, `/segue_close`, `/segue_merge` | Optional | Isolated discussion thread; findings-only merge-back |
 | `/segue_kill` | Optional | Abandon a dead-end segue: record why it died, skip the merge |
 | `/rails_code_review` | Optional | Rails-specific review of a branch against this stack's conventions |
-| `/pr_comment_resolver`, `/pr_fix_ci`, `/test_fix`, `/run_lint` | Optional | Utilities called by core commands |
+| `/qa_walkthrough` | Optional | Reviewer walkthrough: a `script/qa/` script that builds the data, drives a browser to each changed page and spotlights the change; planned by `/task_plan`, gated by `/pr_submit` Step 3b |
+| `/pr_comment_resolver`, `/pr_fix_ci`, `/test_fix`, `/run_lint` | Optional | Utilities a core command names as the next step when the situation fits |
 | `/workflow_setup` | Setup | One-time wizard: parameters, conventions, token fill, automation checks |
 
 ## Documentation rules
@@ -352,3 +359,8 @@ A feature with more than one slice lands on a feature branch, not on `main`. Eac
 - `.llm/README.md` indexes **committed docs only**; `.llm/tasks/` and `.llm/threads/` are local scratch (gitignored)
 - Doc updates happen at defined points only: `/feature_plan` creates placeholders, `/pr_submit` completes-or-deletes them (+ index dupe/dead-link check) — at the feature PR for a multi-slice feature, `/update_docs` for deep passes
 - Never merge a PR to `main` leaving a Draft placeholder behind
+- The Stop hook (`bin/hooks/session_end`) holds a turn while drafts are open: on
+  a slice branch only that slice's, on `main` all of them. It is quiet on
+  `feature/*` and a detached HEAD, where the feature's drafts are meant to stay
+  open until the feature PR. `SKIP_DRAFT_CHECK=1` in `.claude/settings.local.json`
+  silences it locally

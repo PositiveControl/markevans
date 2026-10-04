@@ -1,0 +1,170 @@
+/* ---------------------------------------------------------------------------
+   Home thread design tokens — docs/plans/2026-10-03-home-thread-design.md,
+   section 3. The only file allowed to hold a literal color (bin/gates,
+   docs/rules/tokens-only.md). Each color is a role, not a shade: see
+   docs/rules/color-means-role.md before reaching for one.
+
+   Tailwind's own palette, faces, sizes, radii, shadows and widths are cleared, so a
+   utility either names a token here or does not exist. Spacing is one 6 px
+   unit: p-1 is 6, p-2 12, p-3 18, p-4 24, p-6 36, p-8 48, p-16 96.
+
+   No dark theme is designed. Do not add one.
+   --------------------------------------------------------------------------- */
+
+/* IBM Plex Mono, latin, the two weights the design uses: 400 for labels, rows
+   and artifacts, 500 for the strip's command name. SIL Open Font License. */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("plex-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("plex-mono-500.woff2") format("woff2");
+}
+
+/* Newsreader, latin, fixed optical size. The variable optical-size cut is
+   132 kB on its own, over the whole 120 kB font budget (design doc, section
+   7). SIL Open Font License, self-hosted from Google Fonts. */
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("newsreader-roman.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("newsreader-italic.woff2") format("woff2");
+}
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --container-*: initial;
+
+  /* Grounds */
+  --color-paper: #F7F6F0;          /* page */
+  --color-scope: #EFEEE6;          /* scope face; optional-step strip */
+  --color-card: #FDFDFB;           /* artifact block */
+
+  /* Ink */
+  --color-ink: #1B2428;            /* text, main line, active outline */
+  --color-quiet: #4A5763;          /* labels, pending text, side thread, optional */
+
+  /* Roles: command, human gate, automated gate */
+  --color-command: #0F7480;        /* command fix, feature branch, links */
+  --color-command-tint: #E4EEF0;   /* command strip, active or done */
+  --color-human: #A6651A;          /* human gate */
+  --color-human-tint: #F6E9D8;
+  --color-machine: #3E7C4F;        /* automated gate */
+  --color-machine-tint: #E3EFE6;
+
+  /* Lines and bands */
+  --color-rule: rgba(27, 36, 40, 0.3);         /* hairlines */
+  --color-rule-strong: rgba(27, 36, 40, 0.55); /* active or done strip */
+  --color-rule-faint: rgba(27, 36, 40, 0.15);  /* scope crosshair */
+  --color-sector-1: rgba(27, 36, 40, 0.05);    /* In Progress, Done */
+  --color-sector-2: rgba(27, 36, 40, 0.1);     /* Up for Review */
+
+  /* Faces: serif is a person explaining, mono is the machine
+     (docs/rules/typeface-means-speaker.md) */
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale, named for the role. Never a color's name: text-* reads both. */
+  --text-headline: 40px;
+  --text-headline--line-height: 48px;
+  --text-headline--letter-spacing: -0.01em;
+  --text-prose: 18px;              /* body, step text, italic notes */
+  --text-prose--line-height: 30px;
+  --text-strip: 16px;              /* strip command name, mono 500 */
+  --text-strip--line-height: 24px;
+  --text-key: 14px;                /* detail row key */
+  --text-key--line-height: 30px;
+  --text-artifact: 14px;
+  --text-artifact--line-height: 24px;
+  --text-label: 12px;              /* labels, controls, log, legend */
+  --text-label--line-height: 18px;
+  --text-label--letter-spacing: 0.04em;
+  --text-cell: 11px;               /* Ctl, Bay, Rmk, uppercase */
+  --text-cell--line-height: 16px;
+
+  /* Space and shape */
+  --spacing: 6px;
+  --radius-box: 2px;
+  --container-page: 1320px;        /* content max width */
+  --container-column: 400px;       /* scope column, chart cell */
+  --spacing-strip-gap: 20px;       /* chart cell to strip */
+  --container-gutter: 84px;        /* the chart cell below 900 px */
+
+  /* The page's breakpoint: from 900 px (chart:) the chart is the full column
+     and the top row sits side by side. Below it the page is a phone's (design
+     doc, section 4). Mobile first, as docs/rules/tailwind.md asks. The docked
+     bar alone also steps at Tailwind's lg: and xl:, by what fits in its row
+     (docs/system/home-thread-playback.md, The docked bar). */
+  --breakpoint-chart: 900px;
+
+  /* Strip anatomy (design doc, section 4): w-step-number and so on */
+  --container-step-number: 44px;
+  --container-step-control: 92px;  /* Ctl */
+  --container-step-bay: 132px;     /* Bay */
+  --container-step-status: 96px;
+  --container-row-key: 260px;      /* detail row key */
+
+  /* Chart geometry (design doc, sections 4 and 5), measured from the cell's
+     left and top edges: left-lane-main, top-fix and so on. A line's position
+     is composed from these with var() and calc() in ChartCellComponent. The
+     lanes are the 84 px gutter's; from 900 px they move out across the full
+     column (below this block). */
+  --spacing-lane-main: 14px;
+  --spacing-lane-feature: 38px;
+  --spacing-lane-side: 62px;
+  --spacing-fix: 34px;             /* the fix's centre, from the row top */
+  --spacing-elbow: 14px;           /* fork and merge corner radius */
+  --spacing-loop-inset: 10px;      /* a loop's bracket, from top and bottom */
+  --spacing-chart-label: 20px;     /* a branch label from its fix: right; on a merge, down too */
+  --spacing-line-half: 1px;        /* half a 2 px line: centres an elbow's arm on the fix */
+  --spacing-ring: 32px;            /* the active step's ring around its fix */
+
+  /* Controls: size-target is the 44 px touch target (docs/rules/real-controls.md) */
+  --spacing-target: 44px;
+
+  /* Motion (design doc, section 6; docs/rules/motion-budget.md). The sweep is
+     the one continuous motion: one turn every 6 s, only while playing. */
+  --animate-sweep: sweep 6s linear infinite;
+
+  @keyframes sweep {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Reading measures: max-w-measure and so on */
+  --container-measure: 66ch;       /* a serif paragraph */
+  --container-artifact: 80ch;      /* an artifact block */
+  --container-detail: 880px;       /* a group of detail rows */
+}
+
+/* The full column's lanes. The chart cell places its lines with var(), so the
+   lanes change with the width here rather than in a utility. */
+:root {
+  @variant chart {
+    --spacing-lane-main: 44px;
+    --spacing-lane-feature: 150px;
+    --spacing-lane-side: 256px;
+  }
+}

@@ -1,103 +1,79 @@
-# frozen_string_literal: true
-
 require "test_helper"
 
 class PortfolioTest < ActiveSupport::TestCase
-  test "profile carries the contact surface the page renders" do
-    profile = Portfolio.profile
-
-    assert_equal "Mark Evans", profile.name
-    assert_equal "msteven.evans@gmail.com", profile.email
-    assert profile.github.start_with?("https://github.com/")
-    assert profile.linkedin.start_with?("https://www.linkedin.com/")
+  test "all lists the six projects in the file's order" do
+    assert_equal %w[rails-rocket-sheep dopeempire harness kram dailydrop spamsandwich], Portfolio.all.map(&:key)
   end
 
-  test "every metric has a value and a label" do
-    assert Portfolio.metrics.any?
+  test "fetch finds a project by its key, with sections and links as values" do
+    project = Portfolio.fetch("rails-rocket-sheep")
 
-    Portfolio.metrics.each do |metric|
-      assert metric.value.present?, "#{metric.key} has no value"
-      assert metric.label.present?, "#{metric.key} has no label"
-      assert metric.detail.present?, "#{metric.key} has no detail"
-    end
+    assert_equal "rails-rocket-sheep", project.name
+    assert_kind_of SitePage::Link, project.links.first
+    assert_kind_of SitePage::Section, project.sections.first
   end
 
-  test "every project has a name, blurb and reachable link" do
-    assert Portfolio.projects.any?
-
-    Portfolio.projects.each do |project|
-      assert project.name.present?, "#{project.key} has no name"
-      assert project.blurb.present?, "#{project.key} has no blurb"
-      assert project.url.start_with?("https://"), "#{project.key} link is not absolute"
-      assert project.stack.any?, "#{project.key} has no stack"
-    end
+  test "an unknown key raises NotFound" do
+    assert_raises(Portfolio::NotFound) { Portfolio.fetch("nope") }
   end
 
-  test "projects never link a repo held back for hygiene" do
-    withheld = %w[spamsandwich myrelay rails-rocket-sheep]
+  test "a loaded list is frozen all the way down" do
+    projects = load_projects(minimal)
 
-    Portfolio.projects.each do |project|
-      withheld.each do |repo|
-        refute_includes project.url, "github.com/PositiveControl/#{repo}",
-                        "#{project.key} links a repo that is not cleared for linking"
-      end
-    end
+    assert projects.frozen?
+    assert projects.first.summary.frozen?
+    assert projects.first.sections.frozen?
   end
 
-  test "roles are ordered newest first and each has highlights" do
-    roles = Portfolio.roles
+  test "missing key, name or summary are each reported, under the project's key" do
+    error = assert_invalid(/one: missing name/) { |data| data["projects"].first.except!("name", "summary") }
 
-    assert roles.any?
-    assert_equal "present", roles.first.period.split(" – ").last
-
-    roles.each do |role|
-      assert role.company.present?, "#{role.key} has no company"
-      assert role.highlights.any?, "#{role.key} has no highlights"
-    end
+    assert_match(/one: missing summary/, error.message)
   end
 
-  test "skill groups are non-empty" do
-    assert Portfolio.skill_groups.any?
-
-    Portfolio.skill_groups.each do |group|
-      assert group.title.present?
-      assert group.items.any?, "#{group.title} has no items"
-    end
+  test "a key used twice is reported" do
+    assert_invalid(/one: key used by more than one project/) { |data| data["projects"] << data["projects"].first.dup }
   end
 
-  test "years shipping is derived from the start year, not hardcoded" do
-    assert_equal 2014, Portfolio.profile.started
-    assert_equal 11, Portfolio.years_shipping(Date.new(2025, 1, 1))
-    assert_equal 12, Portfolio.years_shipping(Date.new(2026, 6, 1))
+  test "a key must be fit for a URL" do
+    assert_invalid(/key must be lowercase letters/) { |data| data["projects"].first["key"] = "Has Space" }
+    assert_invalid(/key must be lowercase letters/) { |data| data["projects"].first["key"] = "../x" }
   end
 
-  test "copy carries no em dashes" do
-    offenders = copy_strings.select { |text| text.include?("—") }
-
-    assert_empty offenders, "em dash found in registry copy: #{offenders.first(3).inspect}"
+  test "an unknown key on a project or at the top is reported" do
+    assert_invalid(/one: unknown key tags/) { |data| data["projects"].first["tags"] = "x" }
+    assert_invalid(/unknown top-level key title/) { |data| data["title"] = "x" }
   end
 
-  test "copy carries no middot separators" do
-    offenders = copy_strings.select { |text| text.include?(" · ") }
+  test "links and sections are checked as a page's are" do
+    assert_invalid(/one: links\[1\]: url must start https/) { |data| data["projects"].first["links"] = [ { "label" => "x", "url" => "ftp://x" } ] }
+    assert_invalid(/one: sections\[1\]: missing heading/) { |data| data["projects"].first["sections"] = [ { "paragraphs" => [ "x" ] } ] }
+  end
 
-    assert_empty offenders, "middot separator found in registry copy: #{offenders.first(3).inspect}"
+  test "a file with no projects is refused" do
+    assert_invalid(/no projects/) { |data| data["projects"] = [] }
+    assert_invalid(/a list of projects/) { |data| data.delete("projects") }
   end
 
   private
 
-  # Every human-readable string the page renders, flattened.
-  def copy_strings
-    profile = Portfolio.profile.to_h.values.grep(String)
-    metrics = Portfolio.metrics.flat_map { |m| [ m.value, m.label, m.detail ] }
-    roles = Portfolio.roles.flat_map { |r| [ r.company, r.title, r.period, r.context, *r.highlights ] }
-    projects = Portfolio.projects.flat_map { |p| [ p.name, p.kind, p.link_label, p.blurb, *p.points, *p.stack ] }
-    skills = Portfolio.skill_groups.flat_map { |g| [ g.title, *g.items ] }
-
-    profile + metrics + roles + projects + skills
+  def minimal
+    { "projects" => [ { "key" => "one", "name" => "One", "summary" => "The first." } ] }
   end
 
-  test "fetch lookups raise on an unknown key" do
-    assert_equal "harness", Portfolio.project(:harness).name
-    assert_raises(KeyError) { Portfolio.project(:nope) }
+  def load_projects(data)
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "work.yml")
+      File.write(path, data.to_yaml)
+      Portfolio.load(path)
+    end
+  end
+
+  def assert_invalid(pattern)
+    data = minimal.deep_dup
+    yield data
+    error = assert_raises(Portfolio::Invalid) { load_projects(data) }
+    assert_match pattern, error.message
+    error
   end
 end

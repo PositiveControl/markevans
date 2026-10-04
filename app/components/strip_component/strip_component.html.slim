@@ -1,0 +1,20 @@
+h3
+  button type="button" class=classes disabled=true aria-expanded="true" aria-controls=body_id data-kind=step.kind data-gate=step.gate?.to_s data-playback-target="strip" data-action="playback#select"
+    span> class="flex w-step-number shrink-0 items-center justify-center self-stretch border-r border-rule text-label text-quiet" = number
+    / On a phone the name fills the first line, and Ctl, Bay and status share
+    / the second in thirds. From 900 px they sit in one row at their widths.
+    span> class="min-w-0 flex-1 basis-3/4 px-2 py-1.5 text-strip font-medium wrap-anywhere chart:basis-0" = step.name
+    span> class="#{CELL} border-t chart:border-t-0 chart:border-l w-step-control"
+      span> class="text-quiet" Ctl
+      span = lane
+    span> class="#{CELL} border-t border-l chart:border-t-0 w-step-bay"
+      span> class="text-quiet" Bay
+      span = step.bay
+    span> class=status_classes data-playback-target="status"
+    span class="flex basis-full border-t border-rule py-0.5 in-data-[state=pending]:hidden in-data-[state=active]:hidden"
+      span class="w-step-number shrink-0" aria-hidden="true"
+      span class="px-2"
+        span> class="text-cell uppercase text-quiet" Rmk
+        = step.outcome
+    / The active step's remaining time, emptying left to right; frozen while paused.
+    span class="pointer-events-none absolute inset-x-0 bottom-0 hidden origin-right border-b-2 border-ink animate-remaining [animation-play-state:paused] in-data-[state=active]:block in-data-playing:[animation-play-state:running]" aria-hidden="true" data-playback-target="line"

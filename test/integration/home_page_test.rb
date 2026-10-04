@@ -2,81 +2,136 @@
 
 require "test_helper"
 
+# The home page without scripts: every strip open, in order (design doc,
+# section 6). What playback adds is tested with playback.
 class HomePageTest < ActionDispatch::IntegrationTest
-  test "renders the hero identity" do
+  setup { @thread = DeliveryThread.fetch(:home) }
+
+  test "the headline and intro come from the thread file" do
     get root_url
 
     assert_response :success
-    assert_select "h1", /Mark Evans/
-    assert_select "title", /Mark Evans/
+    assert_select "h1", text: @thread.headline
+    assert_select "main p", text: @thread.intro
+    assert_select "meta[name=description][content=?]", @thread.headline
   end
 
-  test "renders every metric, project and role" do
+  test "a long headline is cut to a search snippet's length in the meta description" do
+    long = @thread.with(headline: "word " * 60)
+    # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
+    original = DeliveryThread.method(:fetch)
+    DeliveryThread.define_singleton_method(:fetch) { |*| long }
+
     get root_url
 
-    Portfolio.metrics.each { |metric| assert_includes response.body, metric.label }
-    Portfolio.projects.each { |project| assert_includes response.body, project.name }
-    Portfolio.roles.each { |role| assert_includes response.body, role.company }
+    content = css_select("meta[name=description]").first["content"]
+    assert_operator content.length, :<=, 155
+    assert content.end_with?("...")
+  ensure
+    DeliveryThread.define_singleton_method(:fetch, original)
   end
 
-  test "every project links out to its live site or repo" do
+  test "the header names the site and links home, with the site's sections and none current" do
     get root_url
 
-    Portfolio.projects.each do |project|
-      assert_select "a[href=?]", project.url
+    assert_select "header a[href=?]", root_path, text: "Mark Evans"
+    assert_select "header nav[aria-label=Site] a", count: 4
+    assert_select "header [aria-current]", count: 0
+  end
+
+  test "every step renders open, in the thread file's order" do
+    get root_url
+
+    keys = css_select("section[aria-labelledby=thread-heading] > div[id]").map { |row| row["id"] }
+    assert_equal @thread.steps.map(&:key), keys
+
+    @thread.steps.each do |step|
+      assert_select "##{step.key} h3 button", text: /\A0?#{@thread.steps.index(step) + 1} #{Regexp.escape(step.name)} Ctl/
+      assert_select "##{step.key}-body"
+      assert_includes response.body, ERB::Util.html_escape(step.body)
     end
   end
 
-  test "contact section links email and profiles" do
+  test "each row draws its chart cell beside its strip, hidden from assistive tech" do
     get root_url
 
-    assert_select "a[href=?]", "mailto:#{Portfolio.profile.email}"
-    assert_select "a[href=?]", Portfolio.profile.github
-    assert_select "a[href=?]", Portfolio.profile.linkedin
+    assert_select "section[aria-labelledby=thread-heading] > div[id] > div[aria-hidden=true] [data-chart=fix]", count: @thread.steps.size
   end
 
-  test "does not publish a personal phone number" do
+  test "the graph follows the file: its forks, merges, loops, sectors and labels" do
     get root_url
 
-    refute_includes response.body, "720-289-3911"
+    events = @thread.steps.map { |step| step.git.event }.tally
+    %w[fork merge loop].each { |event| assert_select "[data-git-event=#{event}]", count: events[event] }
+    assert_select "[data-chart=loop]", count: events["loop"]
+    assert_select "[data-chart=sector]", count: @thread.cells.count(&:sector)
+    assert_equal @thread.steps.filter_map { |step| step.git.label }, css_select("[data-chart=label]").map(&:text)
   end
 
-  test "publishes Person structured data" do
+  test "the legend renders beside the headline" do
     get root_url
 
-    person = css_select('script[type="application/ld+json"]').filter_map do |script|
-      JSON.parse(script.text)
-    rescue JSON::ParserError
-      nil
-    end.find { |data| data["@type"] == "Person" }
-
-    assert person, "Expected Person JSON-LD"
-    assert_equal Portfolio.profile.name, person["name"]
+    assert_select "aside [aria-label=Legend] li", count: 8
   end
 
-  test "sections are landmarked and labelled for assistive tech" do
+  test "without scripts each strip is a disabled button with no status word, its body open" do
     get root_url
 
-    %w[impact work projects skills contact].each do |id|
-      assert_select "section##{id}[aria-labelledby]"
+    assert_select "[data-playback-target=strip][disabled][aria-expanded=true]", count: @thread.steps.size
+    assert_select "[data-playback-target=strip]:not([disabled])", count: 0
+    assert_select "[data-playback-target=status]", text: "", count: @thread.steps.size
+    assert_select "[data-open], [data-state]", count: 0
+  end
+
+  test "without scripts the scope is a map: one link per step, and nothing to press" do
+    get root_url
+
+    hrefs = css_select("[aria-label=Scope] a").map { |link| link["href"] }
+    assert_equal @thread.steps.map { |step| "##{step.key}" }, hrefs
+    assert_select "[aria-label=Scope] [data-playback-target=live]:not([hidden])", count: 0
+    assert_select "[aria-label=Scope] [hidden] button", count: 4
+  end
+
+  test "each row carries its step's seconds for the playback clock, its bay and its lane" do
+    get root_url
+
+    @thread.steps.each do |step|
+      assert_select "##{step.key}[style=?][data-bay=?][data-lane=?]", "--seconds: #{step.duration}", step.bay, step.lane
     end
   end
 
-  test "the command palette ships a row for every section and project" do
+  test "without scripts the read-outs of playback state are not shown" do
     get root_url
 
-    assert_select "[role=dialog][aria-label=?]", "Command palette"
-    assert_select "[role=listbox] [role=option]", minimum: Portfolio.projects.size + 5
-
-    Portfolio.projects.each do |project|
-      assert_select "[role=option][href=?]", project.url
-    end
+    assert_select "[aria-label='Strip bay'][hidden]", count: 2 # the aside's, and the docked bar's
+    assert_select "[aria-label='Strip bay']:not([hidden])", count: 0
+    assert_select "[aria-labelledby=controller-filter][hidden] button", count: 4
+    assert_select "[data-dim]", count: 0
+    assert_select "section[aria-labelledby=log-heading][hidden]", count: 1
+    assert_select "[aria-label='Docked playback'][hidden]", count: 1
   end
 
-  test "the palette dialog starts hidden so it cannot trap a reader without JavaScript" do
+  test "the footer signs the page, and its key list waits for playback" do
     get root_url
 
-    assert_select "[role=dialog][hidden]"
+    assert_select "footer", text: /Mark Evans · PositiveControl/
+    assert_select "footer", text: /This site is built with the workflow it describes\./
+    assert_select "footer ul[aria-label='Keyboard'][hidden][data-playback-target=live] kbd", count: 6
+    assert_select "footer [aria-label='Keyboard'] kbd", text: @thread.steps.count(&:gate?).to_s
+  end
+
+  test "playback and the filter sit on a wrapper around main and the footer, so both read one state" do
+    get root_url
+
+    assert_select "[data-controller='playback filter'] > main"
+    assert_select "[data-controller='playback filter'] > footer"
+    assert_select "main[data-controller]", count: 0
+  end
+
+  test "the log counts gates out of the thread's own total" do
+    get root_url
+
+    assert_select "#log-heading ~ span", text: /Gates cleared\s+0\s+\/ #{@thread.steps.count(&:gate?)}/
   end
 
   test "self-hosted fonts are preloaded, not fetched from a third party" do
@@ -87,13 +142,12 @@ class HomePageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "fonts.gstatic.com"
   end
 
-  # The page was rebuilt to drop the stock aurora/gradient/marquee treatment.
-  # These names coming back means the old look came back with them.
-  test "none of the retired decoration is rendered" do
+  test "none of the portfolio page is left" do
     get root_url
 
-    %w[aurora spotlight gradient-text marquee dot-grid].each do |name|
-      refute_includes response.body, name, "#{name} is back on the page"
+    %w[palette reveal caret].each do |name|
+      assert_select "[data-controller~=#{name}], .#{name}", count: 0
     end
+    refute_includes response.body, "Command palette"
   end
 end

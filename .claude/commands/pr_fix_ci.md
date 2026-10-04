@@ -14,11 +14,11 @@ Diagnose and fix CI/CD pipeline failures on current branch's PR. Pass PR number 
 Fetch PR metadata and CI check results:
 
 ```bash
-gh pr view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json number,title,url,headRefName,baseRefName,additions,deletions,changedFiles
+gh pr view $ARGUMENTS --repo PositiveControl/markevans --json number,title,url,headRefName,baseRefName,additions,deletions,changedFiles
 ```
 
 ```bash
-gh pr checks $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json name,state,link,workflow
+gh pr checks $ARGUMENTS --repo PositiveControl/markevans --json name,state,link,workflow
 ```
 
 Show brief summary: PR title, branch, table of all checks with status. `<BASE>` below is the PR's `baseRefName` — `main`, or the feature branch this slice targets.
@@ -150,7 +150,7 @@ If the re-run option isn't available (e.g., a new run was triggered by the push)
 Poll all checks to confirm fixes resolved the failures:
 
 ```bash
-gh pr checks $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json name,state,link --jq '.[] | "\(.name): \(.state)"'
+gh pr checks $ARGUMENTS --repo PositiveControl/markevans --json name,state,link --jq '.[] | "\(.name): \(.state)"'
 ```
 
 Polling loop:
@@ -193,7 +193,7 @@ PR URL: <URL>
 
 ## Reference
 - GitHub username: Use `gh api user --jq .login` to get the current user's GitHub username
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
+- Repo: PositiveControl/markevans
 - CI checks: scan_ruby, scan_js, lint (fast), test (slow)
 - Informational checks (non-blocking): CodeQL / Analyze
 - CI check `state` values: PENDING, IN_PROGRESS, SUCCESS, FAILURE, SKIPPED

@@ -1,6 +1,6 @@
-.rounded-lg.border.border-dashed.border-gray-300.p-12.text-center.dark:border-gray-700
-  h3.text-sm.font-semibold.text-gray-900.dark:text-gray-100 = title
+div class="rounded-box border border-dashed border-rule p-8 text-center"
+  h3 class="font-mono text-label uppercase" = title
   - if description.present?
-    p.mt-1.text-sm.text-gray-500.dark:text-gray-400 = description
+    p class="mt-1 text-quiet" = description
   - if action?
-    .mt-6 = action
+    div class="mt-4" = action

@@ -1,34 +1,61 @@
-- profile = Portfolio.profile
-- projects = Portfolio.projects
-- page_title = "#{profile.name} — #{profile.role}"
-- content_for :title, page_title
-- content_for :meta_description, profile.summary.truncate(155)
+/ The home thread (design doc, sections 4 and 6). Every word of copy comes from
+/ content/threads/home.yml. Without scripts it reads as a document: every strip
+/ open, in order. With them the playback controller plays it, writing
+/ data-state and data-open on each row (docs/system/home-thread-playback.md).
+/ Each row's chart cell draws its piece of the git graph from the step's git
+/ block. The filter controller, beside it on the wrapper, marks data-dim on the rows
+/ of every controller but the one picked.
+- content_for :title, "Mark Evans"
+- content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
-- content_for :head do
-  ruby:
-    person = {
-      "@context" => "https://schema.org",
-      "@type" => "Person",
-      "name" => profile.name,
-      "jobTitle" => profile.role,
-      "email" => "mailto:#{profile.email}",
-      "url" => root_url,
-      "address" => { "@type" => "PostalAddress", "addressLocality" => "Phoenix", "addressRegion" => "AZ" },
-      "sameAs" => [ profile.github, profile.linkedin ],
-      "knowsAbout" => Portfolio.skill_groups.flat_map(&:items).first(12)
-    }
-  = jsonld_tag(person)
+/ Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
+/ scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).
+div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#scroll:passive touchmove@window->playback#scroll:passive pointerdown@window->playback#press keydown@window->playback#key"
+  = render DockedBarComponent.new(steps: @thread.steps)
+  main class="mx-auto max-w-page px-3 chart:px-8"
+    / Stacked on a phone, scope first; side by side from 900 px.
+    div class="flex flex-col gap-x-8 gap-y-4 pt-6 chart:flex-row chart:items-start"
+      aside class="flex w-full max-w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
+        = render ScopeComponent.new(steps: @thread.steps)
+        = render StripBayComponent.new
+        = render ControllerFilterComponent.new
+        = render LegendComponent.new
+      section class="min-w-0 flex-1 chart:pt-6"
+        h1 class="text-headline" = @thread.headline
+        p class="mt-4 max-w-measure" = @thread.intro
+        div class="mt-6"
+          = render LogComponent.new(steps: @thread.steps)
 
-/ The nav's ⌘K button and the palette dialog share one controller element.
-/ keydown@window is how the shortcut is heard wherever the caret happens to be.
-div data-controller="palette" data-action="keydown@window->palette#hotkey" data-palette-active-class="bg-raised border-amber text-fg"
-  = render "home/nav", profile: profile
-  = render "home/palette", profile: profile, projects: projects
+    section class="pt-4 pb-16" aria-labelledby="thread-heading" data-playback-target="thread"
+      h2#thread-heading class="sr-only" The thread
+      / The page keeps 96 px clear at its top (scroll-pt-16 on html), and
+      / -scroll-mt-1 (-6 px) lifts each row so its strip, 6 px into it, lands
+      / on that line when the page follows it or a link lands on it.
+      - @thread.cells.each.with_index(1) do |cell, number|
+        - step = cell.step
+        div class="flex -scroll-mt-1" id=step.key style="--seconds: #{step.duration}" data-bay=step.bay data-lane=step.lane data-playback-target="row" data-filter-target="row"
+          = render ChartCellComponent.new(cell:)
+          div class="min-w-0 flex-1 py-1 pl-strip-gap"
+            = render StripComponent.new(step:, number:)
+            = render StepBodyComponent.new(step:)
 
-main
-  = render "home/hero", profile: profile
-  = render "home/metrics", metrics: Portfolio.metrics
-  = render "home/work", roles: Portfolio.roles
-  = render "home/projects", projects: projects
-  = render "home/skills", groups: Portfolio.skill_groups
-  = render "home/contact", profile: profile
+  = render SiteFooterComponent.new do
+    / What playback answers to from anywhere on the page but a text field
+    / (docs/system/home-thread-playback.md, The keyboard).
+    ul class="flex flex-wrap gap-x-3" aria-label="Keyboard" hidden=true data-playback-target="live"
+      li
+        kbd> Space
+        | play or pause
+      li
+        kbd> j
+        | next
+      li
+        kbd> k
+        | previous
+      li
+        kbd> g
+        | then
+        kbd<> 1
+        | –
+        kbd<> = @thread.steps.count(&:gate?)
+        | a gate

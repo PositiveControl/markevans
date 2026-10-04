@@ -12,9 +12,9 @@ Plan one issue's implementation: explore → task file → human approval → br
 ### Step 1: Fetch issue details
 
 ```bash
-gh issue view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}}
-gh issue view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json comments --jq '.comments[] | "[\(.createdAt)] \(.author.login): \(.body)"'
-gh api graphql -f query='{ repository(owner: "{{GITHUB_ORG}}", name: "{{GITHUB_REPO}}") { issue(number: <ISSUE_NUMBER>) { parent { number title body } subIssues(first: 20) { nodes { number title state } } } } }'
+gh issue view $ARGUMENTS --repo PositiveControl/markevans
+gh issue view $ARGUMENTS --repo PositiveControl/markevans --json comments --jq '.comments[] | "[\(.createdAt)] \(.author.login): \(.body)"'
+gh api graphql -f query='{ repository(owner: "PositiveControl", name: "markevans") { issue(number: <ISSUE_NUMBER>) { parent { number title body } subIssues(first: 20) { nodes { number title state } } } } }'
 ```
 
 **Shape check:** issue has no acceptance criteria, >5 acceptance bullets, size XL, or open sub-issues → stop, route to `/feature_plan $ARGUMENTS`. Oversized work never enters task planning.
@@ -70,7 +70,7 @@ After approval:
 ```bash
 git checkout main && git pull
 git checkout -b feature/<slug> && git push -u origin feature/<slug>
-gh pr create --draft --base main --head feature/<slug> --title "{{PR_TITLE_PREFIX}} | <PARENT> | <feature title>" --body "$(cat <<'EOF'
+gh pr create --draft --base main --head feature/<slug> --title "ME | <PARENT> | <feature title>" --body "$(cat <<'EOF'
 ## Feature
 <one line, and a link to docs/plans/<design doc>>
 
@@ -90,17 +90,17 @@ EOF
 The `<ID>` segment is the tracker's identifier — a bare number under `github-projects` and `labels` (`1613`), or the bead ID under `beads` (`bd-a3f2dd`, from `tst-a3f2dd` with the prefix normalised to `bd-`). It is the thread ID that ties branch, task file, and PR together. `<BASE>` is the task file's `Base:` line.
 
 ```bash
-git branch --list "{{BRANCH_PREFIX}}/<ID>/*"
+git branch --list "me/<ID>/*"
 ```
-- Exists → `git checkout {{BRANCH_PREFIX}}/<ID>/<slug>`
-- Not → `git fetch origin <BASE> && git checkout -b {{BRANCH_PREFIX}}/<ID>/<short-slug> origin/<BASE>`
+- Exists → `git checkout me/<ID>/<slug>`
+- Not → `git fetch origin <BASE> && git checkout -b me/<ID>/<short-slug> origin/<BASE>`
 
-**Mark In Progress** — tier `{{TRACKER}}`:
+**Mark In Progress** — tier `labels`:
 
 `github-projects`:
 ```bash
-gh api graphql -f query='{ repository(owner: "{{GITHUB_ORG}}", name: "{{GITHUB_REPO}}") { issue(number: <ISSUE_NUMBER>) { projectItems(first: 5) { nodes { id project { title } } } } } }'
-gh project item-edit --project-id {{PROJECT_ID}} --id <ITEM_ID> --field-id {{STATUS_FIELD_ID}} --single-select-option-id {{STATUS_IN_PROGRESS}}
+gh api graphql -f query='{ repository(owner: "PositiveControl", name: "markevans") { issue(number: <ISSUE_NUMBER>) { projectItems(first: 5) { nodes { id project { title } } } } } }'
+gh project item-edit --project-id n/a --id <ITEM_ID> --field-id n/a --single-select-option-id n/a
 ```
 
 `beads`:
@@ -121,11 +121,11 @@ Plan approved and branch ready. Run: /implement <ISSUE_NUMBER>
 ```
 
 ## Reference
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
+- Repo: PositiveControl/markevans
 - Task template: .llm/tasks/task_template.md
-- Branch convention: `{{BRANCH_PREFIX}}/<id>/<slug>` — `<id>` is a number, or `bd-<hash>` under tier `beads`
+- Branch convention: `me/<id>/<slug>` — `<id>` is a number, or `bd-<hash>` under tier `beads`
 - Feature branch: `feature/<slug>`, named in the design doc and sub-issue bodies; base for every slice of a multi-slice feature
-- Project ID: {{PROJECT_ID}} · Status field ID: {{STATUS_FIELD_ID}}
-- Tracker tier: `{{TRACKER}}`
-- Status option IDs (tier `github-projects`): Blocked={{STATUS_BLOCKED}}, Todo={{STATUS_TODO}}, In Progress={{STATUS_IN_PROGRESS}}, Up for Review={{STATUS_UP_FOR_REVIEW}}, Done={{STATUS_DONE}}
+- Project ID: n/a · Status field ID: n/a
+- Tracker tier: `labels`
+- Status option IDs (tier `github-projects`): Blocked=n/a, Todo=n/a, In Progress=n/a, Up for Review=n/a, Done=n/a
 - Sizing: PR target 200–1,500 added lines / ≤25 files

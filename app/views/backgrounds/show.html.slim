@@ -1,0 +1,17 @@
+/ /background: the CV, from content/pages/background.yml. It prints to one
+/ page: the header and footer leave the print, and the page's own spacing
+/ tightens (docs/system/site-pages.md, Print).
+- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :meta_description, @page.description.truncate(155, separator: " ")
+- content_for(:canonical_url) { background_url }
+- content_for(:head) { jsonld_tag(profile_jsonld(@page)) }
+
+main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8 print:max-w-none print:p-0"
+  h1 class="text-headline" = @page.title
+  p class="mt-4 max-w-measure print:mt-2" = @page.intro
+  div class="mt-6 print:mt-3"
+    = render LinkListComponent.new(links: @page.links, label: "Links")
+  div class="mt-8 print:mt-4"
+    = render PageSectionsComponent.new(sections: @page.sections)
+
+= render SiteFooterComponent.new

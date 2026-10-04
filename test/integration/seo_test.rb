@@ -25,6 +25,47 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<urlset"
   end
 
+  test "the sitemap lists every page and every project" do
+    get sitemap_url(format: :xml)
+
+    [ projects_url, workflow_url, background_url, contact_url ].each { |url| assert_includes response.body, "<loc>#{url}</loc>" }
+    Portfolio.all.each { |project| assert_includes response.body, "<loc>#{project_url(project.key)}</loc>" }
+  end
+
+  {
+    "/work" => [ "CollectionPage", -> { SitePage.fetch(:work).description } ],
+    "/work/rails-rocket-sheep" => [ "WebPage", -> { Portfolio.fetch("rails-rocket-sheep").summary } ],
+    "/workflow" => [ "WebPage", -> { SitePage.fetch(:workflow).description } ],
+    "/background" => [ "ProfilePage", -> { SitePage.fetch(:background).description } ],
+    "/contact" => [ "ContactPage", -> { SitePage.fetch(:contact).description } ]
+  }.each do |path, (type, description)|
+    test "#{path} has its own meta description, canonical URL and #{type} JSON-LD" do
+      get path
+
+      assert_response :success
+      assert_select 'meta[name="description"][content=?]', instance_exec(&description).truncate(155, separator: " ")
+      assert_select 'link[rel="canonical"][href=?]', "http://www.example.com#{path}"
+      assert_json_ld(type)
+    end
+  end
+
+  test "/work's JSON-LD lists each project, in order" do
+    get projects_url
+
+    list = json_ld("CollectionPage").dig("mainEntity", "itemListElement")
+    assert_equal Portfolio.all.map { |project| project_url(project.key) }, list.map { |item| item["url"] }
+    assert_equal (1..Portfolio.all.size).to_a, list.map { |item| item["position"] }
+  end
+
+  test "/background's JSON-LD is a Person with the profiles the page links to, and no placeholder" do
+    get background_url
+
+    person = json_ld("ProfilePage")["mainEntity"]
+    assert_equal "Person", person["@type"]
+    assert_equal "Mark Evans", person["name"]
+    assert_equal [ "https://github.com/PositiveControl" ], person["sameAs"]
+  end
+
   test "robots.txt is accessible and references sitemap" do
     get "/robots.txt"
     assert_response :success
@@ -33,6 +74,10 @@ class SeoTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def json_ld(type)
+    css_select('script[type="application/ld+json"]').map { |script| JSON.parse(script.text) }.find { |data| data["@type"] == type }
+  end
 
   def assert_json_ld(expected_type)
     scripts = css_select('script[type="application/ld+json"]')

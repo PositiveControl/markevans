@@ -5,8 +5,8 @@ applies_to: ["app/views/**/*.slim", "app/components/**/*.slim", "app/components/
 triggers: ["tailwind", "colors", "semantic color", "dark mode", "dark:", "responsive", "breakpoint", "sm:", "lg:", "mobile first", "palette"]
 see_also: ["tailwind-build", "components", "accessibility"]
 modes: [ web ]
-tokens: 480
-current_state: matches
+tokens: 600
+current_state: diverges
 ---
 
 # Tailwind
@@ -54,3 +54,13 @@ Mobile-first — unprefixed classes are the small screen, prefixes add up from t
 
 Classes assembled at runtime do not survive the build — [tailwind-build](tailwind-build.md).
 Bracket values need `class=""` in Slim — [slim-gotchas](slim-gotchas.md).
+
+## Where this app is
+
+The semantic palette and the dark-mode pairs above do not exist here.
+`app/assets/tailwind/tokens.css` clears Tailwind's palette, so `blue-500` and
+`dark:bg-gray-800` generate nothing, and the design has no dark theme. Colors
+are the tokens' roles instead (`text-command`, `bg-human-tint`), chosen by
+[color-means-role](color-means-role.md) and limited by
+[tokens-only](tokens-only.md). The `VARIANTS` hash advice and the responsive
+section still apply.

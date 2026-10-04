@@ -16,7 +16,7 @@ Verify branch ready to push:
 1. Read `Base:` from the task file (`.llm/tasks/<id>_*.md`): `main`, or the feature branch `feature/<slug>` this slice targets. No task file → `main`. Every `<BASE>` below is that value.
 2. Run `git status` for uncommitted changes. Unstaged changes → ask user what to do.
 3. Run `git log origin/<BASE>..HEAD --oneline` to confirm commits exist to push.
-4. Confirm branch name follows convention `{{BRANCH_PREFIX}}/<issue>/<slug>` (e.g., `{{BRANCH_PREFIX}}/1613/fix-address-delete`). Mismatch → note, don't block.
+4. Confirm branch name follows convention `me/<issue>/<slug>` (e.g., `me/1613/fix-address-delete`). Mismatch → note, don't block.
 5. Rebase or merge left conflicts in the tree → `/resolve_conflicts` first. Never push a half-resolved rebase.
 6. No `Pre-PR review:` line in the task file's progress log → run `/implement` Step 5 (the fresh-context review) now, then come back.
 
@@ -124,7 +124,7 @@ No PR → create one. First gather context for PR description:
 3. Create the PR using the task file context (preferred) or commit messages (fallback):
 
 ```bash
-gh pr create --base <BASE> --title "{{PR_TITLE_PREFIX}} | <ISSUE_NUMBER> | <Short description>" --body "$(cat <<'EOF'
+gh pr create --base <BASE> --title "ME | <ISSUE_NUMBER> | <Short description>" --body "$(cat <<'EOF'
 ## Summary
 <1-3 bullet points describing the changes, drawn from the task file's goal and approach>
 
@@ -145,13 +145,13 @@ EOF
 
 **`<BASE>` is a feature branch → omit `<CLOSING_LINE>` on every tier** and write `<SLICE_LINE>` as `Slice of \`feature/<slug>\` — feature PR #<n>`. GitHub closes issues only on a merge to the default branch, so a `Closes` here would do nothing; the feature PR body carries one per landed slice instead (`WORKFLOW.md`, *Feature branches*). Then find the feature PR (`gh pr list --head feature/<slug>`) and tick this slice in its **Slices** list.
 
-**`<BASE>` is `main` → omit `<SLICE_LINE>`. PR title and `<CLOSING_LINE>` depend on the tracker tier `{{TRACKER}}`:**
+**`<BASE>` is `main` → omit `<SLICE_LINE>`. PR title and `<CLOSING_LINE>` depend on the tracker tier `labels`:**
 
 | Tier | Title | `<CLOSING_LINE>` |
 |---|---|---|
-| `github-projects` | `{{PR_TITLE_PREFIX}} \| <number> \| <description>` | `Closes #<ISSUE_NUMBER>` |
-| `beads` | `{{PR_TITLE_PREFIX}} \| bd-<hash> \| <description>` | *omit entirely* |
-| `labels` | `{{PR_TITLE_PREFIX}} \| <number> \| <description>` | `Closes #<ISSUE_NUMBER>` |
+| `github-projects` | `ME \| <number> \| <description>` | `Closes #<ISSUE_NUMBER>` |
+| `beads` | `ME \| bd-<hash> \| <description>` | *omit entirely* |
+| `labels` | `ME \| <number> \| <description>` | `Closes #<ISSUE_NUMBER>` |
 
 Under `github-projects` and `labels`, the `Closes #` line is **required** — it is what closes the issue on merge, and under `github-projects` it also drives the board's "item closed → Done" workflow.
 
@@ -159,7 +159,7 @@ Under `beads` there is no GitHub issue to close, so emitting `Closes #` would ei
 
 ### Step 5: Mark Up for Review
 
-Tier `{{TRACKER}}`. Follow only the matching branch.
+Tier `labels`. Follow only the matching branch.
 
 **`beads`:**
 ```bash
@@ -170,25 +170,25 @@ bd update <ID> --external-ref gh-<PR_NUMBER>
 
 **`labels`:**
 ```bash
-gh issue edit <ISSUE_NUMBER> --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --add-label "status:up-for-review" --remove-label "status:in-progress"
-gh issue edit <ISSUE_NUMBER> --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --add-label "{{REVIEW_LABEL}}"
+gh issue edit <ISSUE_NUMBER> --repo PositiveControl/markevans --add-label "status:up-for-review" --remove-label "status:in-progress"
+gh issue edit <ISSUE_NUMBER> --repo PositiveControl/markevans --add-label "ready for review"
 ```
 
 **`github-projects`** — move the issue to "Up for Review" on the board and add the label.
 
 First get the project item ID:
 ```bash
-gh api graphql -f query='{ repository(owner: "{{GITHUB_ORG}}", name: "{{GITHUB_REPO}}") { issue(number: <ISSUE_NUMBER>) { projectItems(first: 5) { nodes { id project { title } } } } } }'
+gh api graphql -f query='{ repository(owner: "PositiveControl", name: "markevans") { issue(number: <ISSUE_NUMBER>) { projectItems(first: 5) { nodes { id project { title } } } } } }'
 ```
 
 Then update status to "Up for Review":
 ```bash
-gh project item-edit --project-id {{PROJECT_ID}} --id <ITEM_ID> --field-id {{STATUS_FIELD_ID}} --single-select-option-id {{STATUS_UP_FOR_REVIEW}}
+gh project item-edit --project-id n/a --id <ITEM_ID> --field-id n/a --single-select-option-id n/a
 ```
 
-Add the "{{REVIEW_LABEL}}" label to the issue:
+Add the "ready for review" label to the issue:
 ```bash
-gh issue edit <ISSUE_NUMBER> --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --add-label "{{REVIEW_LABEL}}"
+gh issue edit <ISSUE_NUMBER> --repo PositiveControl/markevans --add-label "ready for review"
 ```
 
 Replace `<ISSUE_NUMBER>` (or `<ID>`) with the value from `$ARGUMENTS`.
@@ -197,23 +197,23 @@ Replace `<ISSUE_NUMBER>` (or `<ID>`) with the value from `$ARGUMENTS`.
 
 ### Step 6: Wait for fast CI checks
 
-Poll only the fast CI checks: the fast checks (scan_ruby, scan_js, lint, flay). These complete in ~1-2 minutes. Do NOT wait for `test` — the full test suite was already run locally in Step 2.
+Poll only the fast CI checks: the fast checks (scan_ruby, scan_js, lint, gates). These complete in ~1-2 minutes. Do NOT wait for `test` — the full test suite was already run locally in Step 2.
 
 **Important:** The `gh pr checks` command uses these JSON fields: `name`, `state`, `link`, `workflow`. It does NOT have a `conclusion` field — use `state` only (values: `PENDING`, `SUCCESS`, `FAILURE`, `SKIPPED`).
 
 ```bash
-gh pr checks --json name,state,link --jq '.[] | select(["scan_ruby","scan_js","lint","flay"] | index(.name)) | "\(.name): \(.state)"'
+gh pr checks --json name,state,link --jq '.[] | select(["scan_ruby","scan_js","lint","gates"] | index(.name)) | "\(.name): \(.state)"'
 ```
 
 Polling loop:
-1. Fetch check status for the fast checks (scan_ruby, scan_js, lint, flay) only
+1. Fetch check status for the fast checks (scan_ruby, scan_js, lint, gates) only
 2. If any of these is `PENDING` or `IN_PROGRESS`, wait 30 seconds and re-check
 3. If all four are terminal (SUCCESS/FAILURE), proceed to triage
 4. After 5 minutes of polling, proceed with whatever status is available
 
 **If there are CI failures:**
-1. Identify which job(s) failed: one of scan_ruby, scan_js, lint, flay
-2. For lint or flay failures: run `/run_lint` locally, fix issues, commit, and push
+1. Identify which job(s) failed: one of scan_ruby, scan_js, lint, gates
+2. For lint failures: run `/run_lint` locally; for gates failures: run `bin/gates` locally, fix issues, commit, and push
 3. For security-scan failures: investigate and fix the security issue
 4. Ignore `CodeQL` / `Analyze` checks — these are informational and not blocking
 
@@ -231,7 +231,7 @@ When the PR is clean, present:
 ✓ PR #<NUMBER> is ready for review
   URL: <PR_URL>
   Branch: <BRANCH_NAME> → <BASE>
-  Checks: Fast checks passing (scan_ruby, scan_js, lint, flay)
+  Checks: Fast checks passing (scan_ruby, scan_js, lint, gates)
   Test: Running in CI (already passed locally)
   Docs: placeholders resolved, index verified
   Walkthrough: bin/qa-walkthrough <name> (<n> steps) | skipped: <reason>
@@ -256,19 +256,19 @@ PR merged! Automation handles issue close, board → Done, and branch deletion.
 
 ## Reference
 - GitHub username: Use `gh api user --jq .login` to get the current user's GitHub username
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
-- PR title convention: `{{PR_TITLE_PREFIX}} | <issue_number> | <description>`
-- Branch convention: `{{BRANCH_PREFIX}}/<issue_number>/<slug>`
+- Repo: PositiveControl/markevans
+- PR title convention: `ME | <issue_number> | <description>`
+- Branch convention: `me/<issue_number>/<slug>`
 - Base: the task file's `Base:` line — `main`, or `feature/<slug>` for a slice of a multi-slice feature; no `Closes` on a slice PR
-- Tracker tier: `{{TRACKER}}`
-- Fast CI checks (poll these): scan_ruby, scan_js, lint, flay
+- Tracker tier: `labels`
+- Fast CI checks (poll these): scan_ruby, scan_js, lint, gates
 - Slow CI checks (skip polling, ran locally): test
 - Informational checks (ignore): CodeQL / Analyze
 - CI check `state` values: PENDING, IN_PROGRESS, SUCCESS, FAILURE, SKIPPED (no `conclusion` field)
 - Local pre-push checks: bin/gates, bin/rubocop --force-exclusion (changed files), bin/flay (copied code vs `<BASE>`), bin/brakeman -q --no-pager, bin/test, bin/rails test:system, bin/rails db:queries
 - Pre-existing test failures: system tests may have failures on main — only fix failures introduced by the branch
-- Issue label for review: "{{REVIEW_LABEL}}"
-- Project ID: {{PROJECT_ID}} · Status field ID: {{STATUS_FIELD_ID}}
-- Status option IDs: Blocked={{STATUS_BLOCKED}}, Todo={{STATUS_TODO}}, In Progress={{STATUS_IN_PROGRESS}}, Up for Review={{STATUS_UP_FOR_REVIEW}}, Done={{STATUS_DONE}}
+- Issue label for review: "ready for review"
+- Project ID: n/a · Status field ID: n/a
+- Status option IDs: Blocked=n/a, Todo=n/a, In Progress=n/a, Up for Review=n/a, Done=n/a
 - If project board update fails with scope error: suggest `gh auth refresh -s project`, skip and continue
 - Repo prerequisites for post-merge automation: "Automatically delete head branches" enabled (all tiers) · Projects workflow "item closed → Done" enabled and `Closes #N` in every PR body (tier `github-projects`) · `Closes #N` only (tier `labels`) · neither, reconciliation via `/pick` (tier `beads`)

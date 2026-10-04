@@ -1,0 +1,14 @@
+div class=classes aria-hidden="true" data-git-event=git.event data-git-on=git.on
+  span class=GRAPH data-chart="graph"
+    - pieces.each do |piece|
+      span class=piece.classes style=piece.style data-chart=piece.part
+    span class=ring_classes style=fix_style data-chart="ring"
+    span class="absolute -translate-x-1/2 -translate-y-1/2" style=fix_style data-chart="fix"
+      = render FixMarkComponent.new(kind: step.kind)
+  / The sector's dashed edge is its own line, not the cell's border, so the
+  / git lines run unbroken from one row into the next.
+  - if cell.sector
+    span class="absolute inset-x-0 top-0 border-t border-dashed border-rule-strong" data-chart="sector-edge"
+    span class="absolute top-1 right-2 hidden font-mono text-cell uppercase text-quiet chart:block" data-chart="sector" = "Sector · #{cell.sector}"
+  - if git.label
+    span class=label_classes style=label_style data-chart="label" = git.label

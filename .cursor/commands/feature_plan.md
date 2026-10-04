@@ -14,8 +14,8 @@ Plan a feature: explore → design doc → human approval → sized sub-issues +
 If `$ARGUMENTS` is an issue number, fetch it with comments and parent/sub-issue context:
 
 ```bash
-gh issue view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}}
-gh issue view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json comments --jq '.comments[] | "[\(.createdAt)] \(.author.login): \(.body)"'
+gh issue view $ARGUMENTS --repo PositiveControl/markevans
+gh issue view $ARGUMENTS --repo PositiveControl/markevans --json comments --jq '.comments[] | "[\(.createdAt)] \(.author.login): \(.body)"'
 ```
 
 Otherwise treat `$ARGUMENTS` as the problem statement.
@@ -60,18 +60,18 @@ Each sub-issue must have:
 - Size forecast targeting **200–1,500 added lines** per PR
 - Dependencies on sibling slices noted in the body
 
-Tier `{{TRACKER}}`. Follow only the matching branch.
+Tier `labels`. Follow only the matching branch.
 
 **`github-projects`** — create the issues, link them, and put them on the board:
 
 ```bash
-gh issue create --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --title "<title>" --body "<body>"
+gh issue create --repo PositiveControl/markevans --title "<title>" --body "<body>"
 
 # Link each sub-issue to the parent
 gh api graphql -f query='mutation { addSubIssue(input: { issueId: "<PARENT_NODE_ID>", subIssueId: "<CHILD_NODE_ID>" }) { issue { number } } }'
 
 # Add each issue to the board (status defaults to Todo)
-gh project item-add {{PROJECT_NUMBER}} --owner {{GITHUB_ORG}} --url <ISSUE_URL>
+gh project item-add n/a --owner PositiveControl --url <ISSUE_URL>
 ```
 
 **`beads`** — create an epic and hang the slices off it as real dependencies:
@@ -94,7 +94,7 @@ Always pass `--description`; `bd create` warns on issues without one, and a bare
 **`labels`** — create the issues and mark them Todo. There is no parent/child model, so record slice dependencies in the issue body:
 
 ```bash
-gh issue create --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --title "<title>" --body "<body>" --label "status:todo"
+gh issue create --repo PositiveControl/markevans --title "<title>" --body "<body>" --label "status:todo"
 ```
 
 ### Step 6: Create doc placeholders
@@ -108,9 +108,9 @@ Ready to start? Run: /pick   (or /task_plan <first-sub-issue>)
 ```
 
 ## Reference
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
-- Project: #{{PROJECT_NUMBER}} "{{PROJECT_NAME}}" (owner: {{GITHUB_ORG}}), Project ID: {{PROJECT_ID}}
-- Status field ID: {{STATUS_FIELD_ID}}; Todo option: {{STATUS_TODO}}
+- Repo: PositiveControl/markevans
+- Project: #n/a "n/a" (owner: PositiveControl), Project ID: n/a
+- Status field ID: n/a; Todo option: n/a
 - Design docs: `docs/plans/YYYY-MM-DD-<slug>-design.md`
 - Sizing: PR 200–1,500 added lines / ≤25 files; acceptance criteria ≤5 bullets per issue
 - Issue node IDs: `gh issue view <n> --json id --jq .id`

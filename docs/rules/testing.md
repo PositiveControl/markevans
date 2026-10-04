@@ -5,7 +5,7 @@ applies_to: ["test/**/*.rb", "test/fixtures/**/*.yml"]
 triggers: ["fixture", "fixtures", "VCR", "cassette", "WebMock", "factory", "FactoryBot", "RSpec", "what should I test", "integration test", "system test", "assert_difference", "slow test", "TDD"]
 see_also: ["service-objects", "jobs"]
 modes: [ web, api ]
-tokens: 1150
+tokens: 1210
 current_state: matches
 ---
 
@@ -33,6 +33,9 @@ is claimed to work.
 and they are the only optional layer here. Add one when a flow only breaks in a
 browser: a Turbo Frame that never swaps, a Stimulus controller that never connects.
 Which of them a given branch has to run is `/pr_submit`'s call, from the diff.
+`ApplicationSystemTestCase` gives every system test `assert_accessible` (axe) and
+`without_scripts { }` (the page with every script blocked); a page with controls
+calls both — see [real-controls](real-controls.md).
 
 Every new public method and every controller action gets a test: the happy path
 **and** the failure that matters (invalid input, unauthorized, missing record).

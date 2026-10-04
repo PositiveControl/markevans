@@ -48,6 +48,7 @@ Editing a file that matches → read these rules.
 | `db/migrate/**` | [safe-migrations](safe-migrations.md) · [database-conventions](database-conventions.md) · [seeds](seeds.md) |
 | `db/seeds.rb`, `db/seeds/**` | [seeds](seeds.md) |
 | `db/queries.yml` | [query-ledger](query-ledger.md) |
+| `content/**` | [content-is-files](content-is-files.md) · [no-invented-content](no-invented-content.md) |
 | `test/**` | [testing](testing.md) |
 | `test/components/**` | [testing](testing.md) · [components](components.md) |
 | Anything under `app/`, when you are unsure which layer calls which | [write-path](write-path.md) |
@@ -69,6 +70,17 @@ read one when the work touches it, not because you opened a file of that type.
 | adding interactive controls, images, or headings | [accessibility](accessibility.md) |
 | deciding between a component, a partial and a helper | [view-code-placement](view-code-placement.md) |
 
+| Working on the home thread, and you are… | Also read |
+|---|---|
+| choosing a color, size, spacing or radius | [tokens-only](tokens-only.md) · [color-means-role](color-means-role.md) |
+| showing a state or kind (gate, command, optional) | [never-color-alone](never-color-alone.md) |
+| setting text in serif or mono | [typeface-means-speaker](typeface-means-speaker.md) |
+| adding a visual element to the scope, chart or strips | [every-element-answers](every-element-answers.md) |
+| drawing the git graph in the chart | [topology-from-data](topology-from-data.md) |
+| adding a button, target or any clickable thing | [real-controls](real-controls.md) |
+| adding an animation or transition | [motion-budget](motion-budget.md) |
+| changing playback, step state or autoplay | [one-playback-state](one-playback-state.md) · [playback-yields](playback-yields.md) |
+
 | Editing a controller, and you are… | Also read |
 |---|---|
 | writing an index or any list action | [pagination](pagination.md) |
@@ -86,8 +98,8 @@ read one when the work touches it, not because you opened a file of that type.
 | changing what a fresh checkout needs | [seeds](seeds.md) |
 | adding a fixed set of variants with attributes | [registries](registries.md) |
 
-**Read cost:** this index (~1500) plus one or two rules (240–1150) ·
-[`SYMPTOMS.md`](SYMPTOMS.md) (~2300) only when routing by path missed. Every `tokens`
+**Read cost:** this index (~1700) plus one or two rules (190–1210) ·
+[`SYMPTOMS.md`](SYMPTOMS.md) (~3000) only when routing by path missed. Every `tokens`
 figure is generated from the file by `bin/doc-tokens` — budget from it, and re-run that
 script after editing a rule.
 

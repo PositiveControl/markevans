@@ -10,7 +10,14 @@
 #
 # On a slice branch (`<prefix>/<id>/<slug>`) only placeholders created for that
 # id count: the rest belong to the feature and are resolved at the feature PR
-# (WORKFLOW.md, Feature branches). Anywhere else every draft counts.
+# (WORKFLOW.md, Feature branches). On the feature branch itself (`feature/*`),
+# and on a detached HEAD, nothing counts: the feature's drafts are meant to stay
+# Draft until that PR, and a session there would otherwise be held at every
+# Stop by docs it must not touch. Anywhere else every draft counts.
+#
+# SKIP_DRAFT_CHECK=1 is a developer opt-out, for a session on main while a
+# feature's placeholders sit there. Set it in .claude/settings.local.json
+# (gitignored), never in the shared settings.
 #
 # Stays quiet unless there is something to say. Exits 2 with feedback when a
 # draft placeholder exists, 0 otherwise. A broken hook must never block work,
@@ -23,7 +30,11 @@ DRAFT = /^\s*(\*\*)?Status:?(\*\*)?\s*:?\s*Draft\b/i
 
 drafts =
   begin
+    exit 0 if ENV["SKIP_DRAFT_CHECK"] == "1"
+
     branch = `git rev-parse --abbrev-ref HEAD 2>/dev/null`.strip
+    exit 0 if branch == "HEAD" || branch.start_with?("feature/")
+
     slice_id = branch[%r{\A[^/]+/([^/]+)/}, 1]
 
     DOC_DIRS.flat_map do |dir|

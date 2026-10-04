@@ -1,0 +1,32 @@
+# /background: the CV. Prints to one page (docs/system/site-pages.md, Print).
+# Read by app/lib/site_page.rb. The CV content is still open (design doc,
+# section 1), so every line is a placeholder.
+title: Background
+description: "[One line for search results: who Mark Evans is and what he builds]"
+intro: "[A short summary: what you build, for whom, and how]"
+links:
+  - label: GitHub
+    url: https://github.com/PositiveControl
+  - label: Email
+    url: "[mailto:address]"
+sections:
+  - heading: Experience
+    groups:
+      - title: "[Years]"
+        rows:
+          - k: "[Role]"
+            v: "[Company: what you did there, in one line]"
+          - k: "[Role]"
+            v: "[Company: what you did there, in one line]"
+  - heading: Skills
+    groups:
+      - title: Stack
+        rows:
+          - k: "[Area]"
+            v: "[Tools and languages]"
+  - heading: Education
+    groups:
+      - title: "[Years]"
+        rows:
+          - k: "[Qualification]"
+            v: "[Institution]"

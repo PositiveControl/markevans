@@ -1,0 +1,14 @@
+/ Every mark sits in an 18 px slot (w-3), the size the chart draws a fix at.
+ul class="grid grid-flow-col grid-cols-2 grid-rows-4 gap-x-2 gap-y-1 border-t border-rule pt-2 font-mono text-label text-quiet" aria-label="Legend"
+  - SYMBOLS.each do |kind, label|
+    li class="flex items-center gap-1"
+      = render FixMarkComponent.new(kind:)
+      = label
+  - LINES.each do |line|
+    li class="flex items-center gap-1"
+      span class="w-3 shrink-0 border-t-2 #{line.classes}" aria-hidden="true"
+      = line.label
+  li class="flex items-center gap-1"
+    span class="flex w-3 shrink-0 justify-center" aria-hidden="true"
+      span class="size-1.5 border border-quiet"
+    | target on scope

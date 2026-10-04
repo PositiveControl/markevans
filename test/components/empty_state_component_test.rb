@@ -8,6 +8,7 @@ class EmptyStateComponentTest < ViewComponent::TestCase
 
     assert_selector "h3", text: "No orders yet"
     assert_no_selector "p"
+    assert_selector "div.border-dashed.border-rule"
   end
 
   test "renders the description when given" do

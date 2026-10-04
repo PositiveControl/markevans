@@ -6,7 +6,7 @@ description: "Entry door: prioritized ready work, routed by shape and state"
 
 Entry door to the workflow. Show **my** prioritized ready work, then route the selected item to the right next command based on its shape and state.
 
-**Tracker tier: `{{TRACKER}}`** — one of `github-projects`, `beads`, `labels`. Resolved once by `/workflow_setup`; follow only the branch matching that literal.
+**Tracker tier: `labels`** — one of `github-projects`, `beads`, `labels`. Resolved once by `/workflow_setup`; follow only the branch matching that literal.
 
 ## Instructions
 
@@ -31,7 +31,7 @@ gh pr list --state merged --base main --search "<n>" --json number,title --limit
 ### Step 1: Fetch my open issues
 
 ```bash
-gh issue list --assignee $(gh api user --jq .login) --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --state open --json number,title,labels --limit 100
+gh issue list --assignee $(gh api user --jq .login) --repo PositiveControl/markevans --state open --json number,title,labels --limit 100
 ```
 
 Under `beads`, use the bead list as the source of work instead:
@@ -49,7 +49,7 @@ Run all three. `bd ready` applies blocker-aware semantics and **excludes anythin
 
 ```graphql
 {
-  repository(owner: "{{GITHUB_ORG}}", name: "{{GITHUB_REPO}}") {
+  repository(owner: "PositiveControl", name: "markevans") {
     i<NUMBER>: issue(number: <NUMBER>) {
       number
       title
@@ -119,10 +119,10 @@ Fetch full details of the selection (`gh issue view <n>`), then route by shape +
 State the route explicitly: "This is a sized Todo issue → run `/task_plan 1606`". Sizing is enforced here, at the door — an oversized or unshaped issue never goes straight to task planning.
 
 ## Reference
-- Tracker tier: `{{TRACKER}}`
+- Tracker tier: `labels`
 - GitHub username: `gh api user --jq .login`
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
-- Project (tier `github-projects`): #{{PROJECT_NUMBER}} "{{PROJECT_NAME}}" (owner: {{GITHUB_ORG}})
+- Repo: PositiveControl/markevans
+- Project (tier `github-projects`): #n/a "n/a" (owner: PositiveControl)
 - Lifecycle states, and how each tier stores them:
 
   | State | `github-projects` | `beads` | `labels` |

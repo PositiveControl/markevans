@@ -14,7 +14,7 @@ Fetch review comments on PR, address them, resolve conversations. Pass PR number
 Gather PR metadata, check out correct branch:
 
 ```bash
-gh pr view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json number,title,url,headRefName,baseRefName,author,additions,deletions,changedFiles
+gh pr view $ARGUMENTS --repo PositiveControl/markevans --json number,title,url,headRefName,baseRefName,author,additions,deletions,changedFiles
 ```
 
 Show brief summary: PR title, branch, lines changed.
@@ -31,17 +31,17 @@ Fetch both inline code comments and top-level reviews:
 
 **Inline review comments (code-level):**
 ```bash
-gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/$ARGUMENTS/comments --jq '.[] | {id: .id, author: .user.login, path: .path, line: .line, body: .body, in_reply_to_id: .in_reply_to_id, created_at: .created_at}'
+gh api repos/PositiveControl/markevans/pulls/$ARGUMENTS/comments --jq '.[] | {id: .id, author: .user.login, path: .path, line: .line, body: .body, in_reply_to_id: .in_reply_to_id, created_at: .created_at}'
 ```
 
 **Top-level reviews:**
 ```bash
-gh pr view $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json reviews --jq '.reviews[] | "[\(.state)] \(.author.login): \(.body[:200])"'
+gh pr view $ARGUMENTS --repo PositiveControl/markevans --json reviews --jq '.reviews[] | "[\(.state)] \(.author.login): \(.body[:200])"'
 ```
 
 **Issue-level comments (general discussion):**
 ```bash
-gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/issues/$ARGUMENTS/comments --jq '.[] | {id: .id, author: .user.login, body: .body[:300], created_at: .created_at}'
+gh api repos/PositiveControl/markevans/issues/$ARGUMENTS/comments --jq '.[] | {id: .id, author: .user.login, body: .body[:300], created_at: .created_at}'
 ```
 
 ### Step 3: Categorize comments
@@ -116,7 +116,7 @@ git push
 
 Per addressed comment, reply to resolve conversation:
 ```bash
-gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR_NUMBER>/comments/<COMMENT_ID>/replies -X POST -f body="Addressed — <brief description of fix>. See <COMMIT_SHA>."
+gh api repos/PositiveControl/markevans/pulls/<PR_NUMBER>/comments/<COMMENT_ID>/replies -X POST -f body="Addressed — <brief description of fix>. See <COMMIT_SHA>."
 ```
 
 ### Step 7: Verify fast CI checks
@@ -124,7 +124,7 @@ gh api repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR_NUMBER>/comments/<COMMENT_
 Poll fast CI checks — confirm fixes break nothing:
 
 ```bash
-gh pr checks $ARGUMENTS --repo {{GITHUB_ORG}}/{{GITHUB_REPO}} --json name,state,link --jq '.[] | select(["scan_ruby","scan_js","lint"] | index(.name)) | "\(.name): \(.state)"'
+gh pr checks $ARGUMENTS --repo PositiveControl/markevans --json name,state,link --jq '.[] | select(["scan_ruby","scan_js","lint"] | index(.name)) | "\(.name): \(.state)"'
 ```
 
 Fast check fails after push → diagnose, fix before reporting.
@@ -146,8 +146,8 @@ Human comments deferred for discussion → remind user.
 
 ## Reference
 - GitHub username: `gh api user --jq .login` gets current user's GitHub username
-- Repo: {{GITHUB_ORG}}/{{GITHUB_REPO}}
+- Repo: PositiveControl/markevans
 - Fast CI checks: scan_ruby, scan_js, lint
 - Bot reviewers: github-code-quality[bot], copilot-pull-request-reviewer
-- Reply endpoint: `repos/{{GITHUB_ORG}}/{{GITHUB_REPO}}/pulls/<PR>/comments/<ID>/replies`
+- Reply endpoint: `repos/PositiveControl/markevans/pulls/<PR>/comments/<ID>/replies`
 - CI check `state` values: PENDING, IN_PROGRESS, SUCCESS, FAILURE, SKIPPED

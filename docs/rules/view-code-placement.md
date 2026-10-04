@@ -2,10 +2,10 @@
 id: view-code-placement
 title: Where view code goes — component, partial, helper, inline
 applies_to: ["app/views/**", "app/components/**", "app/helpers/**"]
-triggers: ["component or partial", "where does this markup go", "helper", "extract markup", "reuse markup", "progress_bar", "capacity_bar", "jsonld_tag"]
+triggers: ["component or partial", "where does this markup go", "helper", "extract markup", "reuse markup", "jsonld_tag"]
 see_also: ["components", "partials", "pattern-budget"]
 modes: [ web ]
-tokens: 440
+tokens: 430
 current_state: matches
 ---
 
@@ -31,9 +31,9 @@ component. A helper that formats a value is a helper.
 ## Helpers that ship
 
 ```slim
-= progress_bar(current: 75, max: 100, label: "Progress", show_percentage: true)
-= capacity_bar(current: 8, max: 10, label: "Storage")
 = jsonld_tag(schema_hash)
 ```
 
-See `app/helpers/` for the full signatures.
+See `app/helpers/` for the full signatures. The template's `progress_bar` and
+`capacity_bar` were removed here: they built palette class names at runtime,
+and this app's tokens clear Tailwind's palette.

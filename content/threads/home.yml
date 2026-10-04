@@ -1,0 +1,390 @@
+# Home thread. Copy moved unchanged from the decided mock (docs/design/home-mock.dc.html).
+# Square brackets mark content still to be supplied; the placeholder gate fails a production build on them.
+id: home
+title: "[example TBD]"
+headline: "I build web products with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
+intro: "Positive control is an air traffic term. No aircraft moves without explicit clearance. Here, no change ships without one. One feature is on the scope now, flying the whole route. Pause it and step through at your own pace."
+steps:
+  - key: pick
+    name: "/pick"
+    kind: command
+    lane: human
+    bay: "Todo"
+    outcome: "Unshaped work, routed to design."
+    body: "Every session starts here. It surfaces ready work in priority order and routes it by shape and board state."
+    git:
+      on: main
+      event: start
+      label: "main"
+    groups:
+      - title: "Routing"
+        rows:
+          - k: "epic or unshaped"
+            v: "Goes to /feature_plan to be designed and split."
+          - k: "sized Todo issue"
+            v: "Goes to /task_plan."
+          - k: "In Progress"
+            v: "Resumes in /implement from the task file."
+          - k: "Blocked"
+            v: "Shows the blocker instead of starting work."
+      - title: "Checked at the door"
+        rows:
+          - k: "sizing"
+            v: "An issue fits when its acceptance criteria fit in five testable bullets. More than that is an epic."
+  - key: feature_plan
+    name: "/feature_plan"
+    kind: command
+    lane: agent
+    bay: "Todo"
+    outcome: "Design doc drafted in docs/plans/."
+    body: "The agent explores the codebase and drafts a design doc. Nothing is an issue yet. The doc is a proposal; issues are a commitment."
+    git:
+      on: main
+    groups:
+      - title: "Produces"
+        rows:
+          - k: "docs/plans/<slug>-design.md"
+            v: "The design doc, with the slice list."
+          - k: "Status: Draft placeholders"
+            v: "Stubs for the system and procedure docs this feature will need."
+          - k: "feature/<slug>"
+            v: "The feature branch name, written into the doc when there is more than one slice."
+      - title: "Valves, off the chain"
+        rows:
+          - k: "/grill"
+            v: "Interviews the design in rounds until no question is left open."
+          - k: "/research"
+            v: "Reads primary sources and writes one cited note."
+          - k: "/domain_model"
+            v: "Settles a term doing two jobs. Writes the vocabulary and an ADR."
+    artifact:
+      source: "docs/plans/[example]-design.md"
+      body: "[Design doc excerpt. Example TBD.]"
+  - key: segue
+    name: "/segue → /segue_merge"
+    kind: optional
+    lane: human
+    bay: "Todo"
+    outcome: "Findings merged back. Workstream clean."
+    body: "A question comes up that would derail the design. I open an isolated thread, settle it there, and bring back only the findings."
+    git:
+      on: side
+      event: loop
+      from: main
+      label: "side thread"
+    groups:
+      - title: "The cycle"
+        rows:
+          - k: "/segue"
+            v: "Opens the thread and parks the workstream."
+          - k: "/segue_resume, /segue_close"
+            v: "Picks the thread up later, or finishes it."
+          - k: "/segue_merge"
+            v: "Returns the findings to the plan. The discussion itself stays out."
+          - k: "/segue_kill"
+            v: "A dead end. Records why it died and merges nothing."
+    note: "[Segue content TBD: the question, and what came back.]"
+  - key: g1
+    name: "G1 · Design approved"
+    kind: human
+    lane: human
+    bay: "Todo"
+    outcome: "Approved. Sub-issues created on the board."
+    body: "I read the design doc and approve it, send it back, or cut it down."
+    git:
+      on: main
+    groups:
+      - title: "Gate"
+        rows:
+          - k: "blocks"
+            v: "Issue creation."
+          - k: "cleared by"
+            v: "Mark."
+          - k: "then"
+            v: "A parent issue and sized sub-issues land on the board as Todo."
+    note: "[Your note: what you changed or sent back before approving.]"
+  - key: task_plan
+    name: "/task_plan"
+    kind: command
+    lane: agent
+    bay: "Todo"
+    outcome: "Task file, plan and branch ready."
+    body: "One sized issue becomes a task file, an implementation plan and a branch. The issue number threads through all of them."
+    git:
+      on: feature
+      event: fork
+      from: main
+      label: "feature/<slug>"
+    groups:
+      - title: "Produces"
+        rows:
+          - k: ".llm/tasks/<n>_<slug>.md"
+            v: "The task file. Any fresh session can resume from it."
+          - k: "prefix/<n>/<slug>"
+            v: "The branch."
+          - k: "Base: feature/<slug>"
+            v: "Recorded so every later command diffs against the right base."
+          - k: "draft PR to main"
+            v: "Opened with the first slice, so CI runs on the feature from day one."
+          - k: "last action: the walkthrough"
+            v: "The steps this change adds to the reviewer walkthrough, or one line on why it has nothing to show."
+      - title: "How rules are selected"
+        rows:
+          - k: "CLAUDE.md"
+            v: "States the non-negotiables in short form and points at the index."
+          - k: "docs/rules/INDEX.md"
+            v: "Routes by the paths this task will touch."
+          - k: "frontmatter: applies_to, triggers"
+            v: "Path globs and keywords decide which rules match."
+          - k: "frontmatter: tokens"
+            v: "The read cost of each rule, so the plan loads only what it needs."
+          - k: "frontmatter: modes, current_state"
+            v: "Which kind of app the rule ships to, and whether this app matches it or diverges."
+          - k: "docs/rules/SYMPTOMS.md"
+            v: "Read only when routing by path missed."
+    artifact:
+      source: "rules selected for this task"
+      body: "[Rule files the plan loaded. Example TBD.]"
+  - key: g2
+    name: "G2 · Plan approved"
+    kind: human
+    lane: human
+    bay: "In Progress"
+    outcome: "Approved. Board moves to In Progress."
+    body: "I read the implementation plan before any code exists."
+    git:
+      on: feature
+    groups:
+      - title: "Gate"
+        rows:
+          - k: "blocks"
+            v: "Any code."
+          - k: "cleared by"
+            v: "Mark."
+    note: "[Your note: what you cut or reordered in the plan.]"
+  - key: implement
+    name: "/implement"
+    kind: command
+    lane: agent
+    bay: "In Progress"
+    outcome: "Code and tests committed, one logical unit at a time."
+    body: "The agent loads the task file and builds. Tests first, one commit per logical unit."
+    git:
+      on: feature
+    groups:
+      - title: "Rules in play"
+        rows:
+          - k: "path routing"
+            v: "Each file edited routes to its rules through the index, the same way planning did."
+          - k: "right and wrong pairs"
+            v: "Every rule shows both versions side by side, so the agent sees the specific mistake to avoid."
+      - title: "Enforced while writing"
+        rows:
+          - k: "bin/hooks/post_edit"
+            v: "RuboCop on Ruby files; a bracket-class check on Slim templates."
+          - k: ".claude/settings.json deny list"
+            v: "Refuses force-push, reset --hard, clean -fd and reading secrets."
+          - k: "bin/hooks/session_end"
+            v: "Flags draft doc placeholders left behind at the end of a turn."
+      - title: "Valves"
+        rows:
+          - k: "/diagnose"
+            v: "A bug with no failing test. Builds a tight loop first, then hunts."
+          - k: "/test_fix"
+            v: "The suite is red. Triage and a local fix."
+          - k: "scope escape"
+            v: "Forecast passes 1,500 added lines or 25 files: stop, split a sub-issue, land this slice clean."
+    artifact:
+      source: "[example PR] · diff summary"
+      body: "[Files changed and lines added. Example TBD.]"
+  - key: pr_review_local
+    name: "/pr_review --local"
+    kind: command
+    lane: agent
+    bay: "In Progress"
+    outcome: "Self-review finished in two rounds or fewer."
+    body: "Before any PR exists, an agent with a new context reviews the branch. It has not seen the implementation conversation, so it reads the diff cold."
+    git:
+      on: side
+      event: loop
+      from: feature
+      label: "fresh context"
+    groups:
+      - title: "Rounds"
+        rows:
+          - k: "round 1"
+            v: "Full review of the diff. The implementer verifies each finding."
+          - k: "disputes"
+            v: "I rule on them."
+          - k: "fixes"
+            v: "Each lands with a test that failed first."
+          - k: "round 2"
+            v: "Reviews only the fixes from round 1. There is no round 3."
+      - title: "Also here"
+        rows:
+          - k: "/rails_code_review"
+            v: "Reviews the branch against this stack’s conventions. Posts nothing."
+          - k: "/run_lint"
+            v: "RuboCop and bin/flay on the diff, fixed locally."
+  - key: pr_submit
+    name: "/pr_submit"
+    kind: command
+    lane: human
+    bay: "Up for Review"
+    outcome: "PR open. Board moves to Up for Review."
+    body: "I invoke this one myself. Opening a PR has an audience."
+    git:
+      on: feature
+    groups:
+      - title: "In order"
+        rows:
+          - k: "bin/rails db:queries"
+            v: "Regenerates the query ledger. Unreviewed queries get their plan printed for review."
+          - k: "local suite"
+            v: "Must be green before anything is pushed."
+          - k: "docs"
+            v: "Every placeholder is completed or deleted. The index is checked for duplicates and dead links."
+          - k: "/qa_walkthrough"
+            v: "A user-facing branch carries a reviewer walkthrough: a script in script/qa/ that builds the data, drives a browser to each page the branch touched and spotlights what changed. Skipping it is my call, and the PR body says why."
+          - k: "PR"
+            v: "Title carries the issue number. Body carries Closes #n."
+  - key: g3
+    name: "G3 · Deterministic gates"
+    kind: machine
+    lane: ci
+    bay: "Up for Review"
+    outcome: "Every gate green."
+    body: "An agent will eventually miss a rule, so the rules a machine can check are checked. None of these depend on the agent cooperating."
+    git:
+      on: feature
+    groups:
+      - title: "bin/gates · pre-push hook, again in CI"
+        rows:
+          - k: "rejected patterns"
+            v: "Banned tokens in app/ and the Gemfile."
+          - k: "app/ directory budget"
+            v: "No new directory under app/ without an ADR."
+          - k: "command mirror"
+            v: "The Cursor commands match the Claude commands."
+          - k: "foreign keys"
+            v: "Every foreign key leads an index."
+      - title: "Their own CI jobs"
+        rows:
+          - k: "bin/flay"
+            v: "Fails on Ruby this PR copied that its base did not have."
+          - k: "db:queries:check"
+            v: "Every SQL shape the suite emits has a reviewed line in db/queries.yml."
+          - k: "ci.yml"
+            v: "Ruby and JS security scans, RuboCop, the test suite."
+          - k: "bin/lint-docs"
+            v: "Doc checks, including real hosts or IPs leaked into a doc."
+          - k: "api:contract:check"
+            v: "API mode only: the OpenAPI contract agrees with the request tests."
+      - title: "Inside the test run"
+        rows:
+          - k: "Bullet"
+            v: "Raises on an N+1 query."
+          - k: "Lighthouse CI"
+            v: "Accessibility."
+          - k: "Slowpoke"
+            v: "Suite speed."
+      - title: "Gate"
+        rows:
+          - k: "blocks"
+            v: "The push, and the merge under branch protection."
+    artifact:
+      source: "$ bin/gates"
+      body: "[Gate output. Example TBD.]"
+  - key: human_review
+    name: "Human review"
+    kind: command
+    lane: human
+    bay: "Up for Review"
+    outcome: "Review comments posted."
+    body: "A person reads the PR. On a feature built in slices, each slice is read by /pr_review from a fresh session, and the feature PR is read by a human against the design doc."
+    git:
+      on: feature
+    groups:
+      - title: "Tools"
+        rows:
+          - k: "/pr_review"
+            v: "Full-context diff review. Posts comments."
+          - k: "/pr_qa"
+            v: "A guided manual QA pass with a structured report. It starts from the walkthrough's screenshots, and the hands-on part begins where the walkthrough stops."
+          - k: "/pr_fix_ci"
+            v: "Reads a failed run and fixes it locally. Pushing the fix is mine."
+    note: "[Review comments from the example. TBD.]"
+  - key: pr_comment_resolver
+    name: "/pr_comment_resolver"
+    kind: command
+    lane: agent
+    bay: "Up for Review"
+    outcome: "Every conversation answered and resolved."
+    body: "Each review comment gets a fix or a reply, then its conversation is resolved. Other people are reading those threads, so I choose when this runs."
+    git:
+      on: feature
+    groups:
+      - title: "The cycle"
+        rows:
+          - k: "fix or reply"
+            v: "One per comment."
+          - k: "changes requested"
+            v: "The board returns to In Progress until they are addressed."
+          - k: "/resolve_conflicts"
+            v: "Finishes a conflicted merge and regenerates what must not be hand-merged."
+  - key: g4
+    name: "G4 · Comments resolved"
+    kind: human
+    lane: human
+    bay: "Up for Review"
+    outcome: "Clear to merge."
+    body: "Nothing merges with an open conversation."
+    git:
+      on: feature
+    groups:
+      - title: "Gate"
+        rows:
+          - k: "blocks"
+            v: "Merge."
+          - k: "cleared by"
+            v: "The reviewer and Mark."
+  - key: merge
+    name: "Merge"
+    kind: command
+    lane: human
+    bay: "Done"
+    outcome: "Merged. Issue closed, board Done."
+    body: "One click. Everything after it is automation."
+    git:
+      on: main
+      event: merge
+      from: feature
+      label: "merge to main"
+    groups:
+      - title: "Automation"
+        rows:
+          - k: "Closes #n"
+            v: "Closes the issue on merge."
+          - k: "board"
+            v: "The closed item moves to Done."
+          - k: "branch"
+            v: "Deleted automatically."
+          - k: "feature branch"
+            v: "After each slice, main is merged back in so the final merge stays small."
+  - key: deploy
+    name: "Deploy"
+    kind: command
+    lane: ci
+    bay: "Done"
+    outcome: "Shipped."
+    body: "[One line on how the example reached production.]"
+    git:
+      on: main
+      event: end
+    groups:
+      - title: "After"
+        rows:
+          - k: "deploy"
+            v: "Kamal 2, as the template configures it."
+          - k: "/update_docs"
+            v: "An on-demand deep pass over the docs that keeps the index honest."

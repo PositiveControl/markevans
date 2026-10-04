@@ -1,0 +1,5 @@
+# /work: the copy above the project list. The projects themselves are
+# content/work.yml. Read by app/lib/site_page.rb (docs/system/site-pages.md).
+title: Work
+description: "[One line for search results: the projects, and how each was built]"
+intro: "[A line in your voice introducing the projects]"
