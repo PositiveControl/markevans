@@ -14,12 +14,12 @@ links:
 sections:
   - heading: Experience
     groups:
-      - title: "2025 – present · ISSO (SyberJet Aircraft) and Alpine Landing (uCollect)"
+      - title: "2025 – present · Software Engineer · ISSO (SyberJet Aircraft) and Alpine Landing (uCollect)"
         rows:
+          - k: Production
+            v: "Cut the card-labeler's initial load, the OCR workflow's entry point, from 20–25 seconds to ~1 second: traced it to un-indexed 570k-row category scans and redesigned the query."
           - k: Leadership
             v: "Day-to-day technical lead on a cross-functional team of eight: primary reviewer and merge authority across every workstream."
-          - k: Production
-            v: "Cut the card-labeler's initial load, the OCR workflow's entry point, from 20–25 seconds to ~1 second by redesigning un-indexed 570k-row category scans."
           - k: AI and ML
             v: "Built the platform's first LLM backend; stood up and operate the self-hosted vLLM GPU inference host; contribute to and maintain the multi-model card-recognition pipeline."
           - k: Payments
