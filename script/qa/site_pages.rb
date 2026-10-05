@@ -3,11 +3,15 @@
 # Work, Workflow, Background and Contact (#20): the header nav on every page,
 # the six projects from content/work.yml, a project page, the Workflow chain
 # drawn from the home thread, the CV and the contact routes, and the phone
-# width.
+# width. Since #38 the copy is cut from Mark's CV: a project's summary and
+# At a glance rows, the Work intro, the CV with its print scale, and the
+# contact routes.
 #
 # Builds no data: every caption reads content/ through Portfolio, SitePage and
 # DeliveryThread, so it follows the files. Projects are picked by what they are
-# (the first, one whose copy is still a placeholder), never by literal.
+# (the first, one whose copy is written, one whose copy is still a
+# placeholder), never by literal. Once every summary is written the
+# placeholder step has nothing to show and is left out.
 # Spotlights use text, ARIA labels and aria-current, never utility classes.
 # Clicks are the change being shown: a nav link, a project.
 #
@@ -20,6 +24,8 @@ require Rails.root.join("lib/qa_walkthrough")
 projects = Portfolio.all
 first = projects.first
 unwritten = projects.find { |project| project.summary.start_with?("[") }
+written = (projects - [ first ]).find { |project| !project.summary.start_with?("[") && project.links.none?(&:placeholder?) }
+work = SitePage.fetch(:work)
 thread = DeliveryThread.fetch(:home)
 gate = thread.steps.find { |step| step.kind == "human" }
 background = SitePage.fetch(:background)
@@ -36,6 +42,7 @@ QaWalkthrough.run("site_pages") do
   step "Work lists the #{projects.size} projects in the file's order, and Work is current" do
     click_on "Work"
     spotlight "#{NAV} [aria-current=page]", note: "underlined, not only colored"
+    spotlight text: work.intro, note: "the intro, from the CV's note on how the projects were built"
     spotlight "[aria-label=Projects]", note: "#{projects.map(&:name).join(', ')}: content/work.yml"
   end
 
@@ -43,6 +50,14 @@ QaWalkthrough.run("site_pages") do
     click_on first.name
     spotlight "[role=group][aria-label=Links]", note: first.links.map(&:label).join(", ")
     spotlight text: first.sections.first.heading, note: "#{first.sections.size} sections from the file"
+  end
+
+  if written
+    step "A project cut from the CV: #{written.name}, its summary and what it is at a glance" do
+      visit project_path(written.key)
+      spotlight text: written.summary, note: "the summary is also the page's meta description"
+      spotlight text: "At a glance", note: "Role is still a placeholder; Stack and Status come from the CV"
+    end
   end
 
   if unwritten
@@ -60,7 +75,8 @@ QaWalkthrough.run("site_pages") do
 
   step "Background is the CV: #{background.sections.map(&:heading).join(', ')}" do
     click_on "Background"
-    spotlight "main", note: "prints to one page without the header and footer; the system test counts the pages"
+    spotlight text: background.sections.first.heading, note: "a cut of the master resume: no phone, no clearance, the Navy undated"
+    spotlight "main", note: "prints to one page at its own smaller print scale, without the header and footer; the system test counts the pages"
   end
 
   step "Contact gives the routes: #{contact.links.map(&:label).join(', ')}" do
