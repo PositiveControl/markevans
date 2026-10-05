@@ -1,13 +1,15 @@
 # The projects /work lists, in this order (design doc, section 2). Read by
 # app/lib/portfolio.rb; the edit procedure is docs/system/site-pages.md.
 #
-# Copy not yet written stays in [brackets]: the placeholder gate fails a
-# production build until it is filled (docs/rules/no-invented-content.md).
+# Copy is cut from Mark's master resume, never added to
+# (docs/sop/update-the-cv.md). Copy the resume does not answer stays in
+# [brackets]: the placeholder gate fails a production build until it is
+# filled (docs/rules/no-invented-content.md).
 # Write lists one item per line; a flow list, [a, b], reads as a placeholder.
 projects:
   - key: rails-rocket-sheep
     name: rails-rocket-sheep
-    summary: "[One line: what rails-rocket-sheep is and who it is for]"
+    summary: "A Rails 8 template for LLM-harnessed development."
     links:
       - label: Repository
         url: https://github.com/PositiveControl/rails-rocket-sheep
@@ -21,53 +23,59 @@ projects:
               - k: Role
                 v: "[Your role]"
               - k: Stack
-                v: "[Stack]"
+                v: Rails 8
               - k: Status
                 v: "[Status]"
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
 
-  - key: dopeempire
-    name: dopeempire
-    summary: "[One line: what dopeempire is and who it is for]"
+  - key: idlempire
+    name: IDLEmpire
+    summary: "A multiplayer browser strategy game with crypto economics."
     links:
-      - label: "[Link label]"
-        url: "[https://…]"
+      - label: Site
+        url: https://idlempire.com
     sections:
       - heading: The project
         paragraphs:
-          - "[What it is, the problem it answers, and why it was built]"
+          - "Adversarial multiplayer systems: a combat engine and simulator, a balanced production economy with a fair-allocation model, alliance treasuries, diplomacy negotiation with escrow, bounties, and era transitions."
+          - "Autonomous bot agents, built as decision and action services, take part in the live economy. Real-time chat and a comm panel run over ActionCable, beside crypto wallet verification and staking."
+          - "Deployed with Kamal and Docker, with a written architecture review and an ActionCable performance analysis. Test code exceeds application code."
         groups:
           - title: At a glance
             rows:
               - k: Role
                 v: "[Your role]"
               - k: Stack
-                v: "[Stack]"
+                v: Rails 8, ActionCable, Kamal, Docker
               - k: Status
-                v: "[Status]"
+                v: Live at idlempire.com
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
 
   - key: harness
     name: harness
-    summary: "[One line: what harness is and who it is for]"
+    summary: "A local-first agent harness that makes a local quantized 30B model reliable enough to run unattended."
     links:
-      - label: "[Link label]"
-        url: "[https://…]"
+      - label: Repository
+        url: https://github.com/PositiveControl/harness
     sections:
       - heading: The project
         paragraphs:
-          - "[What it is, the problem it answers, and why it was built]"
+          - "An autonomous execution loop drives a planned workplan toward closure: a spec-to-plan compiler behind an operator approval gate, an executor working one issue per turn, and a turn state machine (ASSESS, WRITE_TEST, IMPLEMENT, VERIFY, CLOSE, with halt reachable from any phase). A critic loop requires consecutive clean passes before declaring convergence, because a single clean pass can be a transient model artifact."
+          - "Observed failures become deterministic guards rather than prompt tweaks: premise checks before test-writing, synthesis of structurally-always-red gates, plan linting against over-scoped work, and a pre-commit interceptor that blocks a false success acknowledgement before the model can see it."
+          - "A cite-grounded verification tool over 2,437 chunks of FAA air-traffic-control phraseology regulation holds a two-gate cite-or-silent policy: empty retrieval short-circuits without invoking the model, and a citation absent from the retrieved anchors is refused rather than returned. It is scored against a hand-labeled fixture that includes real recorded audio."
+          - "Eleven eval suites cover retrieval quality, tool-selection accuracy, tool-loop behavior and session resumption. Model selection is fixture-driven: a router bake-off scoring four candidate models from 1.00 down to 0.40 settled which one shipped."
+          - "Memory is append-only episodic and semantic stores over SQLite with embeddings, with a three-tier seed, working, consolidated write path and rows that support non-destructive re-embedding when models are swapped. 4,231 tests run against real SQLite stores, with no mocks, and mypy --strict covers 399 source files; both are gated in pre-commit and pre-push."
         groups:
           - title: At a glance
             rows:
               - k: Role
                 v: "[Your role]"
               - k: Stack
-                v: "[Stack]"
+                v: Python, MLX on Apple Silicon, SQLite
               - k: Status
                 v: "[Status]"
       - heading: How it was built
@@ -76,21 +84,22 @@ projects:
 
   - key: kram
     name: kraM
-    summary: "[One line: what kraM is and who it is for]"
+    summary: "A reversible programming language and gate compiler, written in Go."
     links:
-      - label: "[Link label]"
-        url: "[https://…]"
+      - label: Repository
+        url: https://github.com/PositiveControl/kraM
     sections:
       - heading: The project
         paragraphs:
-          - "[What it is, the problem it answers, and why it was built]"
+          - "A language whose programs run backward exactly, and a compiler backend that lowers them to elementary X, CNOT and Toffoli circuits. An equivalence checker verifies each compiled circuit against the interpreter across every basis state."
+          - "The circuits compile to OpenQASM and were run on IBM Quantum hardware, with measured fidelity recorded against the noise floor, including the runs that degraded."
         groups:
           - title: At a glance
             rows:
               - k: Role
                 v: "[Your role]"
               - k: Stack
-                v: "[Stack]"
+                v: Go, OpenQASM, IBM Quantum
               - k: Status
                 v: "[Status]"
       - heading: How it was built
@@ -99,43 +108,45 @@ projects:
 
   - key: dailydrop
     name: DailyDrop
-    summary: "[One line: what DailyDrop is and who it is for]"
+    summary: "A music curation platform, Rails 8 and native iOS: songs are never hosted, but exported into the listener's own streaming account."
     links:
-      - label: "[Link label]"
-        url: "[https://…]"
+      - label: Site
+        url: https://dailydrop.fm
     sections:
       - heading: The project
         paragraphs:
-          - "[What it is, the problem it answers, and why it was built]"
+          - "Multi-user daily music curation with taste-matching and subscriber communities. One click exports a drop into the listener's own streaming account."
+          - "Passkeys and WebAuthn authentication with a password fallback, and Apple Music (MusicKit) and Spotify OAuth and playlist integration, including the platforms' compliance work. A native Swift iOS client carries a Live Activities widget extension and its own test suite."
+          - "A feature-flag and experiment framework, Architecture Decision Records, and a deployment and incident runbook. Deployed with Kamal 2 and Docker; GitHub Actions CI runs a Lighthouse performance budget. Test code exceeds application code."
         groups:
           - title: At a glance
             rows:
               - k: Role
                 v: "[Your role]"
               - k: Stack
-                v: "[Stack]"
+                v: Rails 8, Solid Queue, Cache and Cable, Swift, Kamal 2
               - k: Status
-                v: "[Status]"
+                v: Live at dailydrop.fm
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
 
   - key: spamsandwich
     name: spamsandwich
-    summary: "[One line: what spamsandwich is]"
+    summary: "A phishing and spam-awareness training tool."
     links:
-      - label: "[Link label]"
-        url: "[https://…]"
+      - label: Site
+        url: https://spamsandwich.com
     sections:
       - heading: The project
         paragraphs:
-          - "[What spamsandwich is: still open in the design doc, section 1]"
+          - "A simulated inbox that tracks how users handle each message, with group-based organization enrollment, invitations and achievement tracking. Passkey authentication."
         groups:
           - title: At a glance
             rows:
               - k: Role
                 v: "[Your role]"
               - k: Stack
-                v: "[Stack]"
+                v: Rails 8
               - k: Status
-                v: "[Status]"
+                v: Live at spamsandwich.com

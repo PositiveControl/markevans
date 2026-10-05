@@ -2,7 +2,7 @@ require "test_helper"
 
 class PortfolioTest < ActiveSupport::TestCase
   test "all lists the six projects in the file's order" do
-    assert_equal %w[rails-rocket-sheep dopeempire harness kram dailydrop spamsandwich], Portfolio.all.map(&:key)
+    assert_equal %w[rails-rocket-sheep idlempire harness kram dailydrop spamsandwich], Portfolio.all.map(&:key)
   end
 
   test "fetch finds a project by its key, with sections and links as values" do
