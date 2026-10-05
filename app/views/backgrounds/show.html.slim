@@ -7,11 +7,11 @@
 - content_for(:head) { jsonld_tag(profile_jsonld(@page)) }
 
 main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8 print:max-w-none print:p-0"
-  h1 class="text-headline" = @page.title
-  p class="mt-4 max-w-measure print:mt-2" = @page.intro
-  div class="mt-6 print:mt-3"
+  h1 class="text-headline print:text-print-headline" = @page.title
+  p class="mt-4 max-w-measure print:mt-1 print:max-w-none print:text-print-prose" = @page.intro
+  div class="mt-6 print:mt-2"
     = render LinkListComponent.new(links: @page.links, label: "Links")
-  div class="mt-8 print:mt-4"
+  div class="mt-8 print:mt-2"
     = render PageSectionsComponent.new(sections: @page.sections)
 
 = render SiteFooterComponent.new
