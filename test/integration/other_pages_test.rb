@@ -33,13 +33,19 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "copy not yet written shows as its [placeholder], as written" do
-    project = Portfolio.fetch("dopeempire")
+    project = Portfolio.load(file_fixture("work/placeholder.yml")).first
+    # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
+    original = Portfolio.method(:fetch)
+    Portfolio.define_singleton_method(:fetch) { |*| project }
+
     get project_url(project.key)
 
     assert_match(/\A\[.+\]\z/, project.summary)
     assert_select "main > p", project.summary
     assert_select "[role=group][aria-label=Links] dl a", count: 0
     assert_select "[role=group][aria-label=Links] dl span", project.links.first.url
+  ensure
+    Portfolio.define_singleton_method(:fetch, original)
   end
 
   test "an unknown project is a 404" do

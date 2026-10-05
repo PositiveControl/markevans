@@ -1,0 +1,10 @@
+# A project whose copy is still to be written. OtherPagesTest renders it in
+# place of a real one, so the placeholder test never depends on content/
+# having something unwritten.
+projects:
+  - key: unwritten
+    name: unwritten
+    summary: "[One line: what unwritten is]"
+    links:
+      - label: "[Link label]"
+        url: "[https://…]"

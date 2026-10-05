@@ -63,7 +63,10 @@ class SeoTest < ActionDispatch::IntegrationTest
     person = json_ld("ProfilePage")["mainEntity"]
     assert_equal "Person", person["@type"]
     assert_equal "Mark Evans", person["name"]
-    assert_equal [ "https://github.com/PositiveControl" ], person["sameAs"]
+    links = SitePage.fetch(:background).links.reject(&:placeholder?).map(&:url)
+    assert_equal links.select { |url| url.start_with?("https://") }, person["sameAs"]
+    assert_includes person["sameAs"], "https://github.com/PositiveControl"
+    assert person["sameAs"].none? { |url| url.start_with?("mailto:") }
   end
 
   test "robots.txt is accessible and references sitemap" do
