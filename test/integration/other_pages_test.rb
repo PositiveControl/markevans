@@ -33,9 +33,9 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "copy not yet written shows as its [placeholder], as written" do
-    project = Portfolio.load(file_fixture("work/placeholder.yml")).first
     # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
     original = Portfolio.method(:fetch)
+    project = Portfolio.load(file_fixture("work/placeholder.yml")).first
     Portfolio.define_singleton_method(:fetch) { |*| project }
 
     get project_url(project.key)
