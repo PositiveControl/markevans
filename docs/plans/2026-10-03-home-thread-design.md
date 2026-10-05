@@ -35,8 +35,9 @@ Build them unless he says otherwise:
 - Mono face is IBM Plex Mono, as the mock uses.
 
 Still open, do not invent: the example feature that fills the thread, the gate
-notes in Mark's voice, the ledger numbers, Background content (CV), what
-spamsandwich is. Square brackets in content mark these.
+notes in Mark's voice, the ledger numbers. Square brackets in content mark
+these. Background content (CV) and what spamsandwich is were answered by
+`docs/plans/2026-10-04-cv-content-design.md` (#38).
 
 ## 2. Context
 
@@ -52,8 +53,8 @@ spamsandwich is. Square brackets in content mark these.
   fonts; Kamal to Hetzner; domain likely markevans.io. The site has no
   accounts yet. Devise, Petergate and the `User` model stay installed but
   unused: no page, component or controller in this feature depends on them.
-- Projects for case studies: rails-rocket-sheep, dopeempire, harness, kraM,
-  DailyDrop, spamsandwich.
+- Projects for case studies: rails-rocket-sheep, IDLEmpire (first listed as
+  dopeempire; renamed in #38), harness, kraM, DailyDrop, spamsandwich.
 
 ## 3. Tokens
 
@@ -86,6 +87,11 @@ No dark theme is designed. Do not add one.
 | Detail row key; artifact | IBM Plex Mono 400 | 14 / 30 px; 14 / 24 px |
 | Labels, controls, log, legend | IBM Plex Mono 400, tracking 0.04em | 12 / 18 px |
 | Strip cell labels (Ctl, Bay, Rmk) | IBM Plex Mono 400, uppercase | 11 / 16 px |
+
+Print has its own scale, added in #38 so `/background` fits a real CV on one
+sheet: `print-headline` 24 / 30, `print-prose` 12 / 17, `print-key` 11 / 17,
+`print-label` 10 / 14, and a 150 px key column (`print-key`). Only `print:`
+classes use them (`docs/system/site-pages.md`, *Print*).
 
 Space and shape: base unit 6 px (6, 12, 18, 24, 36, 48, 96). Page padding
 48 px; content max-width 1320 px. Radius 2 px on boxes; circles only for the

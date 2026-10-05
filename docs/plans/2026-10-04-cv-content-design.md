@@ -48,6 +48,10 @@ hiring team second.
   (`title`, `rows` of `k`/`v`). A resume bullet maps to a row: `k` is the
   area ("Payments", "Security"), `v` is the bullet as written.
 - **Copy only.** Site name, nav and structural labels are not content and do not change.
+  *Changed in implementation, with Mark's approval (2026-10-05):* the cut ran
+  to about two and a half printed pages at the screen's type, so Background
+  got a print-only type scale (tokens plus `print:` classes) rather than being
+  cut to a third. The screen is unchanged.
 
 ## Approach
 

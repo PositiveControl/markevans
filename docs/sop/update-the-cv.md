@@ -1,6 +1,6 @@
 # Update the CV
 
-**Status:** Complete — written for #38; that PR checks it against the cut it lands
+**Status:** Complete
 
 How to re-cut `/background`, and the CV-sourced copy on `/contact` and
 `/work`, when Mark's master resume changes. Why the site is a cut and not the
@@ -57,9 +57,12 @@ sections:
 ```bash
 bin/rails content:schema                         # the file loads
 bin/test test/integration/other_pages_test.rb    # copy reads back
-bin/rails test:system TEST=test/system/other_pages_test.rb  # still one printed page
+bin/rails test test/system/other_pages_test.rb   # still one printed page (needs Chrome)
 bin/rails content:placeholders                   # what is still in brackets
 ```
 
-If the print test reports two pages, cut rows. Don't shrink type or spacing.
-The page is a one-page CV by design (`docs/system/site-pages.md`, *Print*).
+Print uses its own smaller scale, so the screen's size is no guide to the
+page count (`docs/system/site-pages.md`, *Print*). If the print test reports
+two pages, cut rows first. The print scale is tokens in
+`app/assets/tailwind/tokens.css`; change it only on purpose, since it is
+shared by every row the CV prints.
