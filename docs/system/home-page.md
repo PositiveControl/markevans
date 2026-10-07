@@ -157,6 +157,26 @@ system test in `bin/rails test:system`, and both in CI's `test` job. Neither is
 in `bin/gates`: Turbo and Stimulus are served from gems, so measuring them
 needs Rails.
 
+## Export
+
+`bin/export-thread` writes this page as one self-contained HTML file for
+stepping through by hand on a shared screen (`docs/sop/export-the-thread.md`).
+`ThreadExport` (`lib/thread_export.rb`) requests `/` through the app and
+reduces it to the reading without scripts: stylesheets and fonts inlined,
+every script and link removed, the `live` parts and the Stimulus wiring
+dropped, and the site header and footer, intro and scope left out. The
+headline's text and the tab title become the title the export is given
+(uCollect Dev Workflow from `bin/export-thread`). One inline script starts every strip collapsed and lets each open
+and close its row, by writing `data-open` and `aria-expanded` as playback does,
+so the roll-up and the chart cell's folding are the page's own.
+
+So the page has a second consumer. The script finds strips by `aria-controls`
+and rows by `data-lane`, and leans on the `in-data-[open=false]` and
+`in-data-settling` styles; `test/system/thread_export_test.rb` fails if one
+moves. An image, a new kind of asset or a third-party URL the page starts
+referencing must be something the export can inline, or
+`test/lib/thread_export_test.rb` fails and names it.
+
 ## Tests
 
 | File | Covers |
@@ -169,6 +189,7 @@ needs Rails.
 | `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
 | `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |
 | `test/assets/tokens_test.rb` | The tokens match the design doc; fonts on disk match those declared |
+| `test/lib/thread_export_test.rb`, `test/tasks/thread_tasks_test.rb`, `test/system/thread_export_test.rb` | The export: every word of each step, the title on the page and the tab, no headline, intro or scope, nothing playback-only, no site header or footer, one inline script and nothing loaded from outside the file; the task writing to `OUT` and reporting placeholders; from disk in a browser, strips collapsed on load, opening and closing with the graph beside them, and open without scripts |
 | `test/integration/seo_test.rb` | Meta description, canonical URL, WebSite JSON-LD |
 
 Walk it in a browser: `bin/qa-walkthrough home_thread`.
