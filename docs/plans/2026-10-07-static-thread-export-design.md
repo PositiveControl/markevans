@@ -23,6 +23,14 @@ for playback (controls, strip bay, controller filter, log, docked bar, the
 footer's key list) are hidden without scripts already, and the export drops
 them.
 
+**Revised at review (2026-10-07):** the file is the thread and nothing else.
+The site header and footer, the headline, the intro and the scope go. Every strip starts collapsed
+and opens or closes on a click, the git graph folding with its row, by one
+inline script that writes `data-open` and `aria-expanded` as playback does.
+Without scripts the file stays the no-script reading, every strip open. The
+sections below are the design as approved; where they say "no script", "the
+site name stays" or "each scope target links to its step", this note wins.
+
 ## Constraints
 
 - **Not a second copy of the page.** The page is built from

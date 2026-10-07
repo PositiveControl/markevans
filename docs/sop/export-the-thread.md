@@ -31,11 +31,14 @@ audience will see, so supply it first if the file is going to be shown.
 
 ## What is in it, and what is not
 
-The page as it reads without scripts (`docs/system/home-thread-playback.md`,
-*Without scripts*): the headline and intro, the scope, the legend, and every
-strip open in order, each with its chart cell and body. Each target on the
-scope is a link to its step, so you step through by clicking a target or
-scrolling. The fonts are inside the file.
+The thread and nothing else: the legend, then every strip in order, each with its chart
+cell and body. Every strip starts collapsed; click one to open its body, and
+click it again to close it. The git graph beside a strip stretches and folds
+with it. The fonts are inside the file.
+
+The folding is the file's one script, inline, about fifteen lines. With
+scripts off, the file reads as a document instead, every strip open
+(`docs/system/home-thread-playback.md`, *Without scripts*).
 
 Left out on purpose:
 
@@ -43,8 +46,8 @@ Left out on purpose:
 |---|---|
 | Playback, its controls, the strip bay, the log, the docked bar and the key list | The file is stepped through by hand. A clock running on its own fights the presenter |
 | The controller filter | Same: it only works with playback's scripts |
-| The header's Work, Workflow, Background and Contact links | The file has no other pages. The site name stays, as text |
-| Every script, icon, canonical link and font preload | A file that loads nothing cannot fail to load it |
+| The site header and footer, the headline, the intro and the scope | The thread is the subject of the meeting, so the file is the thread and nothing else. The legend's "target on scope" key goes with the scope |
+| The page's scripts, icons, canonical link and font preloads | A file that loads nothing cannot fail to load it |
 
 If something on the page starts referencing a file the export cannot inline
 (an image, a new kind of asset, a third-party URL), the export stops with
