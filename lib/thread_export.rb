@@ -18,6 +18,7 @@ require "base64"
 #   - what only playback or the filter reveal goes, and so does their wiring
 #   - the header keeps the site name as text and drops its links to pages the
 #     file does not have
+#   - the headline, intro and scope go, so the thread starts the page
 #   - the file declares UTF-8 itself: the server said so in a header, and a
 #     file opened from disk has none
 #
@@ -75,6 +76,7 @@ class ThreadExport
     page.css(LIVE).each(&:remove)
     unwire(page)
     unlink_header(page)
+    drop_above_thread(page)
     page.at_css("head").prepend_child(page.create_element("meta", charset: "utf-8"))
 
     page.to_html.tap { |html| verify!(html) }
@@ -112,6 +114,16 @@ class ThreadExport
       link.name = "span"
       link.remove_attribute("href")
     end
+  end
+
+  # The thread starts the page: the headline and intro go, with the section
+  # that held them, and so does the scope, with the legend's key to its marks
+  # and the label of the column it shared with the legend.
+  def drop_above_thread(page)
+    page.css("main h1").each { |headline| headline.parent.remove }
+    page.css("[aria-label=Scope]").each(&:remove)
+    page.css("[aria-label=Legend] li").select { |item| item.text.strip == "target on scope" }.each(&:remove)
+    page.css("aside[aria-label]").each { |aside| aside.remove_attribute("aria-label") }
   end
 
   def verify!(html)

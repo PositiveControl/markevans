@@ -13,11 +13,9 @@ class ThreadExportTest < ActiveSupport::TestCase
     @page = Nokogiri::HTML5(self.class.html)
   end
 
-  test "every word the page shows from the thread file is in the export" do
+  test "every word each step shows from the thread file is in the export" do
     text = @page.text
 
-    assert_includes text, @thread.headline
-    assert_includes text, @thread.intro
     @thread.steps.each do |step|
       words = [ step.name, step.body, step.outcome, step.note, step.artifact&.source, step.artifact&.body ] +
         step.groups.flat_map { |group| [ group.title, *group.rows.flat_map { |row| [ row.key, row.value ] } ] }
@@ -25,12 +23,22 @@ class ThreadExportTest < ActiveSupport::TestCase
     end
   end
 
-  test "every strip is open, and each scope target links to its step's row" do
-    targets = @page.css("[aria-label='Scope and playback'] a[href^='#']")
+  test "every strip is open, in the thread's order" do
+    rows = @page.css("[aria-labelledby=thread-heading] > div[id]")
 
-    assert_equal @thread.steps.map { |step| "##{step.key}" }, targets.map { |a| a["href"] }
-    @thread.steps.each { |step| assert @page.at_css("##{step.key}"), "no row for #{step.key}" }
+    assert_equal @thread.steps.map(&:key), rows.map { |row| row["id"] }
     assert_empty @page.css("[data-open], [data-state]")
+  end
+
+  test "the thread starts the page: no headline, intro or scope above it" do
+    text = @page.text
+
+    assert_nil @page.at_css("h1")
+    refute_includes text, @thread.headline
+    refute_includes text, @thread.intro
+    assert_nil @page.at_css("[aria-label=Scope]")
+    assert_empty @page.css("a[href^='#']")
+    refute_includes @page.at_css("[aria-label=Legend]").text, "target on scope"
   end
 
   test "what only playback or the filter reveal is left out, and so is their wiring" do
