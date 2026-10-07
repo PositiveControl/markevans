@@ -18,6 +18,8 @@ require "base64"
 #   - what only playback or the filter reveal goes, and so does their wiring
 #   - the header keeps the site name as text and drops its links to pages the
 #     file does not have
+#   - the file declares UTF-8 itself: the server said so in a header, and a
+#     file opened from disk has none
 #
 # Run it under RAILS_ENV=test (bin/export-thread): the page queries nothing,
 # but development's pending-migration check opens a database connection on
@@ -47,7 +49,7 @@ class ThreadExport
   # Every reference in the HTML a browser would load that is neither a data:
   # URI nor a link within the page: in attributes, inline styles and <style>.
   def self.foreign_references(html)
-    page = Nokogiri::HTML(html)
+    page = Nokogiri::HTML5(html)
     markup = page.css("*").flat_map do |element|
       element.attribute_nodes.flat_map do |attribute|
         case attribute.name
@@ -66,12 +68,13 @@ class ThreadExport
   def self.css_references(css) = css.scan(Regexp.union(URL, IMPORT)).map { |groups| groups.compact.first }
 
   def call
-    page = Nokogiri::HTML(render)
+    page = Nokogiri::HTML5(render)
     inline_stylesheets(page)
     page.css("script, link, meta[name^=csrf], meta[name=csp-nonce]").each(&:remove)
     page.css(LIVE).each(&:remove)
     unwire(page)
     unlink_header(page)
+    page.at_css("head").prepend_child(page.create_element("meta", charset: "utf-8"))
 
     page.to_html.tap { |html| verify!(html) }
   end

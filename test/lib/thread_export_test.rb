@@ -10,7 +10,7 @@ class ThreadExportTest < ActiveSupport::TestCase
 
   setup do
     @thread = DeliveryThread.fetch(:home)
-    @page = Nokogiri::HTML(self.class.html)
+    @page = Nokogiri::HTML5(self.class.html)
   end
 
   test "every word the page shows from the thread file is in the export" do
@@ -39,6 +39,10 @@ class ThreadExportTest < ActiveSupport::TestCase
     assert_nil @page.at_css("[aria-label=Keyboard]")
     assert_empty @page.css("[data-controller], [data-action], [data-turbo-track]")
     assert_empty @page.css("*").flat_map { |element| element.attributes.keys.grep(/\Adata-(playback|filter)-/) }
+  end
+
+  test "the file declares UTF-8 itself, since from disk there is no header to say so" do
+    assert_equal "utf-8", @page.at_css("head > meta:first-child")&.[]("charset")
   end
 
   test "the header keeps the site name as text, with no links to pages the file does not have" do
