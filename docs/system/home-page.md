@@ -157,6 +157,18 @@ system test in `bin/rails test:system`, and both in CI's `test` job. Neither is
 in `bin/gates`: Turbo and Stimulus are served from gems, so measuring them
 needs Rails.
 
+## Export
+
+`bin/export-thread` writes this page as one self-contained HTML file for
+stepping through by hand on a shared screen (`docs/sop/export-the-thread.md`).
+`ThreadExport` (`lib/thread_export.rb`) requests `/` through the app and
+reduces it to the reading without scripts: stylesheets and fonts inlined,
+every script and link removed, the `live` parts and the Stimulus wiring
+dropped, the header's links turned to text. So the page has a second consumer:
+an image, a new kind of asset or a third-party URL it starts referencing must
+be something the export can inline, or `test/lib/thread_export_test.rb` fails
+and names it.
+
 ## Tests
 
 | File | Covers |
@@ -169,6 +181,7 @@ needs Rails.
 | `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
 | `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |
 | `test/assets/tokens_test.rb` | The tokens match the design doc; fonts on disk match those declared |
+| `test/lib/thread_export_test.rb`, `test/tasks/thread_tasks_test.rb` | The export: every word from the file, targets linking to rows, nothing playback-only, a header without links, nothing loaded from outside the file; the task writing to `OUT` and reporting placeholders |
 | `test/integration/seo_test.rb` | Meta description, canonical URL, WebSite JSON-LD |
 
 Walk it in a browser: `bin/qa-walkthrough home_thread`.

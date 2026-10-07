@@ -1,6 +1,6 @@
 # Static thread export — design
 
-**Status:** Approved (G1, 2026-10-07) — #39
+**Status:** Implemented in #39 (G1 2026-10-07; revised at G2)
 
 ## Problem
 
@@ -63,8 +63,8 @@ HTML:
    stylesheet matches the views, then read the compiled `app.css`.
 3. **Inline the fonts.** Rewrite each font `url()` in that stylesheet to a
    `data:font/woff2;base64,…` URI, and drop the `<link rel="preload">` tags.
-4. **Drop the scripts.** Remove every `script` but the JSON-LD, the importmap
-   and every modulepreload, and the elements that only playback reveals
+4. **Drop the scripts.** Remove every `script` (the JSON-LD and the importmap
+   included) and every `link`, and the elements that only playback reveals
    (`data-playback-target="live"`, `data-filter-target="live"`), along with the
    `data-controller`/`data-action` wiring nothing will read.
 5. **Strip what makes no sense off the server.** The CSRF and CSP meta tags,
@@ -132,7 +132,7 @@ Acceptance criteria (for the issue):
 
 - `bin/export-thread` writes one HTML file with no database running
 - The file contains every word the root page shows from `home.yml`
-- The file references no URL other than `data:` URIs and in-page hashes, and carries no script but the JSON-LD; the command fails otherwise
+- The file references no URL other than `data:` URIs and in-page hashes, and carries no script; the command fails otherwise
 - Each scope target links to its step's `#key`, every strip is open, and nothing that only playback reveals (controls, bay, filter, log, docked bar, key list) is in the file
 - `docs/sop/export-the-thread.md` says how to produce and share it
 
