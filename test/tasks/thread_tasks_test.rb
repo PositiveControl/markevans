@@ -52,10 +52,12 @@ class ThreadTasksTest < ActiveSupport::TestCase
   def with_placeholder_scan(scan)
     task = Rake::Task["content:placeholders"]
     actions = task.actions.dup
-    task.actions.replace([ ->(*) { scan.call } ])
-    with_env("CONTENT_ROOT" => @content) { yield }
-  ensure
-    task.actions.replace(actions)
+    begin
+      task.actions.replace([ ->(*) { scan.call } ])
+      with_env("CONTENT_ROOT" => @content) { yield }
+    ensure
+      task.actions.replace(actions)
+    end
   end
 
   def run_task

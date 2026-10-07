@@ -39,8 +39,9 @@ class ThreadExport
   IMPORT = /@import\s+["']([^"']+)["']/
 
   # The attributes a browser loads a URL from. srcset lists candidates, each a
-  # URL and a size; a style attribute holds url()s like a stylesheet.
-  LOADS = %w[href xlink:href src poster data].freeze
+  # URL and a size; a style attribute holds url()s like a stylesheet. CSS
+  # image-set() with bare strings is not read: Tailwind does not write it.
+  LOADS = %w[href xlink:href src poster data background].freeze
 
   # Between srcset candidates: a comma before whitespace, or straight after a
   # descriptor ("2x,", "640w,"). Not every comma: a data: URI holds one.

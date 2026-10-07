@@ -75,9 +75,10 @@ class ThreadExportTest < ActiveSupport::TestCase
       <img srcset="/a.png 2x, data:image/png;base64,AA 3x"> <img srcset="/b.png 1x,/c.png 2x"> <img srcset="/d.png, /e.png"> <video poster="/p.png"></video>
       <object data="/o.svg"></object> <div style="background: url('/s.png')"></div>
       <svg><use xlink:href="/sprite.svg#x"></use></svg> <div data-href="/not-loaded"></div>
+      <table background="/bg.png"></table>
     HTML
 
-    assert_equal %w[/a.png /b.png /c.png /d.png /e.png /p.png /o.svg /s.png /sprite.svg#x], ThreadExport.foreign_references(html)
+    assert_equal %w[/a.png /b.png /c.png /d.png /e.png /p.png /o.svg /s.png /sprite.svg#x /bg.png], ThreadExport.foreign_references(html)
   end
 
   test "the export refuses to hand back a file that is not self-contained" do
