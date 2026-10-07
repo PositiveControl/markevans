@@ -20,10 +20,10 @@ class ThreadTasksTest < ActiveSupport::TestCase
     FileUtils.rm_rf(@root)
   end
 
-  test "writes the page to OUT, making the directory it needs" do
+  test "writes the page to OUT, making the directory it needs, titled uCollect Dev Workflow" do
     out, = capture_io { run_task }
 
-    assert_includes File.read(@out), DeliveryThread.fetch(:home).headline
+    assert_includes File.read(@out), "<title>uCollect Dev Workflow</title>"
     assert_includes out, "wrote #{@out}"
   end
 
@@ -39,6 +39,12 @@ class ThreadTasksTest < ActiveSupport::TestCase
 
     assert_equal DeliveryThread::ROOT.to_s, scanned
     assert File.exist?(@out)
+  end
+
+  test "TITLE names the file something else" do
+    capture_io { with_env("TITLE" => "Another title") { run_task } }
+
+    assert_includes File.read(@out), "<h1 class=\"text-headline\">Another title</h1>"
   end
 
   test "builds the stylesheet first, so the file matches the views" do

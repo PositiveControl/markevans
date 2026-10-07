@@ -2,6 +2,7 @@
 # Writes the root page as one self-contained HTML file to share or present:
 #   bin/export-thread                 -> dist/delivery-thread.html
 #   bin/export-thread OUT=path.html
+#   bin/export-thread TITLE="Another title"   (default uCollect Dev Workflow)
 # Runs under RAILS_ENV=test, where no request opens a database connection
 # (docs/sop/export-the-thread.md).
 cd "$(dirname "$0")/.." || exit 1

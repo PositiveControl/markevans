@@ -6,7 +6,9 @@ require "test_helper"
 class ThreadExportTest < ActiveSupport::TestCase
   # Rendering the page and fetching its stylesheets and fonts is the slow part,
   # and no test changes the result, so it is built once.
-  def self.html = @html ||= ThreadExport.new.call
+  TITLE = "A thread, exported"
+
+  def self.html = @html ||= ThreadExport.new(title: TITLE).call
 
   setup do
     @thread = DeliveryThread.fetch(:home)
@@ -35,10 +37,11 @@ class ThreadExportTest < ActiveSupport::TestCase
     end
   end
 
-  test "the thread starts the page: no headline, intro or scope above it" do
+  test "the title takes the headline's place and the tab's, with no intro or scope beside it" do
     text = @page.text
 
-    assert_nil @page.at_css("h1")
+    assert_equal [ TITLE ], @page.css("h1").map(&:text)
+    assert_equal TITLE, @page.at_css("title").text
     refute_includes text, @thread.headline
     refute_includes text, @thread.intro
     assert_nil @page.at_css("[aria-label=Scope]")
@@ -98,8 +101,10 @@ class ThreadExportTest < ActiveSupport::TestCase
   end
 
   test "the export refuses to hand back a file that is not self-contained" do
-    export = ThreadExport.new
-    export.define_singleton_method(:render) { "<html><body><img src='/icon.png'></body></html>" }
+    export = ThreadExport.new(title: TITLE)
+    export.define_singleton_method(:render) do
+      "<html><head><title></title></head><body><main><section><h1></h1></section></main><img src='/icon.png'></body></html>"
+    end
 
     error = assert_raises(ThreadExport::NotSelfContained) { export.call }
     assert_includes error.message, "/icon.png"

@@ -8,7 +8,7 @@
 # CONTENT_ROOT says) are reported but do not stop it: the file is for a
 # meeting, not the live site, which content:check still guards.
 namespace :thread do
-  desc "Write the root page as one self-contained HTML file (OUT=path, default dist/delivery-thread.html)"
+  desc "Write the root page as one self-contained HTML file (OUT=path, default dist/delivery-thread.html; TITLE=, default uCollect Dev Workflow)"
   task export: %w[environment tailwindcss:build] do
     content = ENV["CONTENT_ROOT"]
     begin
@@ -22,7 +22,7 @@ namespace :thread do
 
     out = Pathname(ENV.fetch("OUT", Rails.root.join("dist/delivery-thread.html")))
     out.dirname.mkpath
-    out.write(ThreadExport.new.call)
+    out.write(ThreadExport.new(title: ENV.fetch("TITLE", "uCollect Dev Workflow")).call)
     puts "thread:export: wrote #{out} (#{out.size / 1000} kB)"
   end
 end

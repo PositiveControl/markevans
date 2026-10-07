@@ -9,7 +9,7 @@ class ThreadExportTest < ApplicationSystemTestCase
     @steps = DeliveryThread.fetch(:home).steps
     @dir = Dir.mktmpdir
     @path = File.join(@dir, "thread.html")
-    File.write(@path, ThreadExport.new.call)
+    File.write(@path, ThreadExport.new(title: "A thread, exported").call)
   end
 
   teardown { FileUtils.rm_rf(@dir) }

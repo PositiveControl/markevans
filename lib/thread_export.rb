@@ -6,7 +6,7 @@ require "base64"
 # network. It is for stepping through the thread by hand on a
 # shared screen (docs/plans/2026-10-07-static-thread-export-design.md).
 #
-#   ThreadExport.new.call # => String of HTML
+#   ThreadExport.new(title: "uCollect Dev Workflow").call # => String of HTML
 #
 # The page is requested from the app as a browser would, so the file is
 # whatever the page shows from content/threads/home.yml at the moment it runs.
@@ -17,8 +17,9 @@ require "base64"
 #   - every script and link goes, so the page loads nothing; one inline
 #     script folds the strips (STRIPS)
 #   - what only playback or the filter reveal goes, and so does their wiring
-#   - the site header and footer, the headline, the intro and the scope go,
-#     so the file is the thread and nothing else
+#   - the site header and footer, the intro and the scope go, so the file is
+#     the thread and nothing else, under the title it is given: in the
+#     headline's place and style, and on the tab
 #   - the file declares UTF-8 itself: the server said so in a header, and a
 #     file opened from disk has none
 #
@@ -92,6 +93,11 @@ class ThreadExport
 
   def self.css_references(css) = css.scan(Regexp.union(URL, IMPORT)).map { |groups| groups.compact.first }
 
+  # @param title [String] the file's heading and tab title
+  def initialize(title:)
+    @title = title
+  end
+
   def call
     page = Nokogiri::HTML5(render)
     inline_stylesheets(page)
@@ -99,7 +105,7 @@ class ThreadExport
     page.css(LIVE).each(&:remove)
     unwire(page)
     page.css("header, footer").each(&:remove)
-    drop_above_thread(page)
+    title_the_thread(page)
     page.at_css("body").add_child(page.create_element("script", STRIPS))
     page.at_css("head").prepend_child(page.create_element("meta", charset: "utf-8"))
 
@@ -132,11 +138,14 @@ class ThreadExport
     end
   end
 
-  # The thread starts the page: the headline and intro go, with the section
-  # that held them, and so does the scope, with the legend's key to its marks
-  # and the label of the column it shared with the legend.
-  def drop_above_thread(page)
-    page.css("main h1").each { |headline| headline.parent.remove }
+  # The title replaces the headline, in its place and style, and the tab's
+  # title. The intro beside it goes, and so does the scope, with the legend's
+  # key to its marks and the label of the column it shared with the legend.
+  def title_the_thread(page)
+    page.at_css("title").content = @title
+    headline = page.at_css("main h1")
+    headline.content = @title
+    headline.parent.element_children.each { |sibling| sibling.remove unless sibling == headline }
     page.css("[aria-label=Scope]").each(&:remove)
     page.css("[aria-label=Legend] li").select { |item| item.text.strip == "target on scope" }.each(&:remove)
     page.css("aside[aria-label]").each { |aside| aside.remove_attribute("aria-label") }
