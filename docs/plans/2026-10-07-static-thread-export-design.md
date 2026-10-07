@@ -77,10 +77,10 @@ HTML:
 Output goes to `dist/`, which is gitignored: the file is regenerated whenever it
 is shared, so it never lags the content.
 
-**Tests** (`test/integration/thread_export_test.rb`, or in `test/tasks/`):
+**Tests** (`test/lib/thread_export_test.rb`, `test/tasks/thread_tasks_test.rb`):
 the export runs; the file holds the headline, the intro and every step's name
 and body from `home.yml`; it references no external URL; it carries no
-no script. No system test: the no-script page is already
+script. No system test: the no-script page is already
 walked under axe by `test/system/home_playback_test.rb`.
 
 **Review:** no QA walkthrough script. The file is served over Tailscale
