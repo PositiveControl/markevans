@@ -36,15 +36,34 @@ class ThreadExport
   URL = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s]+))\s*\)/
   IMPORT = /@import\s+["']([^"']+)["']/
 
-  # Every href, src, url() and @import in the HTML that is neither a data: URI
-  # nor a link within the page.
+  # The attributes a browser loads a URL from. srcset lists candidates, each a
+  # URL and a size; a style attribute holds url()s like a stylesheet.
+  LOADS = %w[href xlink:href src poster data].freeze
+
+  # Between srcset candidates: a comma before whitespace, or straight after a
+  # descriptor ("2x,", "640w,"). Not every comma: a data: URI holds one.
+  CANDIDATES = /,\s+|(?<=\d[xw]),/
+
+  # Every reference in the HTML a browser would load that is neither a data:
+  # URI nor a link within the page: in attributes, inline styles and <style>.
   def self.foreign_references(html)
     page = Nokogiri::HTML(html)
-    markup = page.css("[href], [src]").flat_map { |element| [ element["href"], element["src"] ].compact }
-    styles = page.css("style").flat_map { |style| style.text.scan(Regexp.union(URL, IMPORT)).map { |groups| groups.compact.first } }
+    markup = page.css("*").flat_map do |element|
+      element.attribute_nodes.flat_map do |attribute|
+        case attribute.name
+        when *LOADS then [ attribute.value ]
+        when "srcset" then attribute.value.split(CANDIDATES).map { |candidate| candidate.split.first&.delete_suffix(",") }
+        when "style" then css_references(attribute.value)
+        else []
+        end
+      end
+    end
+    styles = page.css("style").flat_map { |style| css_references(style.text) }
 
-    (markup + styles).reject { |url| url.start_with?("data:", "#") }
+    (markup + styles).compact.reject { |url| url.start_with?("data:", "#") }
   end
+
+  def self.css_references(css) = css.scan(Regexp.union(URL, IMPORT)).map { |groups| groups.compact.first }
 
   def call
     page = Nokogiri::HTML(render)
