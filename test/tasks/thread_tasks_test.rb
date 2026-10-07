@@ -8,7 +8,6 @@ class ThreadTasksTest < ActiveSupport::TestCase
     @root = Dir.mktmpdir
     @out = File.join(@root, "out/thread.html")
     @content = File.join(@root, "content")
-    FileUtils.mkdir_p(@content)
     # The stylesheet is already built for the suite, and rebuilding it would
     # rewrite a file other workers read; the export is what is under test.
     @prerequisites = @task.prerequisites.dup
@@ -28,23 +27,18 @@ class ThreadTasksTest < ActiveSupport::TestCase
     assert_includes out, "wrote #{@out}"
   end
 
-  test "a placeholder in a thread is reported, and the file is written anyway" do
-    write "threads/home.yml", "title: \"[example TBD]\"\n"
+  test "scans the threads the page renders, not CONTENT_ROOT, and writes the file anyway on a placeholder" do
+    scanned = nil
+    with_placeholder_scan(-> { scanned = ENV["CONTENT_ROOT"]; warn "home.yml:1: [example TBD]"; exit 1 }) do
+      _, err = capture_io { run_task }
 
-    _, err = capture_io { run_task }
+      assert_includes err, "home.yml:1: [example TBD]"
+      assert_includes err, "writing it anyway"
+      assert_equal @content, ENV["CONTENT_ROOT"], "CONTENT_ROOT not put back"
+    end
 
-    assert_includes err, "home.yml:1: [example TBD]"
-    assert_includes err, "writing it anyway"
+    assert_equal DeliveryThread::ROOT.to_s, scanned
     assert File.exist?(@out)
-  end
-
-  test "content the page does not show is left to content:check" do
-    write "work.yml", "role: \"[Your role]\"\n"
-
-    out, err = capture_io { run_task }
-
-    assert_includes out, "no placeholders"
-    assert_empty err
   end
 
   test "builds the stylesheet first, so the file matches the views" do
@@ -53,13 +47,19 @@ class ThreadTasksTest < ActiveSupport::TestCase
 
   private
 
-  def write(path, text)
-    FileUtils.mkdir_p(File.dirname(File.join(@content, path)))
-    File.write(File.join(@content, path), text)
+  # Swaps content:placeholders' body for the block, so the test controls what
+  # it finds; the real scan has its own tests in content_tasks_test.rb.
+  def with_placeholder_scan(scan)
+    task = Rake::Task["content:placeholders"]
+    actions = task.actions.dup
+    task.actions.replace([ ->(*) { scan.call } ])
+    with_env("CONTENT_ROOT" => @content) { yield }
+  ensure
+    task.actions.replace(actions)
   end
 
   def run_task
-    with_env("OUT" => @out, "CONTENT_ROOT" => @content) { @task.invoke }
+    with_env("OUT" => @out) { @task.invoke }
   end
 
   def with_env(values)
