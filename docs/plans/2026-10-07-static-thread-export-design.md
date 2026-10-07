@@ -24,7 +24,8 @@ footer's key list) are hidden without scripts already, and the export drops
 them.
 
 **Revised at review (2026-10-07):** the file is the thread and nothing else.
-The site header and footer, the headline, the intro and the scope go. Every strip starts collapsed
+The site header and footer, the intro and the scope go, and the headline's
+place and the tab carry the title "uCollect Dev Workflow". Every strip starts collapsed
 and opens or closes on a click, the git graph folding with its row, by one
 inline script that writes `data-open` and `aria-expanded` as playback does.
 Without scripts the file stays the no-script reading, every strip open. The
