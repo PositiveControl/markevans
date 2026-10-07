@@ -2,8 +2,8 @@
 
 require "base64"
 
-# The root page as one HTML file that needs nothing else: no server, no
-# network, no script. It is for stepping through the thread by hand on a
+# The root page as one HTML file that needs nothing else: no server and no
+# network. It is for stepping through the thread by hand on a
 # shared screen (docs/plans/2026-10-07-static-thread-export-design.md).
 #
 #   ThreadExport.new.call # => String of HTML
@@ -14,7 +14,8 @@ require "base64"
 # (docs/system/home-thread-playback.md, Without scripts):
 #
 #   - each stylesheet becomes a <style>, its fonts data: URIs
-#   - every script and link goes, so the page loads and runs nothing
+#   - every script and link goes, so the page loads nothing; one inline
+#     script folds the strips (STRIPS)
 #   - what only playback or the filter reveal goes, and so does their wiring
 #   - the header keeps the site name as text and drops its links to pages the
 #     file does not have
@@ -34,6 +35,29 @@ class ThreadExport
 
   # Attributes that only hook the page to Turbo and its Stimulus controllers.
   WIRING = /\Adata-(controller|action|turbo-track|playback-|filter-)/
+
+  # The file's one script. Every strip starts collapsed, and each opens or
+  # closes its own row. It writes what playback writes (data-open on the row,
+  # aria-expanded on the strip), so the page's own roll-up does the folding,
+  # and the chart cell, whose lines hang off the row's edges, folds with it.
+  # data-settling on <html> holds the first draw still, as playback does.
+  # Without it the file stays the no-script reading, every strip open.
+  STRIPS = <<~JS
+    (() => {
+      const root = document.documentElement
+      const fold = (strip, open) => {
+        strip.closest("[data-lane]").dataset.open = open
+        strip.setAttribute("aria-expanded", open)
+      }
+      root.dataset.settling = ""
+      document.querySelectorAll("h3 button[aria-controls]").forEach(strip => {
+        strip.disabled = false
+        fold(strip, false)
+        strip.addEventListener("click", () => fold(strip, strip.getAttribute("aria-expanded") !== "true"))
+      })
+      requestAnimationFrame(() => requestAnimationFrame(() => delete root.dataset.settling))
+    })()
+  JS
 
   # A quoted url() runs to its closing quote; @import may name its sheet bare.
   URL = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s]+))\s*\)/
@@ -77,6 +101,7 @@ class ThreadExport
     unwire(page)
     unlink_header(page)
     drop_above_thread(page)
+    page.at_css("body").add_child(page.create_element("script", STRIPS))
     page.at_css("head").prepend_child(page.create_element("meta", charset: "utf-8"))
 
     page.to_html.tap { |html| verify!(html) }

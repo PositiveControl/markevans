@@ -23,11 +23,16 @@ class ThreadExportTest < ActiveSupport::TestCase
     end
   end
 
-  test "every strip is open, in the thread's order" do
+  test "without scripts every strip is open, in the thread's order, and waits for the script to work" do
     rows = @page.css("[aria-labelledby=thread-heading] > div[id]")
 
     assert_equal @thread.steps.map(&:key), rows.map { |row| row["id"] }
     assert_empty @page.css("[data-open], [data-state]")
+    rows.each do |row|
+      strip = row.at_css("h3 button")
+      assert strip.key?("disabled"), "#{row["id"]}: a strip that does nothing without scripts is disabled"
+      assert @page.at_css("##{strip["aria-controls"]}"), "#{row["id"]}: the strip controls no body"
+    end
   end
 
   test "the thread starts the page: no headline, intro or scope above it" do
@@ -61,8 +66,13 @@ class ThreadExportTest < ActiveSupport::TestCase
     assert_empty header.css("a")
   end
 
-  test "the file runs no script and loads nothing: no link, no url but data: and #" do
-    assert_empty @page.css("script, link")
+  test "the file runs one inline script, the strips', and loads nothing: no link, no url but data: and #" do
+    scripts = @page.css("script")
+
+    assert_equal 1, scripts.size
+    assert_nil scripts.first["src"]
+    assert_includes scripts.first.text, "aria-expanded"
+    assert_empty @page.css("link")
     assert_empty ThreadExport.foreign_references(self.class.html)
     assert_includes @page.css("style").text, "url(data:font/woff2;base64,"
   end
