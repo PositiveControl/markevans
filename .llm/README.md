@@ -20,6 +20,7 @@ Design docs for features. Written before issues are created, approved at gate G1
 
 <!-- plans:start -->
 - [Home thread](../docs/plans/2026-10-03-home-thread-design.md) — the home page as one feature moving through the delivery chain: flight strips on a git spine, radar scope as console (approved G1)
+- [Static thread export](../docs/plans/2026-10-07-static-thread-export-design.md) — the home thread exported as one self-contained HTML file, no Rails or DB, for showing the workflow (approved G1, #39)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`
