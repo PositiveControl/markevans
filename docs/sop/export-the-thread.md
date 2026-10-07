@@ -57,12 +57,17 @@ same way (`test/lib/thread_export_test.rb`).
 
 - **Send it.** It is one file: attach it, or drop it on a shared drive. It
   opens from disk (`file://`) in any current browser.
-- **Serve it on your tailnet,** for someone to review from their own machine:
+- **Serve it on your tailnet,** for someone to review from their own machine.
+  `tailscale serve` will only serve a directory as root (or an operator who
+  can `sudo tailscale`), so serve `dist/` on localhost and proxy to that:
 
   ```bash
-  tailscale serve --bg --https=8444 "$PWD/dist"
+  python3 -m http.server 8090 --bind 127.0.0.1 --directory dist &
+  tailscale serve --bg --https=8444 http://127.0.0.1:8090
   ```
 
   It is then at `https://<machine>.<tailnet>.ts.net:8444/delivery-thread.html`.
-  `tailscale serve --https=8444 off` removes the route. Use a port of its own,
-  as `docs/sop/serve-dev-over-tailscale.md` explains for 8443.
+  Re-running `bin/export-thread` updates what it serves. To stop,
+  `tailscale serve --https=8444 off` and stop the Python server. Use a port of
+  its own, as `docs/sop/serve-dev-over-tailscale.md` explains for 8443. Checked
+  with Tailscale 1.102.4.
