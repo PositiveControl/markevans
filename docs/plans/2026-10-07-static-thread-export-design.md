@@ -83,7 +83,7 @@ HTML:
    the result still names any URL other than a `data:` URI or an in-page
    `#hash`.
 
-Output goes to `dist/`, which is gitignored: the file is regenerated whenever it
+Output goes to `dist/`, which is gitignored (since reversed: the default file is committed; see Rejected alternatives): the file is regenerated whenever it
 is shared, so it never lags the content.
 
 **Tests** (`test/lib/thread_export_test.rb`, `test/tasks/thread_tasks_test.rb`):
@@ -104,6 +104,9 @@ walked under axe by `test/system/home_playback_test.rb`.
 - **Committing the exported file.** Same drift problem with extra steps: it is
   stale the moment content changes unless a gate regenerates it, and GitHub
   does not render HTML anyway, so a committed copy is not easier to share.
+  *Reversed at review (2026-10-07):* the developer asked for the file in the
+  branch, so `dist/delivery-thread.html` is committed. The drift risk stands:
+  the SOP says to regenerate and commit it with any content change.
 - **Saving the page from a browser ("Save as… complete").** Produces a folder,
   not one file, keeps Turbo and the importmap pointing at `/assets/…`, and
   is a manual step nobody can reproduce exactly.

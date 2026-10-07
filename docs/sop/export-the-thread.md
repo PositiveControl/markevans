@@ -17,9 +17,11 @@ bin/export-thread TITLE="Another title"   # default: uCollect Dev Workflow
 ```
 
 It builds the stylesheet, requests `/` from the app in process, and writes
-about 270 kB to `dist/` (ignored by git). Run it again after any change to
-`content/threads/home.yml` or the page's views. The file is a snapshot and does
-not follow the content by itself.
+about 260 kB to `dist/delivery-thread.html`. That file is committed, so it can
+be downloaded from the repo; an `OUT=` path anywhere else in `dist/` is
+ignored. The file is a snapshot and does not follow the content by itself:
+after any change to `content/threads/home.yml` or the page's views, run it
+again and commit the result with the change, or the committed copy is stale.
 
 No server needs to be running, and no database either: the wrapper runs under
 `RAILS_ENV=test`, where nothing on the page opens a connection.

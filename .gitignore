@@ -61,5 +61,7 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# The static export of the root page (bin/export-thread)
-/dist
+# The static export of the root page (bin/export-thread). The default file is
+# committed so it can be shared from the repo; other OUT= exports are not.
+/dist/*
+!/dist/delivery-thread.html
