@@ -17,9 +17,8 @@ require "base64"
 #   - every script and link goes, so the page loads nothing; one inline
 #     script folds the strips (STRIPS)
 #   - what only playback or the filter reveal goes, and so does their wiring
-#   - the header keeps the site name as text and drops its links to pages the
-#     file does not have
-#   - the headline, intro and scope go, so the thread starts the page
+#   - the site header, the headline, the intro and the scope go, so the
+#     thread starts the page
 #   - the file declares UTF-8 itself: the server said so in a header, and a
 #     file opened from disk has none
 #
@@ -99,7 +98,7 @@ class ThreadExport
     page.css("script, link, meta[name^=csrf], meta[name=csp-nonce]").each(&:remove)
     page.css(LIVE).each(&:remove)
     unwire(page)
-    unlink_header(page)
+    page.css("header").each(&:remove)
     drop_above_thread(page)
     page.at_css("body").add_child(page.create_element("script", STRIPS))
     page.at_css("head").prepend_child(page.create_element("meta", charset: "utf-8"))
@@ -130,14 +129,6 @@ class ThreadExport
   def unwire(page)
     page.css("*").each do |element|
       element.attributes.each_key { |name| element.remove_attribute(name) if name.match?(WIRING) }
-    end
-  end
-
-  def unlink_header(page)
-    page.css("header nav").each(&:remove)
-    page.css("header a").each do |link|
-      link.name = "span"
-      link.remove_attribute("href")
     end
   end
 

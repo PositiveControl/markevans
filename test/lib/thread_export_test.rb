@@ -58,12 +58,9 @@ class ThreadExportTest < ActiveSupport::TestCase
     assert_equal "utf-8", @page.at_css("head > meta:first-child")&.[]("charset")
   end
 
-  test "the header keeps the site name as text, with no links to pages the file does not have" do
-    header = @page.at_css("header")
-
-    assert_includes header.text, "Mark Evans"
-    assert_nil header.at_css("nav")
-    assert_empty header.css("a")
+  test "the site header goes: the file is the thread, not a page of the site" do
+    assert_nil @page.at_css("header")
+    assert_nil @page.at_css("nav")
   end
 
   test "the file runs one inline script, the strips', and loads nothing: no link, no url but data: and #" do
