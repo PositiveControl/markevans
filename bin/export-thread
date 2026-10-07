@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# Writes the root page as one self-contained HTML file to share or present:
+#   bin/export-thread                 -> dist/delivery-thread.html
+#   bin/export-thread OUT=path.html
+# Runs under RAILS_ENV=test, where no request opens a database connection
+# (docs/sop/export-the-thread.md).
+cd "$(dirname "$0")/.." || exit 1
+
+RAILS_ENV=test exec bin/rails thread:export "$@"
