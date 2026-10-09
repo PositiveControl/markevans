@@ -86,6 +86,12 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_match(/one: findings\[1\]: missing body/, error.message)
   end
 
+  test "a finding's title and body must be text, so an unquoted [placeholder] or a number is caught" do
+    error = assert_invalid(/one: findings\[1\]: title must be text/) { |data| data["projects"].first["findings"] = [ finding("learning", "title" => [ "What it taught" ], "body" => 2024) ] }
+
+    assert_match(/one: findings\[1\]: body must be text/, error.message)
+  end
+
   test "an unknown key on a finding is reported, step included until findings pin to a thread" do
     assert_invalid(/one: findings\[1\]: unknown key step/) { |data| data["projects"].first["findings"] = [ finding("learning", "step" => "implement") ] }
   end

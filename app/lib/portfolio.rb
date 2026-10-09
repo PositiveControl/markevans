@@ -99,7 +99,11 @@ module Portfolio
         next [ "#{name}: must be a mapping" ] unless finding.is_a?(Hash)
 
         errors = KINDS.include?(finding["kind"]) ? [] : [ "#{name}: kind must be #{KINDS.to_sentence(last_word_connector: ' or ')}" ]
-        errors += %w[title body].select { |key| SitePage.missing?(finding[key]) }.map { |key| "#{name}: missing #{key}" }
+        errors += %w[title body].filter_map do |key|
+          next "#{name}: missing #{key}" if SitePage.missing?(finding[key])
+
+          "#{name}: #{key} must be text" unless finding[key].is_a?(String)
+        end
         errors += (finding.keys - FINDING_REQUIRED - FINDING_OPTIONAL).map { |key| "#{name}: unknown key #{key}" }
         errors += SitePage.one_link_errors(finding["evidence"], "#{name}.evidence") if finding.key?("evidence")
         errors

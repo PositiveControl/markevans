@@ -26,7 +26,8 @@ findings:
 
 `Portfolio` (`app/lib/portfolio.rb`) reads each into a `Portfolio::Finding`,
 with `evidence` as a `SitePage::Link` or `nil`. It reports, with the file's
-other errors, a kind not in `Portfolio::KINDS`, a missing title or body, an
+other errors, a kind not in `Portfolio::KINDS`, a missing title or body or one
+that is not text (an unquoted `[placeholder]` reads as a list), an
 unknown key, and evidence that fails the link rules
 (`SitePage.one_link_errors`: `https://` or `mailto:`, or a `[placeholder]`).
 `step` is an unknown key until #46 pins a finding to a thread.
