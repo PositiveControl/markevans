@@ -21,6 +21,7 @@ Design docs for features. Written before issues are created, approved at gate G1
 <!-- plans:start -->
 - [Home thread](../docs/plans/2026-10-03-home-thread-design.md) — the home page as one feature moving through the delivery chain: flight strips on a git spine, radar scope as console (approved G1)
 - [CV content](../docs/plans/2026-10-04-cv-content-design.md) — fill Background, Contact and Work from the master resume as a one-page cut (approved G1, #38)
+- [Work entries](../docs/plans/2026-10-09-work-entries-design.md) — project pages with typed findings (learning, surprise, takeaway), a kind filter, the project's own played delivery thread, and findings pinned to its steps (approved G1)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`
@@ -44,6 +45,7 @@ How things currently work. Architecture state, not intentions.
 - [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its three values, what it writes on the page (bay and log included), the filter controller, the step clock, follow and yield, the docked bar, the step hash, the keyboard and the event table
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
 - [QA walkthroughs](../docs/system/qa_walkthrough.md) — the reviewer script per change, and how to run one
+- [Project entries](../docs/system/project-entries.md) — Draft (#42): findings, the kind filter, a project's thread and pinned findings on `/work/:id`
 <!-- system:end -->
 
 ## ADRs — `docs/adr/`
@@ -78,6 +80,7 @@ Procedures somebody will need to repeat.
 - [Edit the home thread](../docs/sop/edit-the-home-thread.md) — change a step in content/threads/home.yml, the git block rules, and what the schema, placeholder and literal-color checks catch
 - [Serve the dev server over Tailscale](../docs/sop/serve-dev-over-tailscale.md) — `tailscale serve` route, allowed hosts, what breaks behind the proxy
 - [Update the CV](../docs/sop/update-the-cv.md) — re-cut Background, Contact and Work from the master resume; what never comes across, the one-page print (#38)
+- [Write a project entry](../docs/sop/write-a-project-entry.md) — Draft (#42): writing findings and a project thread from a repo's real history
 <!-- sop:end -->
 
 ## QA — `docs/qa/`
