@@ -1,7 +1,7 @@
 / The heading is PageSectionsComponent's, so Findings reads as one of the
 / project's sections.
-section class="flex flex-col gap-3"
-  h2#findings-heading class="border-b border-rule pb-1 font-mono text-label uppercase text-quiet" Findings
+section class="flex flex-col gap-3 print:gap-1"
+  h2#findings-heading class="border-b border-rule pb-1 font-mono text-label uppercase text-quiet print:pb-0 print:text-print-label" Findings
   ul class="flex flex-col gap-6" aria-labelledby="findings-heading"
     - findings.each.with_index(1) do |finding, n|
       li class="flex max-w-measure flex-col gap-1" id="finding-#{n}" data-kind=finding.kind

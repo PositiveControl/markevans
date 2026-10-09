@@ -16,9 +16,9 @@ class FindingMarkComponent < ApplicationComponent
   KINDS = %w[learning surprise takeaway].freeze
 
   # @param kind [String] one of KINDS
-  # @raise [KeyError] for any other kind
+  # @raise [ArgumentError] for any other kind
   def initialize(kind:)
-    raise KeyError, "no mark for finding kind #{kind}" unless KINDS.include?(kind)
+    raise ArgumentError, "no mark for finding kind #{kind}" unless KINDS.include?(kind)
 
     @kind = kind
   end

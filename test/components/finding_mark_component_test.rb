@@ -38,12 +38,12 @@ class FindingMarkComponentTest < ViewComponent::TestCase
     kinds = Portfolio::KINDS
     silence_warnings { Portfolio.const_set(:KINDS, [ *kinds, "question" ].freeze) }
 
-    assert_raises(KeyError) { FindingMarkComponent.new(kind: "question") }
+    assert_raises(ArgumentError) { FindingMarkComponent.new(kind: "question") }
   ensure
     silence_warnings { Portfolio.const_set(:KINDS, kinds) }
   end
 
   test "an unknown kind raises rather than drawing nothing" do
-    assert_raises(KeyError) { FindingMarkComponent.new(kind: "insight") }
+    assert_raises(ArgumentError) { FindingMarkComponent.new(kind: "insight") }
   end
 end

@@ -58,14 +58,14 @@ module Portfolio
       end.freeze
     end
 
+    private
+
     def findings(list)
       Array(list).map do |finding|
         evidence = finding["evidence"] && SitePage.links([ finding["evidence"] ]).first
         Finding.new(kind: finding["kind"], title: finding["title"], body: finding["body"], evidence:)
       end.freeze
     end
-
-    private
 
     def file_errors(data)
       return [ "top level must be a mapping with a list of projects" ] unless data.is_a?(Hash) && data["projects"].is_a?(Array)
