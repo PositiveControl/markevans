@@ -5,7 +5,8 @@
 # drawn from the home thread, the CV and the contact routes, and the phone
 # width. Since #38 the copy is cut from Mark's CV: a project's summary and
 # At a glance rows, the Work intro, the CV with its print scale, and the
-# contact routes.
+# contact routes. Since #43 a project page shows its findings, each kind a
+# word beside an ink shape.
 #
 # Builds no data: every caption reads content/ through Portfolio, SitePage and
 # DeliveryThread, so it follows the files. Projects are picked by what they are
@@ -24,6 +25,7 @@ require Rails.root.join("lib/qa_walkthrough")
 projects = Portfolio.all
 first = projects.first
 unwritten = projects.find { |project| project.summary.start_with?("[") }
+found = projects.find { |project| project.findings.any? }
 written = (projects - [ first ]).find { |project| !project.summary.start_with?("[") && project.links.none?(&:placeholder?) }
 work = SitePage.fetch(:work)
 thread = DeliveryThread.fetch(:home)
@@ -50,6 +52,14 @@ QaWalkthrough.run("site_pages") do
     click_on first.name
     spotlight "[role=group][aria-label=Links]", note: first.links.map(&:label).join(", ")
     spotlight text: first.sections.first.heading, note: "#{first.sections.size} sections from the file"
+  end
+
+  if found
+    step "#{found.name}'s findings, after #{found.sections.first&.heading || 'its summary'}: each kind a word beside an ink shape, never a color" do
+      visit project_path(found.key)
+      spotlight "[aria-labelledby=findings-heading]", note: found.findings.map { |finding| finding.kind.capitalize }.join(", ")
+      spotlight "#finding-1", note: "#finding-1: #{found.findings.first.kind}, its title and body in serif#{', its evidence in mono' if found.findings.first.evidence}"
+    end
   end
 
   if written
