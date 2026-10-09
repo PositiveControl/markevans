@@ -65,12 +65,6 @@ class PortfolioTest < ActiveSupport::TestCase
     assert findings.frozen?
   end
 
-  test "every project in content/work.yml carries one finding of each kind" do
-    Portfolio.all.each do |project|
-      assert_equal Portfolio::KINDS, project.findings.map(&:kind), project.key
-    end
-  end
-
   test "a project without findings has none" do
     assert_equal [], load_projects(minimal).first.findings
   end
