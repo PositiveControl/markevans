@@ -6,10 +6,11 @@
 # [brackets]: the placeholder gate fails a production build until it is
 # filled (docs/rules/no-invented-content.md).
 # Findings (learning, surprise, takeaway) come from the project's real history,
-# not from the resume: until Mark writes them they stay in [brackets]
+# not from the resume: until Mark writes them they stay bracketed
 # (docs/system/project-entries.md).
 #
-# Write lists one item per line; a flow list, [a, b], reads as a placeholder.
+# Write lists one item per line; a flow list, its items between square
+# brackets on one line, reads as a placeholder.
 projects:
   - key: rails-rocket-sheep
     name: rails-rocket-sheep

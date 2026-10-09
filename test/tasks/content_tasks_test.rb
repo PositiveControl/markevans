@@ -65,9 +65,15 @@ class ContentTasksTest < ActiveSupport::TestCase
   test "content:check passes the content tree once every placeholder is written" do
     FileUtils.cp_r(Rails.root.join("content/."), @root)
     # Every placeholder written, as the live content will be: a link's url
-    # becomes an address, everything else a word.
+    # becomes an address, everything else a word. Comments are left as they
+    # are, since writing content never touches them, so a comment the gate
+    # reads as a placeholder fails here rather than holding every build.
     Pathname(@root).glob("**/*.yml").each do |path|
-      path.write(path.read.gsub(/url: "\[[^\]\n]+\]"/, "url: https://example.com").gsub(/\[[^\]\n]+\]|\bTBD\b/, "x"))
+      path.write(path.each_line.map do |line|
+        next line if line.lstrip.start_with?("#")
+
+        line.gsub(/url: "\[[^\]\n]+\]"/, "url: https://example.com").gsub(/\[[^\]\n]+\]|\bTBD\b/, "x")
+      end.join)
     end
     %w[content:check content:schema].each { |name| Rake::Task[name].reenable }
 
