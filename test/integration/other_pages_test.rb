@@ -29,7 +29,23 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     assert_select "h1.font-mono", project.name
     assert_select "main > p", project.summary
     assert_select "[role=group][aria-label=Links] dl a[href=?]", project.links.first.url
-    assert_equal project.sections.map(&:heading), css_select("main h2").map(&:text)
+    first, *rest = project.sections.map(&:heading)
+    assert_equal [ first, "Findings", *rest ], css_select("main h2").map(&:text)
+  end
+
+  test "a project page reads every finding back from the file: its kind in words, its title and body" do
+    project = Portfolio.fetch("rails-rocket-sheep")
+    get project_url(project.key)
+
+    assert_select "ul[aria-labelledby=findings-heading] > li", project.findings.size
+    project.findings.each.with_index(1) do |finding, n|
+      assert_select "#finding-#{n}[data-kind=?]", finding.kind do
+        assert_select "p.font-mono", finding.kind.capitalize
+        assert_select "h3", finding.title
+        assert_select "p.font-serif", finding.body
+        assert_select "p.font-mono", "#{finding.evidence.label} #{finding.evidence.url}" if finding.evidence
+      end
+    end
   end
 
   test "copy not yet written shows as its [placeholder], as written" do
@@ -44,6 +60,8 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     assert_select "main > p", project.summary
     assert_select "[role=group][aria-label=Links] dl a", count: 0
     assert_select "[role=group][aria-label=Links] dl span", project.links.first.url
+    assert_empty project.findings
+    assert_select "#findings-heading", count: 0
   ensure
     Portfolio.define_singleton_method(:fetch, original)
   end
