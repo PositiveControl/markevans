@@ -50,6 +50,50 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_invalid(/one: sections\[1\]: missing heading/) { |data| data["projects"].first["sections"] = [ { "paragraphs" => [ "x" ] } ] }
   end
 
+  test "findings are read into values, in the file's order, with any evidence as a link" do
+    data = minimal
+    data["projects"].first["findings"] = [
+      finding("surprise", "evidence" => { "label" => "PR #1", "url" => "https://example.com/1" }),
+      finding("takeaway")
+    ]
+    findings = load_projects(data).first.findings
+
+    assert_equal %w[surprise takeaway], findings.map(&:kind)
+    assert_equal [ "A surprise.", "Body of a surprise." ], [ findings.first.title, findings.first.body ]
+    assert_equal SitePage::Link.new(label: "PR #1", url: "https://example.com/1"), findings.first.evidence
+    assert_nil findings.last.evidence
+    assert findings.frozen?
+  end
+
+  test "a project without findings has none" do
+    assert_equal [], load_projects(minimal).first.findings
+  end
+
+  test "a finding's kind must be one of the three" do
+    assert_invalid(/one: findings\[1\]: kind must be learning, surprise or takeaway/) { |data| data["projects"].first["findings"] = [ finding("insight") ] }
+    assert_invalid(/one: findings\[1\]: kind must be/) { |data| data["projects"].first["findings"] = [ finding("learning").except("kind") ] }
+  end
+
+  test "a finding without a title or body is reported, each once" do
+    error = assert_invalid(/one: findings\[1\]: missing title/) { |data| data["projects"].first["findings"] = [ finding("learning", "title" => " ").except("body") ] }
+
+    assert_match(/one: findings\[1\]: missing body/, error.message)
+  end
+
+  test "an unknown key on a finding is reported, step included until findings pin to a thread" do
+    assert_invalid(/one: findings\[1\]: unknown key step/) { |data| data["projects"].first["findings"] = [ finding("learning", "step" => "implement") ] }
+  end
+
+  test "a finding's evidence is checked as a link is" do
+    assert_invalid(/one: findings\[1\]\.evidence: url must start https/) { |data| data["projects"].first["findings"] = [ finding("learning", "evidence" => { "label" => "x", "url" => "ftp://x" }) ] }
+    assert_invalid(/one: findings\[1\]\.evidence needs a label and a url/) { |data| data["projects"].first["findings"] = [ finding("learning", "evidence" => "https://x") ] }
+  end
+
+  test "findings must be a list of mappings" do
+    assert_invalid(/one: findings must be a list/) { |data| data["projects"].first["findings"] = "x" }
+    assert_invalid(/one: findings\[2\]: must be a mapping/) { |data| data["projects"].first["findings"] = [ finding("learning"), "x" ] }
+  end
+
   test "a file with no projects is refused" do
     assert_invalid(/no projects/) { |data| data["projects"] = [] }
     assert_invalid(/a list of projects/) { |data| data.delete("projects") }
@@ -59,6 +103,10 @@ class PortfolioTest < ActiveSupport::TestCase
 
   def minimal
     { "projects" => [ { "key" => "one", "name" => "One", "summary" => "The first." } ] }
+  end
+
+  def finding(kind, **extra)
+    { "kind" => kind, "title" => "A #{kind}.", "body" => "Body of a #{kind}." }.merge(extra.transform_keys(&:to_s))
   end
 
   def load_projects(data)
