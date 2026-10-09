@@ -43,6 +43,13 @@ class FindingsComponentTest < ViewComponent::TestCase
     assert_selector "p.font-mono", text: "[Evidence] [https://…]"
   end
 
+  test "a long evidence address wraps rather than scrolling a phone sideways, as a link list's does" do
+    evidence = SitePage::Link.new(label: "[Evidence]", url: "[https://github.com/PositiveControl/rails-rocket-sheep/pull/…]")
+    render_inline(FindingsComponent.new(findings: [ finding("learning", evidence:) ]))
+
+    assert_selector "p.font-mono.wrap-anywhere", text: evidence.url
+  end
+
   test "a finding without evidence shows no evidence line" do
     render_inline(FindingsComponent.new(findings: [ finding("learning") ]))
 

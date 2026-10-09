@@ -11,7 +11,7 @@ section class="flex flex-col gap-3"
         h3 class="font-serif font-medium" = finding.title
         p class="font-serif" = finding.body
         - if (evidence = finding.evidence)
-          p class="font-mono text-key"
+          p class="font-mono text-key wrap-anywhere"
             - if evidence.placeholder?
               span class="inline-flex min-h-8 items-center text-quiet" = "#{evidence.label} #{evidence.url}"
             - else
