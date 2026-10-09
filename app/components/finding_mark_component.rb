@@ -11,10 +11,14 @@
 # the scope's squares can be taken for in greyscale
 # (docs/system/project-entries.md).
 class FindingMarkComponent < ApplicationComponent
-  # @param kind [String] one of Portfolio::KINDS
+  # The kinds the template draws. Its own list, not Portfolio::KINDS, so a kind
+  # added there without a shape here raises instead of drawing an empty slot.
+  KINDS = %w[learning surprise takeaway].freeze
+
+  # @param kind [String] one of KINDS
   # @raise [KeyError] for any other kind
   def initialize(kind:)
-    raise KeyError, "no mark for finding kind #{kind}" unless Portfolio::KINDS.include?(kind)
+    raise KeyError, "no mark for finding kind #{kind}" unless KINDS.include?(kind)
 
     @kind = kind
   end

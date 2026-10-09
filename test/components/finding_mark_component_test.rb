@@ -25,13 +25,22 @@ class FindingMarkComponentTest < ViewComponent::TestCase
     assert_selector "svg.text-ink[data-mark=takeaway] path[stroke=currentColor][fill=none]"
   end
 
-  test "every kind has a mark, and none is a polygon or a rect" do
+  test "every kind Portfolio accepts is drawn, and none is a polygon or a rect" do
     Portfolio::KINDS.each do |kind|
       render_inline(FindingMarkComponent.new(kind:))
 
-      assert_selector "svg[data-mark=#{kind}]"
+      assert_selector "svg[data-mark=#{kind}] > *"
       assert_no_selector "polygon, rect"
     end
+  end
+
+  test "a kind Portfolio accepts but has no mark here raises, rather than drawing an empty slot" do
+    kinds = Portfolio::KINDS
+    silence_warnings { Portfolio.const_set(:KINDS, [ *kinds, "question" ].freeze) }
+
+    assert_raises(KeyError) { FindingMarkComponent.new(kind: "question") }
+  ensure
+    silence_warnings { Portfolio.const_set(:KINDS, kinds) }
   end
 
   test "an unknown kind raises rather than drawing nothing" do
