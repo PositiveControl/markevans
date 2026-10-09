@@ -1,0 +1,21 @@
+# A project whose findings are written, with real evidence. OtherPagesTest
+# renders it in place of a real one, so reading findings back never depends on
+# content/ still holding placeholders.
+projects:
+  - key: written
+    name: written
+    summary: "A project whose findings are written."
+    sections:
+      - heading: The project
+        paragraphs:
+          - "What it is."
+    findings:
+      - kind: learning
+        title: "One clean pass is not convergence"
+        body: "Two in a row are."
+        evidence:
+          label: "PR #142"
+          url: https://github.com/PositiveControl/harness/pull/142
+      - kind: learning
+        title: "A second learning"
+        body: "Two of a kind are allowed."

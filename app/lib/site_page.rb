@@ -91,15 +91,18 @@ module SitePage
       return [] if links.nil?
       return [ "#{where} must be a list" ] unless links.is_a?(Array)
 
-      links.each_with_index.flat_map do |link, index|
-        name = "#{where}[#{index + 1}]"
-        next [ "#{name} needs a label and a url" ] unless pair?(link, "label", "url")
+      links.each_with_index.flat_map { |link, index| one_link_errors(link, "#{where}[#{index + 1}]") }
+    end
 
-        errors = (link.keys - %w[label url]).map { |key| "#{name}: unknown key #{key}" }
-        url = link["url"].to_s
-        errors << "#{name}: url must start https:// or mailto:, or be a [placeholder]" unless url.match?(URL) || url.match?(/\A\[[^\]]+\]\z/)
-        errors
-      end
+    # One link, named as the caller names it: a finding's evidence is a link
+    # on its own, not a list.
+    def one_link_errors(link, name)
+      return [ "#{name} needs a label and a url" ] unless pair?(link, "label", "url")
+
+      errors = (link.keys - %w[label url]).map { |key| "#{name}: unknown key #{key}" }
+      url = link["url"].to_s
+      errors << "#{name}: url must start https:// or mailto:, or be a [placeholder]" unless url.match?(URL) || url.match?(/\A\[[^\]]+\]\z/)
+      errors
     end
 
     def section_errors(sections, where: "sections")
