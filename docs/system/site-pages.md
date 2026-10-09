@@ -1,6 +1,6 @@
 # Site pages — Work, Workflow, Background, Contact
 
-**Status:** Current through #20.
+**Status:** Current through #38.
 
 The pages beside the home thread (design doc,
 `docs/plans/2026-10-03-home-thread-design.md`, section 2). They are built from
@@ -11,7 +11,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 | `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then every project in file order: its name (mono) linking to its page, and its summary |
 | `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
-| `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV: title, intro, links, sections. Prints to one page |
+| `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |
 | `GET /contact` | `ContactsController#show` | `content/pages/contact.yml` | Title, intro, the contact routes, any sections |
 
 `/work` is not paginated. It lists the projects in a content file, which
@@ -25,6 +25,13 @@ exceptions are the site name and the structural labels: the nav, "The chain"
 and the lists' accessible names. Copy not written yet stays in `[brackets]`
 (`docs/rules/no-invented-content.md`). The pages render placeholders as
 written, so a gap is visible on the page and is never filled in by a guess.
+
+Background, Contact, the Work intro and each project's summary, links and
+first section are cut from Mark's master resume (#38). Re-cutting them is
+`docs/sop/update-the-cv.md`. What the resume does not answer is still in
+brackets: the Contact intro, each project's Role and *How it was built*,
+rails-rocket-sheep's and harness's and kraM's Status, rails-rocket-sheep's
+first paragraph, and the Workflow page.
 
 **`content/work.yml`**, read by `Portfolio` (`app/lib/portfolio.rb`):
 
@@ -123,10 +130,27 @@ Each view sets `content_for` `:title` ("<title> · Mark Evans"),
 `/background` prints to one A4 or Letter page. Header and footer are
 `print:hidden`. The page drops its padding and width (`print:p-0`,
 `print:max-w-none`) and tightens its gaps (`print:mt-*`, `print:gap-*`).
-`application.css` sets a 12 mm sheet margin with `@page`, which no utility
-can do. `test/system/other_pages_test.rb` prints the page through Chrome and
-counts the PDF's pages. Once the CV is written, that test is what says it
-still fits.
+`application.css` sets a 10 mm sheet margin with `@page`, which no utility
+can do.
+
+Letter is the tight sheet. Its printable area is 980 px tall at 10 mm, and
+the CV leaves about 9 px of it, half a line. A4 leaves about 75 px. To
+get there, the sections sit one spacing unit (6 px) apart in print, and so
+do the links and the sections. Any added line on Background will tip it to
+two pages. The print test catches that, and the fix is to cut a row, not
+shrink type.
+
+At the screen's scale a Letter page holds about thirty lines, too few for a
+CV, so print has its own type scale (#38). The tokens are `text-print-headline`,
+`text-print-prose`, `text-print-key` and `text-print-label`, plus a 150 px
+`w-print-key` column, all in `tokens.css`. The Background view,
+`PageSectionsComponent`, `DetailGroupComponent` and `LinkListComponent`
+apply them with `print:`, and a printed link drops its 44 px touch height
+(`print:min-h-0`). The screen is unchanged. Because the components are
+shared, any page that uses them prints at this scale.
+
+`test/system/other_pages_test.rb` prints the page through Chrome and counts
+the PDF's pages. It is what says the CV still fits.
 
 ## Tests
 
@@ -134,9 +158,9 @@ still fits.
 |---|---|
 | `test/lib/portfolio_test.rb`, `test/lib/site_page_test.rb` | The loaders and their schemas |
 | `test/tasks/content_tasks_test.rb` | `content:schema` over the work list and pages |
-| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written; the 404; the Workflow chain against the thread; the current section; the footer |
+| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread; the current section; the footer |
 | `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the sitemap |
-| `test/components/{site_header,site_footer,page_sections,detail_group,link_list}_component_test.rb` | Each component |
+| `test/components/{site_header,site_footer,page_sections,detail_group,link_list}_component_test.rb` | Each component, including the print scale on a row and a link |
 | `test/system/other_pages_test.rb` | axe on every page at 1400 and 390 px, no sideways scroll at 390 px, the one-page print |
 
 Walk it in a browser: `bin/qa-walkthrough site_pages`.

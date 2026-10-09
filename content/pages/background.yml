@@ -1,32 +1,82 @@
 # /background: the CV. Prints to one page (docs/system/site-pages.md, Print).
-# Read by app/lib/site_page.rb. The CV content is still open (design doc,
-# section 1), so every line is a placeholder.
+# Read by app/lib/site_page.rb. A cut of Mark's master resume, never added to;
+# how to re-cut it when the resume changes is docs/sop/update-the-cv.md.
 title: Background
-description: "[One line for search results: who Mark Evans is and what he builds]"
-intro: "[A short summary: what you build, for whom, and how]"
+description: "Mark Evans, senior software engineer in Phoenix, AZ: ships complete systems and leads the teams that build them."
+intro: "Senior engineer who ships complete systems (payments, auth, search, fulfillment, real-time messaging) and leads the teams that build them. Twelve years across Rails and distributed vehicle telemetry; currently day-to-day technical lead of an eight-person team, holding merge authority and running production for a marketplace heading to public launch. Phoenix, AZ."
 links:
+  - label: Email
+    url: mailto:msteven.evans@gmail.com
+  - label: LinkedIn
+    url: https://www.linkedin.com/in/sudobangbang
   - label: GitHub
     url: https://github.com/PositiveControl
-  - label: Email
-    url: "[mailto:address]"
 sections:
   - heading: Experience
     groups:
-      - title: "[Years]"
+      - title: "2025 – present · Software Engineer · ISSO (SyberJet Aircraft) and Alpine Landing (uCollect)"
         rows:
-          - k: "[Role]"
-            v: "[Company: what you did there, in one line]"
-          - k: "[Role]"
-            v: "[Company: what you did there, in one line]"
+          - k: Production
+            v: "Cut the card-labeler's initial load, the OCR workflow's entry point, from 20–25 seconds to ~1 second: traced it to un-indexed 570k-row category scans and redesigned the query."
+          - k: Leadership
+            v: "Day-to-day technical lead on a cross-functional team of eight: primary reviewer and merge authority across every workstream."
+          - k: AI and ML
+            v: "Built the platform's first LLM backend; stood up and operate the self-hosted vLLM GPU inference host; contribute to and maintain the multi-model card-recognition pipeline."
+          - k: Payments
+            v: "Built USDC stablecoin deposits and withdrawals on a Stripe Connect platform, and the offers and negotiation system."
+          - k: Security
+            v: "Designed and shipped passwordless login with passkeys and WebAuthn end to end, and step-up 2FA for sensitive actions."
+          - k: Fulfillment
+            v: "Designed and shipped the returns program end to end, and built the EasyPost shipping integration."
+          - k: Real-time
+            v: "Built the platform's chat from scratch over ActionCable."
+          - k: Avionics
+            v: "Built an in-cabin avionics display proof-of-concept in Flutter targeting NXP i.MX 8 embedded Linux."
+      - title: "2020 – 2025 · Nikola Motor"
+        rows:
+          - k: Lead Engineer
+            v: "Owned technical direction for a team of 8–10 engineers. Ran outsourced penetration testing and closed every medium- and high-severity finding."
+          - k: Senior Engineer
+            v: "Drove unit test coverage from ~40% to 90% in three months. Built over-the-air firmware update orchestration end to end."
+          - k: Software Engineer
+            v: "Core contributor on a telematics platform that grew from zero to ~7.8M requests and ~2.4B rows of time-series data per day."
+      - title: "2011 – 2020 · Earlier"
+        rows:
+          - k: Golden Mean Solutions
+            v: "Software Developer: greenfield EdTech and eCommerce web applications."
+          - k: American Red Cross
+            v: "Engineer III: the Angular.js UI component library behind redcross.org and redcrossblood.org."
+          - k: TeamSnap
+            v: "Software Developer: microservices on RabbitMQ, and APIs serving mobile and web clients."
+          - k: SmallBIT
+            v: "Contract IT and web, self-employed, concurrent with the roles above."
+      - title: Military
+        rows:
+          - k: United States Navy
+            v: "Air Traffic Controller, AC2 (AW). Facility Rated Approach Controller."
   - heading: Skills
     groups:
       - title: Stack
         rows:
-          - k: "[Area]"
-            v: "[Tools and languages]"
+          - k: Primary
+            v: "Ruby, Ruby on Rails, Hotwire, PostgreSQL, MySQL, JavaScript, Tailwind, REST API design, Git, Linux"
+          - k: Strong
+            v: "Python, Go, Swift, Flutter, TimescaleDB, Redis, RabbitMQ, Docker, Kamal, Capistrano, GitHub Actions, AWS, Stripe, ActionCable"
+          - k: AI and ML
+            v: "Multi-model OCR pipelines, LLM product features, agent orchestration, retrieval and memory, self-hosted GPU inference (vLLM on NVIDIA), local inference (MLX, Ollama), LLM eval harnesses"
+          - k: Security
+            v: "Passkeys and WebAuthn, step-up 2FA, device fingerprinting, penetration-test remediation"
+          - k: Practices
+            v: "Test strategy and coverage programs, flaky-test forensics, static analysis in CI, production incident response, stacked PR delivery, technical mentoring"
   - heading: Education
     groups:
-      - title: "[Years]"
+      - title: Degrees and training
         rows:
-          - k: "[Qualification]"
-            v: "[Institution]"
+          - k: M.S. Software Engineering
+            v: "Regis University. 21 of 36 credit hours, 3.85 GPA."
+          - k: B.A. Political Science
+            v: "University of Colorado, 2013."
+          - k: Full-Stack Development
+            v: "Galvanize, 2014."
+          - k: Tower and Radar
+            v: "Control Tower Operator and Advanced Radar, Naval Aviation Technical Training Command."

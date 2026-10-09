@@ -1,5 +1,6 @@
 # /work: the copy above the project list. The projects themselves are
 # content/work.yml. Read by app/lib/site_page.rb (docs/system/site-pages.md).
+# The intro is cut from the master resume's projects note (docs/sop/update-the-cv.md).
 title: Work
-description: "[One line for search results: the projects, and how each was built]"
-intro: "[A line in your voice introducing the projects]"
+description: "Projects by Mark Evans, built LLM-assisted by deliberate practice: each claim is design, architecture, testing or shipping, never volume."
+intro: "Development across these projects is LLM-assisted by deliberate practice. Every claim here is design, architecture, testing or shipping. Never volume."

@@ -19,6 +19,14 @@ class DetailGroupComponentTest < ViewComponent::TestCase
     assert_includes page.find("dl > div")[:class].split, "flex-wrap"
   end
 
+  test "in print the key column narrows and the rows take the print scale, so the CV fits one sheet" do
+    render_inline(DetailGroupComponent.new(group: group("Education", "Qualification" => "Institution")))
+
+    assert_includes page.find("dt")[:class].split, "print:w-print-key"
+    assert_includes page.find("dt")[:class].split, "print:text-print-key"
+    assert_includes page.find("dd")[:class].split, "print:text-print-prose"
+  end
+
   test "the label takes the heading level it is given" do
     render_inline(DetailGroupComponent.new(group: group("Experience", "Role" => "Company"), level: 3))
 

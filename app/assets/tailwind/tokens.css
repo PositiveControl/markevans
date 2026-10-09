@@ -105,6 +105,19 @@
   --text-cell: 11px;               /* Ctl, Bay, Rmk, uppercase */
   --text-cell--line-height: 16px;
 
+  /* Print only, as print:text-print-*: /background prints the CV to one
+     sheet, which the screen scale cannot fill (docs/system/site-pages.md,
+     Print). The roles mirror the screen's. */
+  --text-print-headline: 24px;
+  --text-print-headline--line-height: 30px;
+  --text-print-prose: 12px;
+  --text-print-prose--line-height: 17px;
+  --text-print-key: 11px;
+  --text-print-key--line-height: 17px;
+  --text-print-label: 10px;
+  --text-print-label--line-height: 14px;
+  --text-print-label--letter-spacing: 0.04em;
+
   /* Space and shape */
   --spacing: 6px;
   --radius-box: 2px;
@@ -126,6 +139,7 @@
   --container-step-bay: 132px;     /* Bay */
   --container-step-status: 96px;
   --container-row-key: 260px;      /* detail row key */
+  --container-print-key: 150px;    /* detail row key, in print */
 
   /* Chart geometry (design doc, sections 4 and 5), measured from the cell's
      left and top edges: left-lane-main, top-fix and so on. A line's position

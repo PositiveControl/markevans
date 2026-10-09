@@ -63,7 +63,18 @@ class SeoTest < ActionDispatch::IntegrationTest
     person = json_ld("ProfilePage")["mainEntity"]
     assert_equal "Person", person["@type"]
     assert_equal "Mark Evans", person["name"]
-    assert_equal [ "https://github.com/PositiveControl" ], person["sameAs"]
+    links = SitePage.fetch(:background).links.reject(&:placeholder?).map(&:url)
+    assert_equal links.select { |url| url.start_with?("https://") }, person["sameAs"]
+    assert_includes person["sameAs"], "https://github.com/PositiveControl"
+    assert person["sameAs"].none? { |url| url.start_with?("mailto:") }
+  end
+
+  test "every written page and project description fits a search snippet whole, so none reads as cut off" do
+    descriptions = SitePage.all.map { |page| [ page.title, page.description ] } + Portfolio.all.map { |project| [ project.name, project.summary ] }
+
+    descriptions.reject { |_, text| text.start_with?("[") }.each do |name, text|
+      assert_operator text.length, :<=, 155, "#{name}'s description is #{text.length} characters; the meta tag cuts it at 155"
+    end
   end
 
   test "robots.txt is accessible and references sitemap" do

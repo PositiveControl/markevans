@@ -26,6 +26,13 @@ class LinkListComponentTest < ViewComponent::TestCase
     assert_includes classes, "underline"
   end
 
+  test "in print a link drops its touch height and takes the print scale" do
+    render_inline(LinkListComponent.new(links: [ link("GitHub", "https://github.com/x") ]))
+
+    assert_includes page.find("a")[:class].split, "print:min-h-0"
+    assert_includes page.find("dt")[:class].split, "print:w-print-key"
+  end
+
   test "the list is named by a group around it, not on the dl, and renders nothing when empty" do
     render_inline(LinkListComponent.new(links: [ link("GitHub", "https://github.com/x") ], label: "Contact routes"))
     assert_selector "[role=group][aria-label='Contact routes'] > dl"

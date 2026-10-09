@@ -1,7 +1,7 @@
-div class="flex max-w-detail flex-col gap-1"
-  = content_tag heading_tag, group.title, class: "border-b border-rule pb-1 font-mono text-label uppercase text-quiet"
+div class="flex max-w-detail flex-col gap-1 print:max-w-none print:gap-0"
+  = content_tag heading_tag, group.title, class: "border-b border-rule pb-1 font-mono text-label uppercase text-quiet print:pb-0 print:text-print-label"
   dl
     - group.rows.each do |row|
       div class="flex flex-wrap gap-x-4"
-        dt class="w-row-key max-w-full shrink-0 font-mono text-key wrap-anywhere" = row.key
-        dd class="min-w-0 grow basis-30 font-serif" = row.value
+        dt class="w-row-key max-w-full shrink-0 font-mono text-key wrap-anywhere print:w-print-key print:text-print-key" = row.key
+        dd class="min-w-0 grow basis-30 font-serif print:text-print-prose" = row.value

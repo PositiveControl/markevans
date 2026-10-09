@@ -35,5 +35,5 @@
    and footer leave the print with print:hidden; this sets the sheet's margin,
    which no utility can. */
 @page {
-  margin: 12mm;
+  margin: 10mm;
 }
