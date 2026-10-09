@@ -130,8 +130,15 @@ Each view sets `content_for` `:title` ("<title> · Mark Evans"),
 `/background` prints to one A4 or Letter page. Header and footer are
 `print:hidden`. The page drops its padding and width (`print:p-0`,
 `print:max-w-none`) and tightens its gaps (`print:mt-*`, `print:gap-*`).
-`application.css` sets a 12 mm sheet margin with `@page`, which no utility
+`application.css` sets a 10 mm sheet margin with `@page`, which no utility
 can do.
+
+Letter is the tight sheet. Its printable area is 980 px tall at 10 mm, and
+the CV leaves about 9 px of it, half a line. A4 leaves about 75 px. To
+get there, the sections sit one spacing unit (6 px) apart in print, and so
+do the links and the sections. Any added line on Background will tip it to
+two pages. The print test catches that, and the fix is to cut a row, not
+shrink type.
 
 At the screen's scale a Letter page holds about thirty lines, too few for a
 CV, so print has its own type scale (#38). The tokens are `text-print-headline`,
