@@ -5,6 +5,10 @@
 # (docs/sop/update-the-cv.md). Copy the resume does not answer stays in
 # [brackets]: the placeholder gate fails a production build until it is
 # filled (docs/rules/no-invented-content.md).
+# Findings (learning, surprise, takeaway) come from the project's real history,
+# not from the resume: until Mark writes them they stay in [brackets]
+# (docs/system/project-entries.md).
+#
 # Write lists one item per line; a flow list, [a, b], reads as a placeholder.
 projects:
   - key: rails-rocket-sheep
@@ -29,6 +33,19 @@ projects:
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
+    findings:
+      - kind: learning
+        title: "[What the project taught]"
+        body: "[How it was learned, and what changed because of it]"
+        evidence:
+          label: "[Evidence]"
+          url: "[https://…]"
+      - kind: surprise
+        title: "[What was not expected]"
+        body: "[What happened, and how it was noticed]"
+      - kind: takeaway
+        title: "[What carries to the next project]"
+        body: "[Why it holds beyond this one]"
 
   - key: idlempire
     name: IDLEmpire
@@ -54,6 +71,19 @@ projects:
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
+    findings:
+      - kind: learning
+        title: "[What the project taught]"
+        body: "[How it was learned, and what changed because of it]"
+        evidence:
+          label: "[Evidence]"
+          url: "[https://…]"
+      - kind: surprise
+        title: "[What was not expected]"
+        body: "[What happened, and how it was noticed]"
+      - kind: takeaway
+        title: "[What carries to the next project]"
+        body: "[Why it holds beyond this one]"
 
   - key: harness
     name: harness
@@ -81,6 +111,19 @@ projects:
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
+    findings:
+      - kind: learning
+        title: "[What the project taught]"
+        body: "[How it was learned, and what changed because of it]"
+        evidence:
+          label: "[Evidence]"
+          url: "[https://…]"
+      - kind: surprise
+        title: "[What was not expected]"
+        body: "[What happened, and how it was noticed]"
+      - kind: takeaway
+        title: "[What carries to the next project]"
+        body: "[Why it holds beyond this one]"
 
   - key: kram
     name: kraM
@@ -105,6 +148,19 @@ projects:
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
+    findings:
+      - kind: learning
+        title: "[What the project taught]"
+        body: "[How it was learned, and what changed because of it]"
+        evidence:
+          label: "[Evidence]"
+          url: "[https://…]"
+      - kind: surprise
+        title: "[What was not expected]"
+        body: "[What happened, and how it was noticed]"
+      - kind: takeaway
+        title: "[What carries to the next project]"
+        body: "[Why it holds beyond this one]"
 
   - key: dailydrop
     name: DailyDrop
@@ -130,6 +186,19 @@ projects:
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
+    findings:
+      - kind: learning
+        title: "[What the project taught]"
+        body: "[How it was learned, and what changed because of it]"
+        evidence:
+          label: "[Evidence]"
+          url: "[https://…]"
+      - kind: surprise
+        title: "[What was not expected]"
+        body: "[What happened, and how it was noticed]"
+      - kind: takeaway
+        title: "[What carries to the next project]"
+        body: "[Why it holds beyond this one]"
 
   - key: spamsandwich
     name: spamsandwich
@@ -150,3 +219,16 @@ projects:
                 v: Rails 8
               - k: Status
                 v: Live at spamsandwich.com
+    findings:
+      - kind: learning
+        title: "[What the project taught]"
+        body: "[How it was learned, and what changed because of it]"
+        evidence:
+          label: "[Evidence]"
+          url: "[https://…]"
+      - kind: surprise
+        title: "[What was not expected]"
+        body: "[What happened, and how it was noticed]"
+      - kind: takeaway
+        title: "[What carries to the next project]"
+        body: "[Why it holds beyond this one]"
