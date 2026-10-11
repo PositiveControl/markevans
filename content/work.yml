@@ -30,11 +30,11 @@ projects:
                 v: Released and maintained
       - heading: How it was built
         paragraphs:
-          - "The chain on /workflow was developed first in project repos (IDLEmpire, harness, DailyDrop, spamsandwich, and uCollect at work), then extracted into this template as conventions, gates and commands, tested against the apps it generates. When it was mature enough, the template began running its own workflow on itself: since October 2026 the workflow layer is tracked in the repo, and the template's features go through it, with a design doc, slices on a feature branch, and gates in CI. What came of it: four releases, and the codebase this site was generated from."
+          - "The template was carved out of an existing Rails app in January 2026: the stack, the service and registry patterns, and a CLAUDE.md. The conventions, gates and commands were built here from August, tested against the apps the template generates, and adopted back into the project repos: DailyDrop in August, IDLEmpire in October. When it was mature enough, the template began running its own workflow on itself: since October 2026 the workflow layer is tracked in the repo, and its features go through it, with a design doc, slices on a feature branch, and gates in CI. What came of it: four releases, and the codebase this site was generated from."
 
   - key: idlempire
     name: IDLEmpire
-    summary: "A multiplayer browser strategy game with crypto economics."
+    summary: "A multiplayer browser strategy game."
     links:
       - label: Site
         url: https://idlempire.com
@@ -42,20 +42,20 @@ projects:
       - heading: The project
         paragraphs:
           - "Adversarial multiplayer systems: a combat engine and simulator, a balanced production economy with a fair-allocation model, alliance treasuries, diplomacy negotiation with escrow, bounties, and era transitions."
-          - "Autonomous bot agents, built as decision and action services, take part in the live economy. Real-time chat and a comm panel run over ActionCable, beside crypto wallet verification and staking."
+          - "Autonomous bot agents, built as decision and action services, take part in the live economy. Real-time chat and a comm panel run over ActionCable."
           - "Deployed with Kamal and Docker, with a written architecture review and an ActionCable performance analysis. Test code exceeds application code."
         groups:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8, ActionCable, Kamal, Docker
               - k: Status
                 v: Live at idlempire.com
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "Built fast from a scaffold in December 2025: a tick engine, the economy loop, combat and a leaderboard in its first days. In October 2026 it adopted the rails-rocket-sheep workflow, and since then work lands through the chain: each change an issue, planned and built as its own slice and pull request, across the Rails server and a Godot client."
 
   - key: harness
     name: harness
@@ -75,7 +75,7 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Python, MLX on Apple Silicon, SQLite
               - k: Status
@@ -99,7 +99,7 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator
               - k: Stack
                 v: Go, OpenQASM, IBM Quantum
               - k: Status
@@ -124,7 +124,7 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8, Solid Queue, Cache and Cable, Swift, Kamal 2
               - k: Status
@@ -147,7 +147,7 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8
               - k: Status
