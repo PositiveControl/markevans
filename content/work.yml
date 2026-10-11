@@ -5,7 +5,8 @@
 # (docs/sop/update-the-cv.md). Copy the resume does not answer stays in
 # [brackets]: the placeholder gate fails a production build until it is
 # filled (docs/rules/no-invented-content.md).
-# Write lists one item per line; a flow list, [a, b], reads as a placeholder.
+# Write lists one item per line; a flow list, its items between square
+# brackets on one line, reads as a placeholder.
 projects:
   - key: rails-rocket-sheep
     name: rails-rocket-sheep
@@ -16,19 +17,20 @@ projects:
     sections:
       - heading: The project
         paragraphs:
-          - "[What it is, the problem it answers, and why it was built]"
+          - "A Rails 8 application template for building with AI coding agents. rails new gives you a framework; this gives you a codebase an agent can be productive in on the first prompt: the patterns are already there, the conventions are written down one rule per file, a generated CLAUDE.md routes the agent to the right rule before it touches anything, and the rules a machine can check are checked at push time and in CI. The result is that the tenth feature looks like the first one."
+          - "It was built because many side projects start from rails new. The template gets the boilerplate out of the way and gives each one the same foundation, ready to develop and deploy the same day. It is applied once and leaves behind ordinary Rails files: no gem, no runtime dependency, nothing to upgrade. MIT licensed. This site was generated from it."
         groups:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8
               - k: Status
-                v: "[Status]"
+                v: Released and maintained
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "The chain on /workflow was developed first in project repos (IDLEmpire, harness, DailyDrop, spamsandwich, and uCollect at work), then extracted into this template as conventions, gates and commands, tested against the apps it generates. When it was mature enough, the template began running its own workflow on itself: since October 2026 the workflow layer is tracked in the repo, and the template's features go through it, with a design doc, slices on a feature branch, and gates in CI. What came of it: four releases, and the codebase this site was generated from."
 
   - key: idlempire
     name: IDLEmpire
