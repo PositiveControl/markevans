@@ -1,3 +1,22 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="256" cy="256" r="256" fill="red"/>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- A radar scope, in the home page scope's colours (app/assets/tailwind/tokens.css):
+       scope face, ink rim and sweep, faint crosshair and range ring, one command-teal blip. -->
+  <defs>
+    <linearGradient id="trail" x1="256" y1="256" x2="436" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B2428" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#1B2428" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="236" fill="#EFEEE6"/>
+  <g stroke="#1B2428" stroke-opacity="0.3" stroke-width="10" fill="none">
+    <line x1="256" y1="32" x2="256" y2="480"/>
+    <line x1="32" y1="256" x2="480" y2="256"/>
+    <circle cx="256" cy="256" r="124"/>
+  </g>
+  <!-- The sweep's trailing wedge, 60 degrees behind the leader. -->
+  <path d="M256 256 L256 28 A228 228 0 0 1 453.5 142 Z" fill="url(#trail)"/>
+  <line x1="256" y1="256" x2="453.5" y2="142" stroke="#1B2428" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="22" fill="#1B2428"/>
+  <circle cx="352" cy="146" r="30" fill="#0F7480"/>
+  <circle cx="256" cy="256" r="236" fill="none" stroke="#1B2428" stroke-width="32"/>
 </svg>
