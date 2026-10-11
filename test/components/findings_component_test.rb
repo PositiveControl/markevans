@@ -56,6 +56,32 @@ class FindingsComponentTest < ViewComponent::TestCase
     assert_selector "li p.font-mono", count: 1
   end
 
+  test "the section filters its findings by kind: a toggle per kind after All, hidden until scripts run" do
+    render_inline(FindingsComponent.new(findings: [ finding("learning") ]))
+
+    assert_selector "section[data-controller=filter][data-filter-key-value=kind]"
+    assert_selector "section [role=group][aria-labelledby=kind-filter][hidden][data-filter-target=live]", visible: :all
+    labels = page.all("[data-filter-target=option]", visible: :all).map { |button| button.text(:all) }
+    assert_equal [ "All", "Learnings", "Surprises", "Takeaways" ], labels
+    assert_equal %w[all] + Portfolio::KINDS, page.all("[data-filter-target=option]", visible: :all).map { |button| button[:"data-kind"] }
+  end
+
+  test "the toggles come after the heading and before the list, so the list still reads in order" do
+    render_inline(FindingsComponent.new(findings: [ finding("learning") ]))
+
+    order = page.all("h2, [role=group], ul", visible: :all).map(&:tag_name)
+    assert_equal %w[h2 div ul], order
+  end
+
+  test "every finding is a row the filter dims by its kind, to quiet text, never hidden" do
+    render_inline(FindingsComponent.new(findings: [ finding("learning"), finding("surprise") ]))
+
+    assert_selector "li[data-filter-target=row][data-kind]", count: 2
+    assert_selector "li.data-dim\\:text-quiet", count: 2
+    assert_selector "li svg.in-data-dim\\:text-quiet", count: 2
+    assert_no_selector "li[class*=opacity], li [class*=opacity], li[data-dim]"
+  end
+
   test "nothing renders when there are no findings" do
     render_inline(FindingsComponent.new(findings: []))
 

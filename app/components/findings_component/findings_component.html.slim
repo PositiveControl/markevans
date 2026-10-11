@@ -1,10 +1,12 @@
 / The heading is PageSectionsComponent's, so Findings reads as one of the
-/ project's sections.
-section class="flex flex-col gap-3 print:gap-1"
+/ project's sections. The filter, keyed on kind, marks data-dim on every finding
+/ of another kind: its text drops to quiet and it keeps its place.
+section class="flex flex-col gap-3 print:gap-1" data-controller="filter" data-filter-key-value="kind"
   h2#findings-heading class="border-b border-rule pb-1 font-mono text-label uppercase text-quiet print:pb-0 print:text-print-label" Findings
+  = render FilterComponent.new(label: "Kind", key: "kind", options: KIND_LABELS)
   ul class="flex flex-col gap-6" aria-labelledby="findings-heading"
     - findings.each.with_index(1) do |finding, n|
-      li class="flex max-w-measure flex-col gap-1" id="finding-#{n}" data-kind=finding.kind
+      li class="flex max-w-measure flex-col gap-1 data-dim:text-quiet" id="finding-#{n}" data-kind=finding.kind data-filter-target="row"
         p class="flex items-center gap-1 font-mono text-label uppercase"
           = render FindingMarkComponent.new(kind: finding.kind)
           = finding.kind.capitalize
