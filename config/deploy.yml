@@ -58,7 +58,7 @@ env:
     RAILS_ENV: production
     RAILS_LOG_LEVEL: info
     SOLID_QUEUE_IN_PUMA: true
-    WEB_CONCURRENCY: 2
+    WEB_CONCURRENCY: 1
     RAILS_MAX_THREADS: 5
 
 # Aliases for common commands
