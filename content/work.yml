@@ -106,6 +106,7 @@ projects:
                 v: Built and validated on IBM Quantum hardware
       - heading: How it was built
         paragraphs:
+          - "It started with pry. Debugging Ruby means stepping through a program as it runs, and kraM began as a language where a REPL could do that in both directions: step forward like pry, and walk the program backward. Making every step reversible led to elementary gates and circuits, the same building blocks quantum programs are made of. That is how the compiler came to target OpenQASM, and why its circuits were validated on IBM Quantum hardware."
           - "kraM did not go through the chain: it was built in four days of direct commits, one language feature at a time, from an expression evaluator and a reversible execution core with a time-travel REPL up to the gate compiler and the quantum algorithms. Each algorithm carries its own tests, and each hardware run was committed as a result, with its QASM sample kept."
 
   - key: dailydrop
