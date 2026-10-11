@@ -39,6 +39,19 @@ class ProjectFindingsTest < ApplicationSystemTestCase
     assert_selector "[data-filter-target=option][aria-pressed=true]", count: 1, text: "All"
   end
 
+  test "on paper the toggles are left out and a narrowed list prints every finding in ink" do
+    visit project_path(@project.key)
+    surprise = @findings.index { |finding| finding.kind == "surprise" } + 1
+    other = @findings.index { |finding| finding.kind != "surprise" } + 1
+    click_toggle "Surprises"
+    assert_selector "#finding-#{other}[data-dim]"
+
+    as_print do
+      assert_no_selector "[aria-labelledby=kind-filter]"
+      assert_equal color("#finding-#{surprise} h3"), color("#finding-#{other} h3")
+    end
+  end
+
   test "the home page's lane toggles stay out of a project page" do
     visit project_path(@project.key)
 

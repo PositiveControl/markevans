@@ -63,7 +63,9 @@ template copy. It is the home page's filter, not a second one
 Picking a kind marks `data-dim` on every finding of another kind. A dimmed
 finding's text, its mark included, drops to `text-quiet`; it is never hidden
 and keeps its place in the reading order. Its text never fades by opacity,
-which would fail axe's contrast check.
+which would fail axe's contrast check. The dim is for the screen only: on
+paper the toggles are left out and every finding prints in ink, narrowed or
+not.
 
 Without scripts the toggles stay `hidden` and no finding carries `data-dim`, so
 the section reads as a document, every finding at full strength.

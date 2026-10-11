@@ -7,7 +7,7 @@ section class="flex flex-col gap-3 print:gap-1" data-controller="filter" data-fi
     = render FilterComponent.new(label: "Kind", key: "kind", options: kind_options)
   ul class="flex flex-col gap-6" aria-labelledby="findings-heading"
     - findings.each.with_index(1) do |finding, n|
-      li class="flex max-w-measure flex-col gap-1 data-dim:text-quiet" id="finding-#{n}" data-kind=finding.kind data-filter-target="row"
+      li class="flex max-w-measure flex-col gap-1 not-print:data-dim:text-quiet" id="finding-#{n}" data-kind=finding.kind data-filter-target="row"
         p class="flex items-center gap-1 font-mono text-label uppercase"
           = render FindingMarkComponent.new(kind: finding.kind)
           = finding.kind.capitalize

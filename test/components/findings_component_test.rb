@@ -87,12 +87,12 @@ class FindingsComponentTest < ViewComponent::TestCase
     assert_equal %w[h2 div ul], order
   end
 
-  test "every finding is a row the filter dims by its kind, to quiet text, never hidden" do
+  test "every finding is a row the filter dims by its kind, to quiet text on screen only, never hidden" do
     render_inline(FindingsComponent.new(findings: [ finding("learning"), finding("surprise") ]))
 
     assert_selector "li[data-filter-target=row][data-kind]", count: 2
-    assert_selector "li.data-dim\\:text-quiet", count: 2
-    assert_selector "li svg.in-data-dim\\:text-quiet", count: 2
+    assert_selector "li.not-print\\:data-dim\\:text-quiet", count: 2
+    assert_selector "li svg.not-print\\:in-data-dim\\:text-quiet", count: 2
     assert_no_selector "li[class*=opacity], li [class*=opacity], li[data-dim]"
   end
 

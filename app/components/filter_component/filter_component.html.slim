@@ -1,4 +1,4 @@
-div class="flex flex-wrap items-center gap-1 font-mono text-label" role="group" aria-labelledby=heading_id hidden=true data-filter-target="live"
+div class="flex flex-wrap items-center gap-1 font-mono text-label print:hidden" role="group" aria-labelledby=heading_id hidden=true data-filter-target="live"
   span id=heading_id class="mr-1 uppercase text-quiet" = label
   - options.each do |option|
     button type="button" class=BUTTON aria-pressed=(option.value == "all").to_s *value_attribute(option) data-filter-target="option" data-action="filter#pick" = option.label

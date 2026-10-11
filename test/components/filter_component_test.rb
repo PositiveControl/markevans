@@ -48,6 +48,12 @@ class FilterComponentTest < ViewComponent::TestCase
     assert_selector "[data-filter-target=live][hidden] button", count: 4, visible: :all
   end
 
+  test "left off paper: a printed page has nothing to press" do
+    render_inline(lanes)
+
+    assert_selector "[role=group].print\\:hidden", visible: :all
+  end
+
   private
 
   def lanes = FilterComponent.new(label: "Controller", key: "lane", options: DeliveryThread::LANE_NAMES)
