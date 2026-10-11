@@ -231,3 +231,33 @@ projects:
       - heading: How it was built
         paragraphs:
           - "Built in two days of direct commits in April 2026, without the chain: a core of configuration, tracker and reporter, then the Minitest and RSpec integrations, then its own test suite. It ships in every app the rails-rocket-sheep template generates, this site included, which reports any test over 500 ms after each run."
+
+  - key: myrelay
+    name: myrelay
+    summary: "A self-hosted WireGuard VPN toolkit, written in Go: no account system, no cloud dependency, no subscription."
+    category: AI and Tooling
+    tags:
+      - Go
+      - WireGuard
+      - SQLite
+      - Terraform
+    links:
+      - label: Repository
+        url: https://github.com/PositiveControl/myrelay
+    sections:
+      - heading: The project
+        paragraphs:
+          - "Set up a private VPN server, add a peer with one command, and hand out a QR code. A CLI, vpnctl, writes the peer config; an agent watches it and syncs the WireGuard peers. It runs standalone on one server, or managed from a control plane API, and ships a Terraform example for Hetzner Cloud."
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: Creator and maintainer
+              - k: Stack
+                v: Go, WireGuard, SQLite, Terraform
+              - k: Status
+                v: In development
+      - heading: How it was built
+        paragraphs:
+          - "It started with Algo. Since 2016, personal VPNs had run on Algo, Trail of Bits' scripts for setting up a WireGuard and IPsec VPN in the cloud; myrelay was built as an updated replacement."
+          - "Built in March 2026 in direct commits, from the control plane and agent to the vpnctl CLI and SQLite persistence. In August it was hardened through four small pull requests, each tied to a bd issue: an idempotent stop that waits for teardown, a seam for injecting the WireGuard command runner, a fix so teardown never removes the node-wide NAT rule, and the tests that use the seam."

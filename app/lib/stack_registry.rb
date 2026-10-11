@@ -22,7 +22,7 @@ module StackRegistry
     framework: %w[Rails ActionCable Godot MLX Minitest RSpec],
     platform: [ "iOS", "Apple Silicon", "IBM Quantum" ],
     data: %w[PostgreSQL SQLite],
-    tool: %w[Claude Cursor Kamal RubyGems],
+    tool: %w[Claude Cursor Kamal RubyGems Terraform WireGuard],
     hosting: %w[Hetzner]
   }.flat_map { |kind, names| names.map { |name| [ name, Chip.new(name:, kind:) ] } }.to_h.freeze
 

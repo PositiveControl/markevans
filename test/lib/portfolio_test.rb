@@ -1,15 +1,15 @@
 require "test_helper"
 
 class PortfolioTest < ActiveSupport::TestCase
-  test "all lists the seven projects in the file's order" do
-    assert_equal %w[rails-rocket-sheep idlempire harness kram dailydrop spamsandwich slowpoke-rb], Portfolio.all.map(&:key)
+  test "all lists the eight projects in the file's order" do
+    assert_equal %w[rails-rocket-sheep idlempire harness kram dailydrop spamsandwich slowpoke-rb myrelay], Portfolio.all.map(&:key)
   end
 
   test "grouped lists each category in its fixed order, its projects in the file's order" do
     groups = Portfolio.grouped
 
     assert_equal Portfolio::CATEGORIES, groups.map(&:first)
-    assert_equal %w[rails-rocket-sheep harness slowpoke-rb], groups.first.last.map(&:key)
+    assert_equal %w[rails-rocket-sheep harness slowpoke-rb myrelay], groups.first.last.map(&:key)
     assert_equal Portfolio.all.sort_by(&:key), groups.flat_map(&:last).sort_by(&:key)
   end
 

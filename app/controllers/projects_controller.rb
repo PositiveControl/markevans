@@ -1,6 +1,6 @@
 # The projects, from content/work.yml (docs/system/site-pages.md).
 class ProjectsController < ApplicationController
-  # Not paginated: seven entries from a content file, which grow by an edit to
+  # Not paginated: eight entries from a content file, which grow by an edit to
   # that file and never with usage (docs/rules/pagination.md).
   def index
     @page = SitePage.fetch(:work)
