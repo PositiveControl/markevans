@@ -37,7 +37,7 @@ steps:
     artifact:             # optional
       source: "…"
       body: "…"
-      url: "https://…"    # optional: links the source line; https only
+      url: "https://…"    # optional: links the source line; https only. Other keys are rejected
     note: "…"             # optional, italic, in Mark's voice
     seconds: 8            # optional; a step plays for 6 s otherwise
 ```

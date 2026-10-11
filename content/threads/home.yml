@@ -64,6 +64,8 @@ steps:
         # Home thread — design
 
         Status: Approved (G1, 2026-10-03)
+        Date: 2026-10-03
+        Slug: home-thread
         **Feature branch:** feature/home-thread
 
         The home page of markevans.io is one real feature moving through the delivery

@@ -646,6 +646,19 @@ class HomePlaybackTest < ApplicationSystemTestCase
     end
   end
 
+  test "an artifact's source link is a target of at least 44 px" do
+    open_thread
+    click_control "Pause"
+
+    sizes = evaluate_script(<<~JS)
+      [...document.querySelectorAll("main pre")].map(pre => pre.previousElementSibling.querySelector("a"))
+        .filter(Boolean)
+        .map(a => [a.textContent.trim(), a.getBoundingClientRect().height])
+    JS
+    assert_operator sizes.size, :>=, 1, "no artifact links on the home thread"
+    sizes.each { |name, height| assert_operator height, :>=, 44, "#{name} is #{height} px tall" }
+  end
+
   test "axe passes while playing, while paused, and with a filter on" do
     open_thread
     assert_accessible

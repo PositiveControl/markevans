@@ -117,7 +117,15 @@ class DeliveryThreadTest < ActiveSupport::TestCase
 
   test "an artifact url is optional and must be https" do
     assert_invalid(/two: artifact.url must start with https:\/\//) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "url" => "javascript:alert(1)" } }
+    assert_invalid(/two: artifact.url must start with https:\/\//) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "url" => "http://x" } }
     assert_invalid(/two: unknown artifact key link/) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "link" => "https://x" } }
+  end
+
+  test "an https artifact url loads onto the artifact" do
+    data = minimal
+    data["steps"][0]["artifact"] = { "source" => "s", "body" => "b", "url" => "https://example.com/pr/1" }
+
+    assert_equal "https://example.com/pr/1", load_thread(data).steps.first.artifact.url
   end
 
   test "a git block needs on" do
