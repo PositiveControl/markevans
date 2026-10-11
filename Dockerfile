@@ -63,9 +63,12 @@ COPY --from=build /rails /rails
 
 # Run and own only the runtime files as a non-root user for security
 # Ensure all app files are readable by rails user (fixes restrictive local file permissions)
+# Kamal builds from a git clone, and log/ and tmp/ hold no tracked files when a
+# global gitignore drops their .keep, so create them before handing them over
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chmod -R o+r /rails && \
+    mkdir -p log tmp && \
     chown -R rails:rails db log storage tmp app/assets/builds
 USER 1000:1000
 
