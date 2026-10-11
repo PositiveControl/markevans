@@ -13,6 +13,20 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_equal Portfolio.all.sort_by(&:key), groups.flat_map(&:last).sort_by(&:key)
   end
 
+  test "grouped with a tag keeps only the projects carrying it, and drops empty categories" do
+    groups = Portfolio.grouped(tag: "Swift")
+
+    assert_equal [ [ "Applications", %w[dailydrop] ] ], groups.map { |category, projects| [ category, projects.map(&:key) ] }
+  end
+
+  test "tags lists every tag in use once, languages first, in registry order" do
+    tags = Portfolio.tags
+
+    assert_equal tags.uniq, tags
+    assert_equal Portfolio.all.flat_map(&:tags).uniq.sort, tags.sort
+    assert_equal StackRegistry.all.map(&:name) & tags, tags
+  end
+
   test "a category outside the fixed set, or none, is reported" do
     assert_invalid(/one: category must be one of AI and Tooling, Applications, Languages and Compilers/) { |data| data["projects"].first["category"] = "Hobbies" }
     assert_invalid(/one: missing category/) { |data| data["projects"].first.delete("category") }

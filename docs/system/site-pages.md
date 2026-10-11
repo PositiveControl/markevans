@@ -8,7 +8,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 
 | Route | Controller | Content | Shows |
 |---|---|---|---|
-| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then a heading per category in `Portfolio::CATEGORIES` order, each over its projects in file order: name (mono) linking to its page, summary, and its tags as chips (`ChipComponent`), to the right from 900 px. An empty category is left out |
+| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then the stack filter (`StackFilterComponent`: All and a link per tag in use; `?tag=` keeps only the projects carrying it, and a tag no project carries is ignored), then a heading per category in `Portfolio::CATEGORIES` order, each over its projects in file order: name (mono) linking to its page, summary, and its tags as chips (`ChipComponent`), to the right from 900 px. An empty category is left out |
 | `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
 | `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |

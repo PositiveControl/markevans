@@ -9,6 +9,8 @@
 main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
   h1 class="text-headline" = @page.title
   p class="mt-4 max-w-measure" = @page.intro
+  div class="mt-6 max-w-detail"
+    = render StackFilterComponent.new(tags: Portfolio.tags, current: @tag)
   - @groups.each do |category, projects|
     section class="mt-8 flex max-w-detail flex-col gap-2"
       h2 class="font-mono text-label uppercase text-quiet" = category

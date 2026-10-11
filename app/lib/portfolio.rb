@@ -38,8 +38,18 @@ module Portfolio
       @all ||= load(PATH)
     end
 
-    # Each category with its projects, in file order; an empty category is left out.
-    def grouped = CATEGORIES.filter_map { |category| [ category, all.select { |project| project.category == category } ].freeze if all.any? { |project| project.category == category } }.freeze
+    # Each category with its projects, in file order; an empty category is left
+    # out. A tag keeps only the projects carrying it.
+    def grouped(tag: nil)
+      projects = tag ? all.select { |project| project.tags.include?(tag) } : all
+      CATEGORIES.filter_map do |category|
+        members = projects.select { |project| project.category == category }
+        [ category, members.freeze ].freeze if members.any?
+      end.freeze
+    end
+
+    # Every tag some project carries, once, in StackRegistry order.
+    def tags = StackRegistry.all.map(&:name) & all.flat_map(&:tags)
 
     # @raise [NotFound] when no project has the key
     def fetch(key) = all.find { |project| project.key == key.to_s } || raise(NotFound, "no project #{key} in #{PATH.basename}")

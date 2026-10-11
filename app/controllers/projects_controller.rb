@@ -4,7 +4,9 @@ class ProjectsController < ApplicationController
   # that file and never with usage (docs/rules/pagination.md).
   def index
     @page = SitePage.fetch(:work)
-    @groups = Portfolio.grouped
+    # A tag no project carries is ignored, so a stale link shows the whole list.
+    @tag = params[:tag].presence_in(Portfolio.tags)
+    @groups = Portfolio.grouped(tag: @tag)
   end
 
   # An unknown key raises Portfolio::NotFound, which Rails answers with a 404.

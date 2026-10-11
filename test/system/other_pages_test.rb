@@ -8,7 +8,7 @@ require "application_system_test_case"
 class OtherPagesTest < ApplicationSystemTestCase
   PHONE = [ 390, 844 ].freeze
 
-  def pages = [ projects_path, project_path(Portfolio.all.first.key), workflow_path, background_path, contact_path ]
+  def pages = [ projects_path, projects_path(tag: "Ruby"), project_path(Portfolio.all.first.key), workflow_path, background_path, contact_path ]
 
   test "every page is accessible at 1400 px" do
     pages.each do |path|
@@ -27,6 +27,18 @@ class OtherPagesTest < ApplicationSystemTestCase
         assert_accessible
       end
     end
+  end
+
+  test "a stack filter link is a 44 px target that narrows the list" do
+    visit projects_path
+    sizes = evaluate_script(<<~JS)
+      [...document.querySelectorAll("nav[aria-label='Filter by stack'] a")].map(a => { const r = a.getBoundingClientRect(); return [a.textContent, r.width, r.height] })
+    JS
+    sizes.each { |name, width, height| assert_operator [ width, height ].min, :>=, 44, "#{name} is #{width}×#{height}" }
+
+    within("nav[aria-label='Filter by stack']") { click_link "Swift" }
+    assert_selector "a[aria-current=page]", text: "Swift"
+    assert_selector "main section li[data-project]", count: 1
   end
 
   test "the CV prints to one page, without the header and footer" do
