@@ -55,7 +55,7 @@ class ProjectFindingsTest < ApplicationSystemTestCase
   test "the home page's lane toggles stay out of a project page" do
     visit project_path(@project.key)
 
-    assert_selector "[data-filter-target=option]", count: 1 + Portfolio::KINDS.size
+    assert_selector "[data-filter-target=option]", count: 1 + @findings.map(&:kind).uniq.size
     assert_no_selector "[data-lane]"
   end
 
