@@ -103,10 +103,10 @@ projects:
               - k: Stack
                 v: Go, OpenQASM, IBM Quantum
               - k: Status
-                v: "[Status]"
+                v: Built and validated on IBM Quantum hardware
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "kraM did not go through the chain: it was built in four days of direct commits, one language feature at a time, from an expression evaluator and a reversible execution core with a time-travel REPL up to the gate compiler and the quantum algorithms. Each algorithm carries its own tests, and each hardware run was committed as a result, with its QASM sample kept."
 
   - key: dailydrop
     name: DailyDrop
