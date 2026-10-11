@@ -131,7 +131,7 @@ projects:
                 v: Live at dailydrop.fm
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "Generated from the rails-rocket-sheep template in February 2026, with the MVP built the next day: the selection engine, Apple Music integration and the public frontend. Design work is written down as it goes: over a hundred design docs and thirty decision records. In August it adopted the template's agent workflow, and production incidents are written up as postmortems in the repo; the last, a silent drop of library-scoped Apple Music IDs, ended in a fix and a rule to flag degraded rows instead of falling back silently."
 
   - key: spamsandwich
     name: spamsandwich
