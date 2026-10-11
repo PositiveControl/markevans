@@ -102,16 +102,18 @@ Development mail is captured by Letter Opener at `/letter_opener`.
 
 ### Deployment
 
-Deployed with Kamal 2. First replace the placeholders in `config/deploy.yml`
-(`your-username`, `YOUR_SERVER_IP`, `your-domain.com`), then define every
-secret it declares in `.kamal/secrets`. Kamal stops on any that is missing:
+Deployed with Kamal 2 to `markevans.io` on the server
+dopeempire (idlempire.com) also runs on. Both apps share that host's
+kamal-proxy; markevans has its own Postgres accessory on host port 5433.
+Copy `.kamal/secrets.example` to `.kamal/secrets` and define every secret
+`config/deploy.yml` declares. Kamal stops on any that is missing:
 
 | Secret | Used by |
 |---|---|
 | `KAMAL_REGISTRY_PASSWORD` | Pushing the image to the registry |
 | `RAILS_MASTER_KEY` | The app's credentials |
 | `DATABASE_URL` | The primary database |
-| `QUEUE_DATABASE_URL`, `CABLE_DATABASE_URL`, `CACHE_DATABASE_URL` | The Solid Queue, Cable and Cache databases |
+| `QUEUE_DATABASE_URL`, `CABLE_DATABASE_URL`, `CACHE_DATABASE_URL` | The Solid Queue, Cable and Cache databases, in the same Postgres container |
 | `POSTGRES_PASSWORD` | The Postgres accessory |
 
 Then:

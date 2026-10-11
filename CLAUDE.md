@@ -150,11 +150,13 @@ workflow. Adding a page: `docs/sop/add-seo-to-a-page.md`.
 
 ## Deployment
 
-Kamal 2. Configure `config/deploy.yml`, fill `.kamal/secrets`, then
-`kamal setup` and `kamal deploy`. `.kamal/secrets` must define every secret
-`deploy.yml` declares, or Kamal stops: `KAMAL_REGISTRY_PASSWORD`,
-`RAILS_MASTER_KEY`, `DATABASE_URL`, `QUEUE_`/`CABLE_`/`CACHE_DATABASE_URL`, and
-`POSTGRES_PASSWORD` (table in `README.md`). Server hardening:
+Kamal 2, to `markevans.io` on the server dopeempire also uses. Fill
+`.kamal/secrets` from `.kamal/secrets.example`, then `kamal setup` and
+`kamal deploy`. `.kamal/secrets` must define every secret `deploy.yml`
+declares, or Kamal stops: `KAMAL_REGISTRY_PASSWORD`, `RAILS_MASTER_KEY`,
+`DATABASE_URL`, `QUEUE_`/`CABLE_`/`CACHE_DATABASE_URL`, and
+`POSTGRES_PASSWORD` (table in `README.md`). The four databases share one
+Postgres container but must stay separate databases. Server hardening:
 `docs/sop/harden-a-kamal-server.md`.
 
 ## Documentation
