@@ -14,7 +14,10 @@
 # controller (docs/rules/one-playback-state.md).
 #
 # Rendered hidden: without scripts there is nothing to filter with (section
-# 6), so the filter controller reveals it on connect.
+# 6), so the filter controller reveals it on connect. Left off paper too: a
+# printed page has nothing to press. Whether a dimmed row prints dimmed is up
+# to the rows' own classes: a project's findings print in ink, and the home
+# thread, with no print styles, prints its rows as they show.
 class FilterComponent < ApplicationComponent
   Option = Data.define(:value, :label)
 

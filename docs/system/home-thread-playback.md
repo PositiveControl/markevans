@@ -82,7 +82,9 @@ and `data-dim` on every row whose value for the key does not match. The
 options are a `FilterComponent` labelled Controller, keyed on `lane`, with the
 lane names from `DeliveryThread::LANE_NAMES`. The same controller and
 component filter a project's findings by kind
-(`docs/system/project-entries.md`). Nothing is hidden: a
+(`docs/system/project-entries.md`). The toggles are `print:hidden`; the home
+thread has no print styles, so a lane picked before printing still prints its
+rows dimmed. Nothing is hidden on screen: a
 dimmed row's chart graph drops to 40 percent, its strip loses its ground and
 strong rule, and its strip and body text turn quiet. Text at 40 percent would
 fail axe's contrast check. An upcoming row's strip already wears those
