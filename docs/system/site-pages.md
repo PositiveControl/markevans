@@ -78,8 +78,8 @@ a flow list, `[a, b]`, as a placeholder.
    its page and joins the sitemap with no other change. A new category is a
    code change: add it to `Portfolio::CATEGORIES`, in the order `/work` shows it.
    A new chip is too: add its name under its kind in `StackRegistry::ITEMS`.
-   A language chip is ink on a strong rule, every other kind quiet on a faint
-   one, and no kind gets a role color (`docs/rules/color-means-role.md`).
+   A language chip is ink on a strong rule, every other kind quiet on a
+   hairline rule, and no kind gets a role color (`docs/rules/color-means-role.md`).
 2. `bin/rails content:schema` checks the file. `bin/test test/integration/other_pages_test.rb`
    reads the copy back.
 3. `bin/rails content:placeholders` lists what is still in brackets. It must be

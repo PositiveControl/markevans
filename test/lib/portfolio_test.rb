@@ -38,6 +38,7 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_invalid(/one: tags must be a list of words/) { |data| data["projects"].first["tags"] = "Ruby" }
     assert_invalid(/one: tags must be a list of words/) { |data| data["projects"].first["tags"] = [ "Ruby", "" ] }
     assert_invalid(/one: tag COBOL is not in StackRegistry/) { |data| data["projects"].first["tags"] = [ "COBOL" ] }
+    assert_invalid(/one: tag Ruby is listed twice/) { |data| data["projects"].first["tags"] = %w[Ruby Ruby] }
   end
 
   test "fetch finds a project by its key, with sections and links as values" do

@@ -98,7 +98,8 @@ module Portfolio
       return [] if tags.nil?
       return [ "tags must be a list of words" ] unless tags.is_a?(Array) && tags.all? { |tag| tag.is_a?(String) && tag.present? }
 
-      tags.reject { |tag| StackRegistry.find(tag) }.map { |tag| "tag #{tag} is not in StackRegistry" }
+      tags.reject { |tag| StackRegistry.find(tag) }.map { |tag| "tag #{tag} is not in StackRegistry" } +
+        tags.tally.select { |_, count| count > 1 }.keys.map { |tag| "tag #{tag} is listed twice" }
     end
   end
 end

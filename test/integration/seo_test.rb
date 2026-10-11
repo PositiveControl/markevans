@@ -57,6 +57,14 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_equal (1..Portfolio.all.size).to_a, list.map { |item| item["position"] }
   end
 
+  test "/work's JSON-LD lists every project even when the page is filtered, as its canonical URL does" do
+    get projects_url(tag: "Swift")
+
+    list = json_ld("CollectionPage").dig("mainEntity", "itemListElement")
+    assert_equal Portfolio.all.size, list.size
+    assert_select "link[rel=canonical][href=?]", projects_url
+  end
+
   test "/background's JSON-LD is a Person with the profiles the page links to, and no placeholder" do
     get background_url
 

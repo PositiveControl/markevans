@@ -5,7 +5,8 @@ class ProjectsController < ApplicationController
   def index
     @page = SitePage.fetch(:work)
     # A tag no project carries is ignored, so a stale link shows the whole list.
-    @tag = params[:tag].presence_in(Portfolio.tags)
+    @tags = Portfolio.tags
+    @tag = params[:tag].presence_in(@tags)
     @groups = Portfolio.grouped(tag: @tag)
   end
 

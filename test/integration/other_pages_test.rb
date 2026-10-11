@@ -31,14 +31,14 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal [ project_path("dailydrop") ], css_select("main section ul a").map { |a| a["href"] }
     assert_select "nav[aria-label='Filter by stack'] a", count: Portfolio.tags.size + 1
-    assert_select "nav[aria-label='Filter by stack'] a[aria-current=page]", text: "Swift" do |links|
+    assert_select "nav[aria-label='Filter by stack'] a[aria-current=page]", text: "Swift, show all" do |links|
       assert_equal projects_path, links.first["href"], "the picked tag links back to the whole list"
     end
     assert_select "nav[aria-label='Filter by stack'] a[href=?]", projects_path(tag: "Ruby"), text: "Ruby"
   end
 
   test "/work with no tag, or one not in use, lists everything and marks All current" do
-    [ projects_url, projects_url(tag: "COBOL") ].each do |url|
+    [ projects_url, projects_url(tag: "COBOL"), "#{projects_url}?tag[]=Ruby" ].each do |url|
       get url
 
       assert_response :success

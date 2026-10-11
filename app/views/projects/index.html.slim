@@ -4,13 +4,14 @@
 - content_for :title, "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { projects_url }
-- content_for(:head) { jsonld_tag(project_list_jsonld(@page, @groups.flat_map(&:last))) }
+/ The JSON-LD describes the canonical, unfiltered list, whatever ?tag= shows.
+- content_for(:head) { jsonld_tag(project_list_jsonld(@page, Portfolio.grouped.flat_map(&:last))) }
 
 main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
   h1 class="text-headline" = @page.title
   p class="mt-4 max-w-measure" = @page.intro
   div class="mt-6 max-w-detail"
-    = render StackFilterComponent.new(tags: Portfolio.tags, current: @tag)
+    = render StackFilterComponent.new(tags: @tags, current: @tag)
   - @groups.each do |category, projects|
     section class="mt-8 flex max-w-detail flex-col gap-2"
       h2 class="font-mono text-label uppercase text-quiet" = category

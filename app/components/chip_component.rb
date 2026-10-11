@@ -7,13 +7,16 @@
 #       = render ChipComponent.new(name: tag)
 #
 # What a chip may say, and its kind, is StackRegistry. A language is ink on a
-# strong rule; every other kind is quiet on a faint one. Neither uses a role
-# color (docs/rules/color-means-role.md).
+# strong rule; every other kind is quiet on a hairline rule. Neither uses a
+# role color (docs/rules/color-means-role.md).
 class ChipComponent < ApplicationComponent
   LOOKS = {
-    true => "border-rule-strong text-ink",
-    false => "border-rule text-quiet"
+    language: "border-rule-strong text-ink",
+    other: "border-rule text-quiet"
   }.freeze
+
+  # @param chip [StackRegistry::Chip]
+  def self.look_for(chip) = LOOKS.fetch(chip.language? ? :language : :other)
 
   # @param name [String] a chip in StackRegistry
   # @raise [KeyError] when it is not
@@ -25,5 +28,5 @@ class ChipComponent < ApplicationComponent
 
   attr_reader :chip
 
-  def look = LOOKS.fetch(chip.language?)
+  def look = self.class.look_for(chip)
 end

@@ -2,4 +2,7 @@ nav class="font-mono text-label" aria-label="Filter by stack"
   ul class="flex flex-wrap gap-1"
     - options.each do |option|
       li
-        a class="#{LINK} #{option.look}" href=href(option) aria-current=("page" if current?(option)) = option.label
+        a class="#{LINK} #{option.look}" href=href(option) aria-current=("page" if current?(option))
+          = option.label
+          - if current?(option) && option.tag
+            span class="sr-only" = ", show all"
