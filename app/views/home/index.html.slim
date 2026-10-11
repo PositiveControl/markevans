@@ -3,14 +3,14 @@
 / open, in order. With them the playback controller plays it, writing
 / data-state and data-open on each row (docs/system/home-thread-playback.md).
 / Each row's chart cell draws its piece of the git graph from the step's git
-/ block. The filter controller, beside it on the wrapper, marks data-dim on the rows
+/ block. The filter controller, beside it on the wrapper and keyed on lane, marks data-dim on the rows
 / of every controller but the one picked.
 - content_for :title, "Mark Evans"
 - content_for :meta_description, @thread.headline.truncate(155, separator: " ")
 
 / Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
 / scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).
-div data-controller="playback filter" data-action="visibilitychange@document->playback#hide wheel@window->playback#scroll:passive touchmove@window->playback#scroll:passive pointerdown@window->playback#press keydown@window->playback#key"
+div data-controller="playback filter" data-filter-key-value="lane" data-action="visibilitychange@document->playback#hide wheel@window->playback#scroll:passive touchmove@window->playback#scroll:passive pointerdown@window->playback#press keydown@window->playback#key"
   = render DockedBarComponent.new(steps: @thread.steps)
   main class="mx-auto max-w-page px-3 chart:px-8"
     / Stacked on a phone, scope first; side by side from 900 px.
