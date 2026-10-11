@@ -242,6 +242,8 @@ projects:
       - SQLite
       - Terraform
     links:
+      - label: Site
+        url: https://myrelay.to
       - label: Repository
         url: https://github.com/PositiveControl/myrelay
     sections:
