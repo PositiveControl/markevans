@@ -1,8 +1,8 @@
 # Project entries
 
-**Status:** Current for findings (#43). The kind filter (#44), the project's
-own delivery thread (#45) and findings pinned to its steps (#46) are added
-here as they land.
+**Status:** Current for findings (#43) and the kind filter (#44). The
+project's own delivery thread (#45) and findings pinned to its steps (#46) are
+added here as they land.
 
 How a `/work/:id` page is assembled beyond its summary and sections. Design:
 `docs/plans/2026-10-09-work-entries-design.md`. The page's route, its other
@@ -40,13 +40,35 @@ heading's text. `FindingsComponent` draws a section under a mono `h2`
 "Findings" (a structural label), and a `ul` named by that heading. Each
 finding is an `li`:
 
-- `id="finding-<n>"`, counted from 1 in file order, and `data-kind`
+- `id="finding-<n>"`, counted from 1 in file order, `data-kind`, and
+  `data-filter-target="row"`
 - its kind as a mono word (`kind`, capitalised) beside its mark
 - its title, a serif `h3`, and its body, serif
 - its evidence in mono, linked by its label, or shown as label and url in
   quiet text while the url is still a placeholder
 
-The section is static: it reads the same with scripts off.
+### The kind filter
+
+Between the heading and the list, a row of toggles narrows the findings by
+kind: All, then Learnings, Surprises and Takeaways, each only if the project
+has a finding of that kind, since a toggle with nothing to show would dim every
+finding. Findings all of one kind get no toggles. The words come from
+`Portfolio::KINDS`, pluralised (`FindingsComponent::KIND_LABELS`), not from
+template copy. It is the home page's filter, not a second one
+(`docs/system/home-thread-playback.md`, *The filter*): the section carries
+`data-controller="filter"` keyed on `kind`, and the toggles are a
+`FilterComponent` labelled Kind, `aria-pressed` buttons each carrying
+`data-kind`.
+
+Picking a kind marks `data-dim` on every finding of another kind. A dimmed
+finding's text, its mark included, drops to `text-quiet`; it is never hidden
+and keeps its place in the reading order. Its text never fades by opacity,
+which would fail axe's contrast check. The dim is for the screen only: on
+paper the toggles are left out and every finding prints in ink, narrowed or
+not.
+
+Without scripts the toggles stay `hidden` and no finding carries `data-dim`, so
+the section reads as a document, every finding at full strength.
 
 ### Kinds
 

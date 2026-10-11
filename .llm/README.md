@@ -45,7 +45,7 @@ How things currently work. Architecture state, not intentions.
 - [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its three values, what it writes on the page (bay and log included), the filter controller, the step clock, follow and yield, the docked bar, the step hash, the keyboard and the event table
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
 - [QA walkthroughs](../docs/system/qa_walkthrough.md) — the reviewer script per change, and how to run one
-- [Project entries](../docs/system/project-entries.md) — findings (#43); the kind filter, a project's thread and pinned findings to come (#42)
+- [Project entries](../docs/system/project-entries.md) — findings (#43) and the kind filter (#44); a project's thread and pinned findings to come (#42)
 <!-- system:end -->
 
 ## ADRs — `docs/adr/`

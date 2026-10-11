@@ -170,5 +170,6 @@ the PDF's pages. It is what says the CV still fits.
 | `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the sitemap |
 | `test/components/{site_header,site_footer,page_sections,detail_group,link_list,findings,finding_mark}_component_test.rb` | Each component, including the print scale on a row and a link |
 | `test/system/other_pages_test.rb` | axe on every page at 1400 and 390 px, no sideways scroll at 390 px, the one-page print |
+| `test/system/project_findings_test.rb` | The kind filter: a toggle dims the other kinds to quiet and hides none, the order holds, All clears it, axe with a filter on; in print no toggles and every finding in ink; without scripts no toggles and nothing dimmed |
 
 Walk it in a browser: `bin/qa-walkthrough site_pages`.

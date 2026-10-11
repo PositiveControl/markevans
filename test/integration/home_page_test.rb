@@ -128,6 +128,14 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "main[data-controller]", count: 0
   end
 
+  test "the filter is keyed on lane, which every row and option carries" do
+    get root_url
+
+    assert_select "[data-controller='playback filter'][data-filter-key-value=lane]", count: 1
+    assert_select "[data-filter-target=row]:not([data-lane])", count: 0
+    assert_select "[data-filter-target=option]:not([data-lane])", count: 0
+  end
+
   test "the log counts gates out of the thread's own total" do
     get root_url
 

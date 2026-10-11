@@ -42,14 +42,4 @@ class OtherPagesTest < ApplicationSystemTestCase
       assert_selector "h1", text: SitePage.fetch(:background).title
     end
   end
-
-  private
-
-  def as_print
-    browser = page.driver.browser
-    browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
-    yield
-  ensure
-    browser.execute_cdp("Emulation.setEmulatedMedia", media: "")
-  end
 end

@@ -1,4 +1,0 @@
-div class="flex flex-wrap items-center gap-1 font-mono text-label" role="group" aria-labelledby="controller-filter" hidden=true data-filter-target="live"
-  span#controller-filter class="mr-1 uppercase text-quiet" Controller
-  - OPTIONS.each do |option|
-    button type="button" class=BUTTON aria-pressed=(option.lane == "all").to_s data-lane=option.lane data-filter-target="option" data-action="filter#pick" = option.label
