@@ -1,6 +1,6 @@
 # Site pages — Work, Workflow, Background, Contact
 
-**Status:** Current through #38.
+**Status:** Current through #43.
 
 The pages beside the home thread (design doc,
 `docs/plans/2026-10-03-home-thread-design.md`, section 2). They are built from
@@ -9,7 +9,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 | Route | Controller | Content | Shows |
 |---|---|---|---|
 | `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then every project in file order: its name (mono) linking to its page, and its summary |
-| `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
+| `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, the first section, findings, then the other sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
 | `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |
 | `GET /contact` | `ContactsController#show` | `content/pages/contact.yml` | Title, intro, the contact routes, any sections |
@@ -21,15 +21,16 @@ change only when someone edits that file, never through use of the site
 ## Where the content lives
 
 Every word comes from `content/` (`docs/rules/content-is-files.md`). The only
-exceptions are the site name and the structural labels: the nav, "The chain"
-and the lists' accessible names. Copy not written yet stays in `[brackets]`
+exceptions are the site name and the structural labels: the nav, "The chain",
+"Findings", a finding's kind word (its `kind`, capitalised) and the lists'
+accessible names. Copy not written yet stays in `[brackets]`
 (`docs/rules/no-invented-content.md`). The pages render placeholders as
 written, so a gap is visible on the page and is never filled in by a guess.
 
 Background, Contact, the Work intro and each project's summary, links and
 first section are cut from Mark's master resume (#38). Re-cutting them is
 `docs/sop/update-the-cv.md`. What the resume does not answer is still in
-brackets: the Contact intro, each project's Role and *How it was built*,
+brackets: the Contact intro, each project's Role, *How it was built* and findings,
 rails-rocket-sheep's and harness's and kraM's Status, rails-rocket-sheep's
 first paragraph, and the Workflow page.
 
@@ -42,6 +43,11 @@ first paragraph, and the Workflow page.
 | `projects[].summary` | yes | One line: the list's text, the page's lede, its meta description |
 | `projects[].links` | no | A list of `label` and `url` |
 | `projects[].sections` | no | A list of sections, as a page's |
+| `projects[].findings` | no | A list of what the project taught, shown after its first section (`docs/system/project-entries.md`) |
+| `projects[].findings[].kind` | yes | `learning`, `surprise` or `takeaway` |
+| `projects[].findings[].title` | yes | One line, serif |
+| `projects[].findings[].body` | yes | A paragraph, serif |
+| `projects[].findings[].evidence` | no | One `label` and `url`, as a link is |
 
 **`content/pages/<key>.yml`**, read by `SitePage` (`app/lib/site_page.rb`):
 
@@ -99,6 +105,8 @@ No controller rescues it (`docs/rules/exception-boundary.md`).
 | `SiteFooterComponent` | The signature and the line about how the site is built, with any content between them. Leaves the print | every page; the home page puts its key list in it |
 | `PageSectionsComponent` | Each section: a mono `h2` label over a hairline, serif paragraphs, then its groups | project, Workflow, Background, Contact |
 | `DetailGroupComponent` | A mono `h3`/`h4` label over a `dl` of mono key (260 px) and serif value. A value that would get under 180 px wraps beneath its key | `PageSectionsComponent`, `StepBodyComponent` |
+| `FindingsComponent` | A project's findings: a mono `h2` "Findings", then each finding as `#finding-<n>`, its kind in a mono word beside its `FindingMarkComponent`, a serif title and body, and its evidence in mono, a link only once the address is real | project |
+| `FindingMarkComponent` | A finding kind's ink shape in an 18 px slot: open circle, bar over a dot, arrow | `FindingsComponent` |
 | `LinkListComponent` | A `dl` of mono label and address, inside a `role="group"` that carries the list's name. Each address is shown without its scheme and is a 44 px tall, underlined link, or text if it is still a placeholder | project, Background, Contact |
 
 The Workflow page draws its chain from `DeliveryThread.fetch(:home)`, the
@@ -158,9 +166,10 @@ the PDF's pages. It is what says the CV still fits.
 |---|---|
 | `test/lib/portfolio_test.rb`, `test/lib/site_page_test.rb` | The loaders and their schemas |
 | `test/tasks/content_tasks_test.rb` | `content:schema` over the work list and pages |
-| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread; the current section; the footer |
+| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order, a project's findings included; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread; the current section; the footer |
 | `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the sitemap |
-| `test/components/{site_header,site_footer,page_sections,detail_group,link_list}_component_test.rb` | Each component, including the print scale on a row and a link |
+| `test/components/{site_header,site_footer,page_sections,detail_group,link_list,findings,finding_mark}_component_test.rb` | Each component, including the print scale on a row and a link |
 | `test/system/other_pages_test.rb` | axe on every page at 1400 and 390 px, no sideways scroll at 390 px, the one-page print |
+| `test/system/project_findings_test.rb` | The kind filter: a toggle dims the other kinds to quiet and hides none, the order holds, All clears it, axe with a filter on; in print no toggles and every finding in ink; without scripts no toggles and nothing dimmed |
 
 Walk it in a browser: `bin/qa-walkthrough site_pages`.

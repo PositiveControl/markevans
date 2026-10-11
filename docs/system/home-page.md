@@ -46,7 +46,7 @@ list is in their reach:
 | Region | What | From |
 |---|---|---|
 | Header | The site name, linking to `/`, and Work, Workflow, Background and Contact; none is current here. Rendered by the layout on every page | `SiteHeaderComponent` |
-| Top row, left (`max-w-column`, 400 px; stacked above the right below 900 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `ControllerFilterComponent`, `LegendComponent` |
+| Top row, left (`max-w-column`, 400 px; stacked above the right below 900 px) | The scope, with the controls in its lower gap, then the strip bay, the controller filter and the legend | `ScopeComponent`, `ControlsComponent`, `StripBayComponent`, `FilterComponent`, `LegendComponent` |
 | Top row, right | Headline and intro, then the log | the thread file, `LogComponent` |
 | Docked bar (fixed, top) | Controls, the active step's number and name, a strip bay and a mark per step (both from 1280 px); shown only while the scope is out of view | `DockedBarComponent` |
 | Thread | Per step (`@thread.cells`): the `aria-hidden` chart cell (`w-column`, or the 84 px `w-gutter` below 900 px), then 20 px across (`pl-strip-gap`) the strip and its body. The row's `id` is the step key, and the step's hash; `-scroll-mt-1`, under the page's 96 px `scroll-pt-16`, puts its strip 96 px down when the page goes to it. It is a playback and a filter `row` target and carries `--seconds`, `data-bay` and `data-lane` | `ChartCellComponent`, `StripComponent`, `StepBodyComponent` |
@@ -62,7 +62,7 @@ list is in their reach:
 | `ScopeComponent` | The radar scope: route ring, crosshair, one target per step on a 270 degree arc (a link to the step), the leader, the centre block, the sweep. All but the ring, crosshair and targets render hidden until playback connects |
 | `ControlsComponent` | Restart, step back, play or pause, step forward: 44 px round icon buttons, hidden until playback connects |
 | `StripBayComponent` | Todo, In Progress, Up for Review, Done (`DeliveryThread::BAYS`) in four equal cells; the active step's bay fills ink. Hidden until playback connects |
-| `ControllerFilterComponent` | All, Human, Agent, CI as 44 px toggles with `aria-pressed`, labelled Controller. Hidden until the filter connects |
+| `FilterComponent` | All, Human, Agent, CI as 44 px toggles with `aria-pressed`, labelled Controller and keyed on `lane`. Hidden until the filter connects. A project's findings use it too, keyed on `kind` |
 | `DockedBarComponent` | A second view of playback: `ControlsComponent`, the step's number and name, `StripBayComponent`, and per step a 44 px link drawn as its scope target. Hidden until playback connects, then shown only while the page is `data-docked` |
 | `LogComponent` | Header: Log, gates cleared out of the thread's gate count (`Step#gate?`), artifacts made. Body: an entry per step, newest first, each hidden until its step is done, behind a one-line empty state; scrolls inside 220 px and takes focus. Hidden until playback connects |
 
@@ -164,7 +164,7 @@ needs Rails.
 | `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, bay, filter, log and docked bar, targets as links), each row's seconds, bay and lane, the log's gate total, the footer and its key list, self-hosted fonts, nothing of the old page |
 | `test/integration/page_budget_test.rb`, `test/system/page_requests_test.rb` | The budget (above) |
 | `test/system/home_playback_test.rb` | Playback, the bay, the filter, the log, follow, yield, the docked bar, the hash and the keyboard in a browser, and axe while playing, paused, filtered, docked and without scripts (`bin/rails test:system`; see `home-thread-playback.md`) |
-| `test/components/{strip,step_body,legend,fix_mark,controls,strip_bay,controller_filter,log}_component_test.rb` | Each component from inline steps |
+| `test/components/{strip,step_body,legend,fix_mark,controls,strip_bay,filter,log}_component_test.rb` | Each component from inline steps |
 | `test/components/{scope,docked_bar}_component_test.rb` | Targets, arc and marks from a fixture thread |
 | `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
 | `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |

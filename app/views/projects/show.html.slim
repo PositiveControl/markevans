@@ -1,6 +1,8 @@
 / One project from content/work.yml: its name, summary, links and sections
 / (docs/system/site-pages.md). The name is the repository's, so it is mono
-/ (docs/rules/typeface-means-speaker.md).
+/ (docs/rules/typeface-means-speaker.md). Findings follow the first section,
+/ The project, by position rather than by its heading, so the template never
+/ matches on copy (docs/system/project-entries.md).
 - content_for :title, "#{@project.name} · Mark Evans"
 - content_for :meta_description, @project.summary.truncate(155, separator: " ")
 - content_for(:canonical_url) { project_url(@project.key) }
@@ -11,7 +13,9 @@ main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
   p class="mt-4 max-w-measure" = @project.summary
   div class="mt-6"
     = render LinkListComponent.new(links: @project.links, label: "Links")
-  div class="mt-8"
-    = render PageSectionsComponent.new(sections: @project.sections)
+  div class="mt-8 flex flex-col gap-6"
+    = render PageSectionsComponent.new(sections: @project.sections.first(1))
+    = render FindingsComponent.new(findings: @project.findings)
+    = render PageSectionsComponent.new(sections: @project.sections.drop(1))
 
 = render SiteFooterComponent.new

@@ -29,23 +29,37 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     assert_select "h1.font-mono", project.name
     assert_select "main > p", project.summary
     assert_select "[role=group][aria-label=Links] dl a[href=?]", project.links.first.url
-    assert_equal project.sections.map(&:heading), css_select("main h2").map(&:text)
+    first, *rest = project.sections.map(&:heading)
+    assert_equal [ first, "Findings", *rest ], css_select("main h2").map(&:text)
+  end
+
+  test "a project page reads every finding back from the file: its kind in words, its title and body" do
+    project = Portfolio.fetch("rails-rocket-sheep")
+    get project_url(project.key)
+
+    assert_findings_shown project
+  end
+
+  test "written evidence links by its label, and a kind may come twice" do
+    with_project(file_fixture("work/written.yml")) do |project|
+      get project_url(project.key)
+
+      assert_equal %w[learning learning], project.findings.map(&:kind)
+      assert_findings_shown project
+    end
   end
 
   test "copy not yet written shows as its [placeholder], as written" do
-    # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
-    original = Portfolio.method(:fetch)
-    project = Portfolio.load(file_fixture("work/placeholder.yml")).first
-    Portfolio.define_singleton_method(:fetch) { |*| project }
+    with_project(file_fixture("work/placeholder.yml")) do |project|
+      get project_url(project.key)
 
-    get project_url(project.key)
-
-    assert_match(/\A\[.+\]\z/, project.summary)
-    assert_select "main > p", project.summary
-    assert_select "[role=group][aria-label=Links] dl a", count: 0
-    assert_select "[role=group][aria-label=Links] dl span", project.links.first.url
-  ensure
-    Portfolio.define_singleton_method(:fetch, original)
+      assert_match(/\A\[.+\]\z/, project.summary)
+      assert_select "main > p", project.summary
+      assert_select "[role=group][aria-label=Links] dl a", count: 0
+      assert_select "[role=group][aria-label=Links] dl span", project.links.first.url
+      assert_empty project.findings
+      assert_select "#findings-heading", count: 0
+    end
   end
 
   test "an unknown project is a 404" do
@@ -102,6 +116,42 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
       get url
 
       assert_select "footer", /Mark Evans · PositiveControl/
+    end
+  end
+
+  private
+
+  # Serves the first project in a fixture file in place of content/work.yml's.
+  # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
+  def with_project(path)
+    original = Portfolio.method(:fetch)
+    project = Portfolio.load(path).first
+    Portfolio.define_singleton_method(:fetch) { |*| project }
+    yield project
+  ensure
+    Portfolio.define_singleton_method(:fetch, original)
+  end
+
+  # Evidence still to be found is its label and url as text; written evidence
+  # is a link by its label.
+  def assert_findings_shown(project)
+    assert_select "ul[aria-labelledby=findings-heading] > li", project.findings.size
+    project.findings.each.with_index(1) do |finding, n|
+      assert_select "#finding-#{n}[data-kind=?]", finding.kind do
+        assert_select "p.font-mono", finding.kind.capitalize
+        assert_select "h3", finding.title
+        assert_select "p.font-serif", finding.body
+        assert_evidence_shown finding.evidence if finding.evidence
+      end
+    end
+  end
+
+
+  def assert_evidence_shown(evidence)
+    if evidence.placeholder?
+      assert_select "p.font-mono", "#{evidence.label} #{evidence.url}"
+    else
+      assert_select "p.font-mono a[href=?]", evidence.url, evidence.label
     end
   end
 end

@@ -28,6 +28,15 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     browser.execute_cdp("Network.setBlockedURLs", urls: [])
   end
 
+  # Runs the block with the page styled for print, then back for the screen.
+  def as_print
+    browser = page.driver.browser
+    browser.execute_cdp("Emulation.setEmulatedMedia", media: "print")
+    yield
+  ensure
+    browser.execute_cdp("Emulation.setEmulatedMedia", media: "")
+  end
+
   # Runs the block with the viewport at the given size, then puts it back.
   def at_size(width, height)
     browser = page.driver.browser

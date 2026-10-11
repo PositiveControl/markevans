@@ -74,9 +74,17 @@ outcome. The controller only shows them, so it builds no markup.
 The controller filter is not playback state: picking a lane leaves the step,
 playing and reopened strips as they were. A second controller,
 `app/javascript/controllers/filter_controller.js`, sits on the wrapper beside
-`playback` and owns one value, `lane` (`all`, `human`, `agent` or `ci`;
-default `all`). Its `render()` writes `aria-pressed` on each option and
-`data-dim` on every row whose `data-lane` does not match. Nothing is hidden: a
+`playback`. It filters on whatever key the markup names in
+`data-filter-key-value`; here it is `lane`, which every row and every option
+carries as `data-lane`. It owns one value, `picked` (`all`, `human`, `agent`
+or `ci`; default `all`). Its `render()` writes `aria-pressed` on each option
+and `data-dim` on every row whose value for the key does not match. The
+options are a `FilterComponent` labelled Controller, keyed on `lane`, with the
+lane names from `DeliveryThread::LANE_NAMES`. The same controller and
+component filter a project's findings by kind
+(`docs/system/project-entries.md`). The toggles are `print:hidden`; the home
+thread has no print styles, so a lane picked before printing still prints its
+rows dimmed. Nothing is hidden on screen: a
 dimmed row's chart graph drops to 40 percent, its strip loses its ground and
 strong rule, and its strip and body text turn quiet. Text at 40 percent would
 fail axe's contrast check. An upcoming row's strip already wears those
@@ -245,8 +253,8 @@ labels. Text at that opacity fails axe's contrast check.
 | `test/system/home_playback_test.rb` | One test per row built here; gate words; the line running and freezing; chart dimming and ring; the bay following a jump; the filter dimming without hiding; the log's order, counts, empty state and 220 px scroll; the follow landing at 96 px; wheel, touch, key and scrollbar yields; the 96 px scroll padding; the docked bar driving state; the hash written and read; each key; reduced motion; every control, docked ones too, at least 44 px; axe while playing, paused, filtered, docked and without scripts |
 | `test/system/home_narrow_test.rb` | The narrow layout (`docs/system/home-page.md`, *Narrow screens*): no sideways scroll at 390 px with and without scripts, the 84 px gutter and its lanes, the stacked top row, 44 px targets, the docked bar under 96 px at five widths, and the arriving scroll that does not pause but still drops a follow and a waiting `g` |
 | `test/application_system_test_case.rb` | `assert_accessible` (axe-core-api, single-frame), and `without_scripts`, which blocks every `.js` URL over CDP. Chrome's own script switch also blocks axe |
-| `test/components/{strip,step_body,controls,scope,chart_cell,strip_bay,controller_filter,log,docked_bar}_component_test.rb` | The markup each state is styled from |
-| `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, bay, filter, log and docked bar, targets as links, each row's seconds, bay and lane, the wrapper, the footer and its hidden key list |
+| `test/components/{strip,step_body,controls,scope,chart_cell,strip_bay,filter,log,docked_bar}_component_test.rb` | The markup each state is styled from |
+| `test/integration/home_page_test.rb` | The page as served: disabled strips, empty status cells, hidden controls, bay, filter, log and docked bar, targets as links, each row's seconds, bay and lane, the wrapper and the filter's key, the footer and its hidden key list |
 
 System tests are not part of `bin/test`; CI's `test` job runs them. Locally,
 `bin/rails test:system`. They set `pace` to 50, so a 6 s step takes 300 ms.

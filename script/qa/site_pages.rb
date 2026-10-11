@@ -5,7 +5,8 @@
 # drawn from the home thread, the CV and the contact routes, and the phone
 # width. Since #38 the copy is cut from Mark's CV: a project's summary and
 # At a glance rows, the Work intro, the CV with its print scale, and the
-# contact routes.
+# contact routes. Since #43 a project page shows its findings, each kind a
+# word beside an ink shape, and since #44 the reader narrows them by kind.
 #
 # Builds no data: every caption reads content/ through Portfolio, SitePage and
 # DeliveryThread, so it follows the files. Projects are picked by what they are
@@ -13,7 +14,7 @@
 # placeholder), never by literal. Once every summary is written the
 # placeholder step has nothing to show and is left out.
 # Spotlights use text, ARIA labels and aria-current, never utility classes.
-# Clicks are the change being shown: a nav link, a project.
+# Clicks are the change being shown: a nav link, a project, a kind toggle.
 #
 # Not walked: the one-page print (test/system/other_pages_test.rb prints the
 # CV through Chrome and counts the pages; a print dialog cannot be driven
@@ -24,6 +25,7 @@ require Rails.root.join("lib/qa_walkthrough")
 projects = Portfolio.all
 first = projects.first
 unwritten = projects.find { |project| project.summary.start_with?("[") }
+found = projects.find { |project| project.findings.any? }
 written = (projects - [ first ]).find { |project| !project.summary.start_with?("[") && project.links.none?(&:placeholder?) }
 work = SitePage.fetch(:work)
 thread = DeliveryThread.fetch(:home)
@@ -50,6 +52,29 @@ QaWalkthrough.run("site_pages") do
     click_on first.name
     spotlight "[role=group][aria-label=Links]", note: first.links.map(&:label).join(", ")
     spotlight text: first.sections.first.heading, note: "#{first.sections.size} sections from the file"
+  end
+
+  if found
+    step "#{found.name}'s findings, after #{found.sections.first&.heading || 'its summary'}: each kind a word beside an ink shape, never a color" do
+      visit project_path(found.key)
+      spotlight "[aria-labelledby=findings-heading]", note: found.findings.map { |finding| finding.kind.capitalize }.join(", ")
+      spotlight "#finding-1", note: "#finding-1: #{found.findings.first.kind}, its title and body in serif#{', its evidence in mono' if found.findings.first.evidence}"
+    end
+
+    kind = found.findings.map(&:kind).find { |each| each != found.findings.first.kind }
+    if kind
+      label = FindingsComponent::KIND_LABELS.fetch(kind)
+      step "Narrow #{found.name}'s findings to #{label}: the others drop back to quiet text and stay in place" do
+        find("[data-filter-target=option]", exact_text: label).click
+        spotlight "[aria-labelledby=kind-filter]", note: "#{label} is pressed, filled ink; All is not"
+        spotlight "#finding-1", note: "a #{found.findings.first.kind}: quiet, still in its place, still readable"
+      end
+
+      step "All brings every finding back" do
+        find("[data-filter-target=option]", exact_text: "All").click
+        spotlight "[aria-labelledby=findings-heading]", note: "All: every finding at full strength again"
+      end
+    end
   end
 
   if written
