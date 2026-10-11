@@ -129,6 +129,27 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "##{@steps[1].key}-body", visible: :hidden
   end
 
+  test "the active strip selected: closes or opens its body, playback unchanged; the next step opens" do
+    open_thread
+    target(2).click
+    click_control "Play"
+
+    strip(2).click
+    assert_row 2, state: "active", open: "false"
+    assert_selector "##{@steps[2].key} h3 button[aria-expanded=false]"
+    assert_selector "##{@steps[2].key}-body", visible: :hidden
+    assert playing?
+
+    strip(2).click
+    assert_row 2, state: "active", open: "true"
+    assert_selector "##{@steps[2].key} h3 button[aria-expanded=true]"
+
+    strip(2).click
+    hold(3)
+    pace FAST
+    assert_row 3, state: "active", open: "true"
+  end
+
   test "restart: step 1, reopened strips cleared, paused" do
     open_thread
     target(4).click

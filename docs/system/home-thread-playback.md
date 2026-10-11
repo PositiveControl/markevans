@@ -6,7 +6,7 @@ How the home thread plays. The design is section 6 of
 `docs/plans/2026-10-03-home-thread-design.md`; the page around it is
 `docs/system/home-page.md`.
 
-## One controller, three values
+## One controller, four values
 
 `app/javascript/controllers/playback_controller.js` sits on a `div` wrapping
 the page's `main` and its footer, so the footer's key list is in its reach,
@@ -17,6 +17,7 @@ and owns all playback state (`docs/rules/one-playback-state.md`):
 | `step` | Number | The active step's index, from 0 |
 | `playing` | Boolean | Whether the step clock runs |
 | `open` | Array | Indexes of done strips the reader has reopened |
+| `shut` | Boolean | The reader has closed the active strip. Cleared when the step changes |
 | `pace` | Number | Milliseconds per second of step time, default 1000. Only system tests change it |
 
 Nothing else holds playback state. The scope, the strips, the chart, the bay,
@@ -109,6 +110,7 @@ rewinds the line's animation.
 | Step back, step forward | Moves one step and pauses | #16 |
 | A target, docked mark or pending strip selected | Jumps there and pauses. A target or mark is a link to its step; the controller cancels the navigation, and the page goes to the step. A strip is already in view | #16; docked mark and going there, #18 |
 | A done strip selected | Opens or closes it. Playback state unchanged | #16 |
+| The active strip selected | Closes or opens its body. Playback state unchanged; the next step opens as usual | — |
 | Reader scrolls by wheel, touch or keys | Pauses, and drops a follow on its way. Before playback first starts it counts as nothing: that scroll is how the thread comes into view. The wheel or touch scroll that started it does not pause until it goes quiet for 300 ms, though it drops a follow and a waiting `g` | #18; arrival, #19 |
 | Tab becomes hidden | Pauses. Does not resume by itself | #16 |
 | Restart | Step 1, reopened strips cleared, paused | #16 |
