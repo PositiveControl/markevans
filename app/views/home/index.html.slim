@@ -18,7 +18,7 @@ div data-controller="playback filter" data-filter-key-value="lane" data-action="
       aside class="flex w-full max-w-column shrink-0 flex-col gap-2" aria-label="Scope and playback"
         = render ScopeComponent.new(steps: @thread.steps)
         = render StripBayComponent.new
-        = render ControllerFilterComponent.new
+        = render FilterComponent.new(label: "Controller", key: "lane", options: DeliveryThread::LANE_NAMES)
         = render LegendComponent.new
       section class="min-w-0 flex-1 chart:pt-6"
         h1 class="text-headline" = @thread.headline
