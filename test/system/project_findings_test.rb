@@ -8,7 +8,11 @@ require "application_system_test_case"
 # (docs/system/project-entries.md).
 class ProjectFindingsTest < ApplicationSystemTestCase
   setup do
-    @project = Portfolio.all.find { |project| project.findings.map(&:kind).uniq.size > 1 }
+    # The test narrows to Surprises, so it needs a surprise and something to dim.
+    @project = Portfolio.all.find do |project|
+      kinds = project.findings.map(&:kind)
+      kinds.include?("surprise") && kinds.uniq.size > 1
+    end
     @findings = @project.findings
   end
 
