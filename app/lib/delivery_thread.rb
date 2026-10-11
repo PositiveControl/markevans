@@ -34,6 +34,7 @@ module DeliveryThread
   REQUIRED = %w[key name kind lane bay outcome body git groups].freeze
   OPTIONAL = %w[artifact note seconds].freeze
   GIT_KEYS = %w[on event from label].freeze
+  ARTIFACT_KEYS = %w[source body url].freeze
   # headline and intro are the page copy around the thread: the h1 and the
   # paragraph beneath it.
   TOP_KEYS = %w[id title headline intro steps].freeze
@@ -74,7 +75,9 @@ module DeliveryThread
   Git = Data.define(:on, :event, :from, :label)
   Group = Data.define(:title, :rows)
   Row = Data.define(:key, :value)
-  Artifact = Data.define(:source, :body)
+  Artifact = Data.define(:source, :body, :url) do
+    def initialize(source:, body:, url: nil) = super
+  end
 
   class << self
     # @raise [KeyError] when no content/threads/<id>.yml exists
@@ -115,7 +118,7 @@ module DeliveryThread
           outcome: step["outcome"], body: step["body"],
           git: Git.new(on: git_on(step["git"]), event: step["git"]["event"], from: step["git"]["from"], label: step["git"]["label"]),
           groups: step["groups"].map { |group| Group.new(title: group["title"], rows: group["rows"].map { |row| Row.new(key: row["k"], value: row["v"]) }.freeze) }.freeze,
-          artifact: (Artifact.new(source: step["artifact"]["source"], body: step["artifact"]["body"]) if step["artifact"]),
+          artifact: (Artifact.new(source: step["artifact"]["source"], body: step["artifact"]["body"], url: step["artifact"]["url"]) if step["artifact"]),
           note: step["note"], seconds: step["seconds"]
         )
       end
@@ -169,7 +172,7 @@ module DeliveryThread
       errors << allowed("lane", step["lane"], LANES)
       errors << allowed("bay", step["bay"], BAYS)
       errors += git_errors(step["git"]) + group_errors(step["groups"])
-      errors << "artifact needs a source and a body" if step.key?("artifact") && !pair?(step["artifact"], "source", "body")
+      errors += artifact_errors(step["artifact"]) if step.key?("artifact")
       errors << "seconds must be a positive whole number" if step.key?("seconds") && !(step["seconds"].is_a?(Integer) && step["seconds"].positive?)
       errors.compact.map { |error| "#{name}: #{error}" }
     end
@@ -178,6 +181,16 @@ module DeliveryThread
     def missing?(value) = value.nil? || (value.is_a?(String) && value.strip.empty?)
 
     def pair?(hash, *keys) = hash.is_a?(Hash) && keys.none? { |key| missing?(hash[key]) }
+
+    # A url is optional and must be https, so a content edit cannot put a
+    # javascript: or http: link on the page.
+    def artifact_errors(artifact)
+      return [ "artifact needs a source and a body" ] unless pair?(artifact, "source", "body")
+
+      errors = (artifact.keys - ARTIFACT_KEYS).map { |key| "unknown artifact key #{key}" }
+      errors << "artifact.url must start with https://" if artifact.key?("url") && !artifact["url"].to_s.start_with?("https://")
+      errors
+    end
 
     def git_errors(git)
       return [] if git.nil? # reported as missing

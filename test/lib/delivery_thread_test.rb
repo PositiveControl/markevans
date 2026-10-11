@@ -115,6 +115,11 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: seconds must be a positive whole number/) { |data| data["steps"][1]["seconds"] = "8" }
   end
 
+  test "an artifact url is optional and must be https" do
+    assert_invalid(/two: artifact.url must start with https:\/\//) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "url" => "javascript:alert(1)" } }
+    assert_invalid(/two: unknown artifact key link/) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "link" => "https://x" } }
+  end
+
   test "a git block needs on" do
     assert_invalid(/two: git.on is required/) { |data| data["steps"][1]["git"] = { "event" => "loop", "from" => "main" } }
   end
