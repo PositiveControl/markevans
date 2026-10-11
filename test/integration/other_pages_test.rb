@@ -6,13 +6,16 @@ require "test_helper"
 # is read back from content/, so a test fails if a template starts writing
 # copy of its own (docs/rules/content-is-files.md).
 class OtherPagesTest < ActionDispatch::IntegrationTest
-  test "/work lists every project in the file's order, each linking to its page with its summary" do
+  test "/work lists every project under its category, each linking to its page with its summary" do
     get projects_url
 
     assert_response :success
     assert_select "h1", SitePage.fetch(:work).title
-    links = css_select("ul[aria-label=Projects] a")
-    assert_equal Portfolio.all.map { |project| project_path(project.key) }, links.map { |a| a["href"] }
+    assert_equal Portfolio::CATEGORIES, css_select("main section > h2").map(&:text)
+    Portfolio.grouped.each do |category, projects|
+      links = css_select("ul[aria-label='#{category}'] a")
+      assert_equal projects.map { |project| project_path(project.key) }, links.map { |a| a["href"] }
+    end
     Portfolio.all.each do |project|
       assert_select "a[href=?]", project_path(project.key) do
         assert_select "span.font-mono", project.name

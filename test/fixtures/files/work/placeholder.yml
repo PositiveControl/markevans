@@ -5,6 +5,7 @@ projects:
   - key: unwritten
     name: unwritten
     summary: "[One line: what unwritten is]"
+    category: Applications
     links:
       - label: "[Link label]"
         url: "[https://…]"

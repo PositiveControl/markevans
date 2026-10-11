@@ -5,6 +5,19 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_equal %w[rails-rocket-sheep idlempire harness kram dailydrop spamsandwich slowpoke-rb], Portfolio.all.map(&:key)
   end
 
+  test "grouped lists each category in its fixed order, its projects in the file's order" do
+    groups = Portfolio.grouped
+
+    assert_equal Portfolio::CATEGORIES, groups.map(&:first)
+    assert_equal %w[rails-rocket-sheep harness slowpoke-rb], groups.first.last.map(&:key)
+    assert_equal Portfolio.all.sort_by(&:key), groups.flat_map(&:last).sort_by(&:key)
+  end
+
+  test "a category outside the fixed set, or none, is reported" do
+    assert_invalid(/one: category must be one of AI and Tooling, Applications, Languages and Compilers/) { |data| data["projects"].first["category"] = "Hobbies" }
+    assert_invalid(/one: missing category/) { |data| data["projects"].first.delete("category") }
+  end
+
   test "fetch finds a project by its key, with sections and links as values" do
     project = Portfolio.fetch("rails-rocket-sheep")
 
@@ -58,7 +71,7 @@ class PortfolioTest < ActiveSupport::TestCase
   private
 
   def minimal
-    { "projects" => [ { "key" => "one", "name" => "One", "summary" => "The first." } ] }
+    { "projects" => [ { "key" => "one", "name" => "One", "summary" => "The first.", "category" => "Applications" } ] }
   end
 
   def load_projects(data)

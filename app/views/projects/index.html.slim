@@ -1,18 +1,22 @@
-/ /work: the projects in content/work.yml, in the file's order, under the copy
-/ in content/pages/work.yml (docs/system/site-pages.md).
+/ /work: the projects in content/work.yml, under their categories in
+/ Portfolio::CATEGORIES order and in the file's order within each, under the
+/ copy in content/pages/work.yml (docs/system/site-pages.md).
 - content_for :title, "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { projects_url }
-- content_for(:head) { jsonld_tag(project_list_jsonld(@page, @projects)) }
+- content_for(:head) { jsonld_tag(project_list_jsonld(@page, @groups.flat_map(&:last))) }
 
 main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
   h1 class="text-headline" = @page.title
   p class="mt-4 max-w-measure" = @page.intro
-  ul class="mt-8 flex max-w-detail flex-col" aria-label="Projects"
-    - @projects.each do |project|
-      li class="border-b border-rule first:border-t"
-        a class="flex min-h-8 flex-col gap-1 py-3 no-underline" href=project_path(project.key)
-          span class="font-mono text-strip font-medium underline underline-offset-4" = project.name
-          span class="font-serif text-ink" = project.summary
+  - @groups.each do |category, projects|
+    section class="mt-8 flex max-w-detail flex-col gap-2"
+      h2 class="font-mono text-label uppercase text-quiet" = category
+      ul class="flex flex-col" aria-label=category
+        - projects.each do |project|
+          li class="border-b border-rule first:border-t"
+            a class="flex min-h-8 flex-col gap-1 py-3 no-underline" href=project_path(project.key)
+              span class="font-mono text-strip font-medium underline underline-offset-4" = project.name
+              span class="font-serif text-ink" = project.summary
 
 = render SiteFooterComponent.new

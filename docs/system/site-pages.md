@@ -8,7 +8,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 
 | Route | Controller | Content | Shows |
 |---|---|---|---|
-| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then every project in file order: its name (mono) linking to its page, and its summary |
+| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then a heading per category in `Portfolio::CATEGORIES` order, each over its projects in file order: name (mono) linking to its page, and summary. An empty category is left out |
 | `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
 | `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |
@@ -40,6 +40,7 @@ first paragraph, and the Workflow page.
 | `projects[].key` | yes | The URL segment: lowercase letters, digits and single hyphens; unique |
 | `projects[].name` | yes | As the project is written, e.g. `kraM` |
 | `projects[].summary` | yes | One line: the list's text, the page's lede, its meta description |
+| `projects[].category` | yes | The `/work` heading it sits under: one of `Portfolio::CATEGORIES` (`AI and Tooling`, `Applications`, `Languages and Compilers`) |
 | `projects[].links` | no | A list of `label` and `url` |
 | `projects[].sections` | no | A list of sections, as a page's |
 
@@ -72,8 +73,9 @@ a flow list, `[a, b]`, as a placeholder.
 ### Change a project or a page
 
 1. Edit `content/work.yml` or `content/pages/<key>.yml`. A new project is a new
-   entry, and it appears on `/work`, gets its page and joins the sitemap with
-   no other change.
+   entry with a `category`, and it appears on `/work` under that heading, gets
+   its page and joins the sitemap with no other change. A new category is a
+   code change: add it to `Portfolio::CATEGORIES`, in the order `/work` shows it.
 2. `bin/rails content:schema` checks the file. `bin/test test/integration/other_pages_test.rb`
    reads the copy back.
 3. `bin/rails content:placeholders` lists what is still in brackets. It must be
@@ -117,7 +119,7 @@ Each view sets `content_for` `:title` ("<title> · Mark Evans"),
 
 | Page | JSON-LD |
 |---|---|
-| `/work` | `CollectionPage` whose `mainEntity` is an `ItemList` of the projects, in order (`project_list_jsonld`) |
+| `/work` | `CollectionPage` whose `mainEntity` is an `ItemList` of the projects, in the page's order (`project_list_jsonld`) |
 | `/work/:id`, `/workflow` | `WebPage` (`web_page_jsonld`) |
 | `/background` | `ProfilePage` whose `mainEntity` is the `Person`, `sameAs` the page's `https` links, placeholders left out (`profile_jsonld`) |
 | `/contact` | `ContactPage` |

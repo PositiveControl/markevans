@@ -11,6 +11,7 @@ projects:
   - key: rails-rocket-sheep
     name: rails-rocket-sheep
     summary: "A Rails 8 template for LLM-harnessed development."
+    category: AI and Tooling
     links:
       - label: Repository
         url: https://github.com/PositiveControl/rails-rocket-sheep
@@ -35,6 +36,7 @@ projects:
   - key: idlempire
     name: IDLEmpire
     summary: "A multiplayer browser strategy game."
+    category: Applications
     links:
       - label: Site
         url: https://idlempire.com
@@ -60,6 +62,7 @@ projects:
   - key: harness
     name: harness
     summary: "A local-first agent harness that makes a local quantized 30B model reliable enough to run unattended."
+    category: AI and Tooling
     links:
       - label: Repository
         url: https://github.com/PositiveControl/harness
@@ -87,6 +90,7 @@ projects:
   - key: kram
     name: kraM
     summary: "A reversible programming language and gate compiler, written in Go."
+    category: Languages and Compilers
     links:
       - label: Repository
         url: https://github.com/PositiveControl/kraM
@@ -112,6 +116,7 @@ projects:
   - key: dailydrop
     name: DailyDrop
     summary: "A music curation platform, Rails 8 and native iOS: songs are never hosted, but exported into the listener's own streaming account."
+    category: Applications
     links:
       - label: Site
         url: https://dailydrop.fm
@@ -137,6 +142,7 @@ projects:
   - key: spamsandwich
     name: spamsandwich
     summary: "A phishing and spam-awareness training tool."
+    category: Applications
     links:
       - label: Site
         url: https://spamsandwich.com
@@ -160,6 +166,7 @@ projects:
   - key: slowpoke-rb
     name: slowpoke-rb
     summary: "A Ruby gem that finds slow tests, across Minitest and RSpec, with zero runtime dependencies."
+    category: AI and Tooling
     links:
       - label: Repository
         url: https://github.com/PositiveControl/slowpoke-rb
