@@ -57,7 +57,7 @@ class FindingsComponentTest < ViewComponent::TestCase
   end
 
   test "the section filters its findings by kind: a toggle per kind after All, hidden until scripts run" do
-    render_inline(FindingsComponent.new(findings: [ finding("learning") ]))
+    render_inline(FindingsComponent.new(findings: Portfolio::KINDS.map { |kind| finding(kind) }))
 
     assert_selector "section[data-controller=filter][data-filter-key-value=kind]"
     assert_selector "section [role=group][aria-labelledby=kind-filter][hidden][data-filter-target=live]", visible: :all
@@ -66,8 +66,22 @@ class FindingsComponentTest < ViewComponent::TestCase
     assert_equal %w[all] + Portfolio::KINDS, page.all("[data-filter-target=option]", visible: :all).map { |button| button[:"data-kind"] }
   end
 
+  test "a toggle for each kind the project has, in the kinds' order, so none dims every finding" do
+    render_inline(FindingsComponent.new(findings: [ finding("takeaway"), finding("learning"), finding("takeaway") ]))
+
+    labels = page.all("[data-filter-target=option]", visible: :all).map { |button| button.text(:all) }
+    assert_equal [ "All", "Learnings", "Takeaways" ], labels
+  end
+
+  test "findings of one kind have nothing to narrow, so there are no toggles" do
+    render_inline(FindingsComponent.new(findings: [ finding("surprise"), finding("surprise") ]))
+
+    assert_selector "li", count: 2
+    assert_no_selector "[role=group]", visible: :all
+  end
+
   test "the toggles come after the heading and before the list, so the list still reads in order" do
-    render_inline(FindingsComponent.new(findings: [ finding("learning") ]))
+    render_inline(FindingsComponent.new(findings: [ finding("learning"), finding("surprise") ]))
 
     order = page.all("h2, [role=group], ul", visible: :all).map(&:tag_name)
     assert_equal %w[h2 div ul], order

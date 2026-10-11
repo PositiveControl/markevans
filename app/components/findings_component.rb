@@ -9,8 +9,10 @@
 # (docs/rules/never-color-alone.md). The title and body are Mark explaining, so
 # serif. Each finding is finding-<n> in file order, for a link to land on.
 #
-# A row of toggles, one per kind, narrows the list: the findings of other kinds
-# drop to quiet text and are never hidden. The toggles are hidden until the
+# A row of toggles, one per kind the project has, narrows the list: the
+# findings of other kinds drop to quiet text and are never hidden. A kind the
+# project lacks gets no toggle, since it would dim every finding, and findings
+# all of one kind get no toggles at all. The toggles are hidden until the
 # filter controller connects, so without scripts every finding reads at full
 # strength.
 class FindingsComponent < ApplicationComponent
@@ -27,4 +29,10 @@ class FindingsComponent < ApplicationComponent
   private
 
   attr_reader :findings
+
+  # The labels of the kinds these findings have, in KINDS order.
+  def kind_options
+    kinds = findings.map(&:kind)
+    KIND_LABELS.select { |kind, _| kinds.include?(kind) }
+  end
 end

@@ -50,7 +50,9 @@ finding is an `li`:
 ### The kind filter
 
 Between the heading and the list, a row of toggles narrows the findings by
-kind: All, Learnings, Surprises, Takeaways. The words come from
+kind: All, then Learnings, Surprises and Takeaways, each only if the project
+has a finding of that kind, since a toggle with nothing to show would dim every
+finding. Findings all of one kind get no toggles. The words come from
 `Portfolio::KINDS`, pluralised (`FindingsComponent::KIND_LABELS`), not from
 template copy. It is the home page's filter, not a second one
 (`docs/system/home-thread-playback.md`, *The filter*): the section carries
