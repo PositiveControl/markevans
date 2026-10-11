@@ -12,6 +12,12 @@ projects:
     name: rails-rocket-sheep
     summary: "A Rails 8 template for LLM-harnessed development."
     category: AI and Tooling
+    tags:
+      - Ruby
+      - Rails
+      - Claude
+      - Cursor
+      - Kamal
     links:
       - label: Repository
         url: https://github.com/PositiveControl/rails-rocket-sheep
@@ -37,6 +43,15 @@ projects:
     name: IDLEmpire
     summary: "A multiplayer browser strategy game."
     category: Applications
+    tags:
+      - Ruby
+      - Rails
+      - GDScript
+      - Godot
+      - ActionCable
+      - PostgreSQL
+      - Kamal
+      - Hetzner
     links:
       - label: Site
         url: https://idlempire.com
@@ -63,6 +78,11 @@ projects:
     name: harness
     summary: "A local-first agent harness that makes a local quantized 30B model reliable enough to run unattended."
     category: AI and Tooling
+    tags:
+      - Python
+      - MLX
+      - SQLite
+      - Apple Silicon
     links:
       - label: Repository
         url: https://github.com/PositiveControl/harness
@@ -91,6 +111,10 @@ projects:
     name: kraM
     summary: "A reversible programming language and gate compiler, written in Go."
     category: Languages and Compilers
+    tags:
+      - Go
+      - OpenQASM
+      - IBM Quantum
     links:
       - label: Repository
         url: https://github.com/PositiveControl/kraM
@@ -117,6 +141,14 @@ projects:
     name: DailyDrop
     summary: "A music curation platform, Rails 8 and native iOS: songs are never hosted, but exported into the listener's own streaming account."
     category: Applications
+    tags:
+      - Ruby
+      - Rails
+      - Swift
+      - iOS
+      - PostgreSQL
+      - Kamal
+      - Hetzner
     links:
       - label: Site
         url: https://dailydrop.fm
@@ -143,6 +175,12 @@ projects:
     name: spamsandwich
     summary: "A phishing and spam-awareness training tool."
     category: Applications
+    tags:
+      - Ruby
+      - Rails
+      - PostgreSQL
+      - Kamal
+      - Hetzner
     links:
       - label: Site
         url: https://spamsandwich.com
@@ -167,6 +205,11 @@ projects:
     name: slowpoke-rb
     summary: "A Ruby gem that finds slow tests, across Minitest and RSpec, with zero runtime dependencies."
     category: AI and Tooling
+    tags:
+      - Ruby
+      - Minitest
+      - RSpec
+      - RubyGems
     links:
       - label: Repository
         url: https://github.com/PositiveControl/slowpoke-rb

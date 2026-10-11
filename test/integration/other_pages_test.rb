@@ -16,6 +16,7 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
       links = css_select("ul[aria-label='#{category}'] a")
       assert_equal projects.map { |project| project_path(project.key) }, links.map { |a| a["href"] }
     end
+    assert_equal Portfolio.fetch("rails-rocket-sheep").tags, css_select("li[data-project=rails-rocket-sheep] ul[aria-label=Stack] li").map(&:text)
     Portfolio.all.each do |project|
       assert_select "a[href=?]", project_path(project.key) do
         assert_select "span.font-mono", project.name

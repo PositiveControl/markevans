@@ -18,6 +18,14 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_invalid(/one: missing category/) { |data| data["projects"].first.delete("category") }
   end
 
+  test "tags are an optional list of short words, in the file's order" do
+    assert_equal %w[Ruby Rails Swift iOS], Portfolio.fetch("dailydrop").tags.first(4)
+    assert_equal [], load_projects(minimal).first.tags
+    assert_invalid(/one: tags must be a list of words/) { |data| data["projects"].first["tags"] = "Ruby" }
+    assert_invalid(/one: tags must be a list of words/) { |data| data["projects"].first["tags"] = [ "Ruby", "" ] }
+    assert_invalid(/one: tag COBOL is not in StackRegistry/) { |data| data["projects"].first["tags"] = [ "COBOL" ] }
+  end
+
   test "fetch finds a project by its key, with sections and links as values" do
     project = Portfolio.fetch("rails-rocket-sheep")
 
@@ -54,7 +62,7 @@ class PortfolioTest < ActiveSupport::TestCase
   end
 
   test "an unknown key on a project or at the top is reported" do
-    assert_invalid(/one: unknown key tags/) { |data| data["projects"].first["tags"] = "x" }
+    assert_invalid(/one: unknown key labels/) { |data| data["projects"].first["labels"] = "x" }
     assert_invalid(/unknown top-level key title/) { |data| data["title"] = "x" }
   end
 

@@ -14,9 +14,13 @@ main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
       h2 class="font-mono text-label uppercase text-quiet" = category
       ul class="flex flex-col" aria-label=category
         - projects.each do |project|
-          li class="border-b border-rule first:border-t"
-            a class="flex min-h-8 flex-col gap-1 py-3 no-underline" href=project_path(project.key)
+          li class="flex flex-col gap-2 border-b border-rule py-3 first:border-t chart:flex-row chart:items-start chart:justify-between chart:gap-4" data-project=project.key
+            a class="flex min-h-8 flex-col gap-1 no-underline" href=project_path(project.key)
               span class="font-mono text-strip font-medium underline underline-offset-4" = project.name
               span class="font-serif text-ink" = project.summary
+            - if project.tags.any?
+              ul class="flex flex-wrap gap-1 chart:w-1/3 chart:shrink-0 chart:justify-end" aria-label="Stack"
+                - project.tags.each do |tag|
+                  = render ChipComponent.new(name: tag)
 
 = render SiteFooterComponent.new

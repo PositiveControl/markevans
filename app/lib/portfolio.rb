@@ -6,8 +6,9 @@
 #   Portfolio.all.map(&:key)                  # => ["rails-rocket-sheep", ...]
 #   Portfolio.fetch("rails-rocket-sheep").name
 #
-# A project is a key (its URL), a name, a one-line summary, a category, links
-# and sections. /work shows the categories in CATEGORIES order.
+# A project is a key (its URL), a name, a one-line summary, a category, tags
+# (its language and stack, shown as chips on /work), links and sections. /work
+# shows the categories in CATEGORIES order.
 # Sections and links take the shape a page's do, and are read and checked by
 # SitePage. The file's order is the list's order.
 #
@@ -17,7 +18,7 @@ module Portfolio
   PATH = Rails.root.join("content/work.yml")
 
   REQUIRED = %w[key name summary category].freeze
-  OPTIONAL = %w[links sections].freeze
+  OPTIONAL = %w[tags links sections].freeze
   # A key is the project's URL segment.
   KEY = /\A[a-z0-9]+(-[a-z0-9]+)*\z/
   # The headings /work groups projects under, in the order it shows them.
@@ -27,7 +28,7 @@ module Portfolio
   # No such project. config/application.rb answers it with a 404.
   NotFound = Class.new(StandardError)
 
-  Project = Data.define(:key, :name, :summary, :category, :links, :sections)
+  Project = Data.define(:key, :name, :summary, :category, :tags, :links, :sections)
 
   class << self
     # Outside development the file is read once.
@@ -51,6 +52,7 @@ module Portfolio
 
       data["projects"].map do |project|
         Project.new(key: project["key"], name: project["name"], summary: project["summary"], category: project["category"],
+          tags: Array(project["tags"]).freeze,
           links: SitePage.links(project["links"]), sections: SitePage.sections(project["sections"]))
       end.freeze
     end
@@ -75,9 +77,18 @@ module Portfolio
       errors = REQUIRED.select { |key| SitePage.missing?(project[key]) }.map { |key| "missing #{key}" }
       errors += (project.keys - REQUIRED - OPTIONAL).map { |key| "unknown key #{key}" }
       errors << "key must be lowercase letters, digits and single hyphens" if project["key"].is_a?(String) && !project["key"].match?(KEY)
+      errors += tag_errors(project["tags"])
       errors << "category must be one of #{CATEGORIES.join(', ')}" unless SitePage.missing?(project["category"]) || CATEGORIES.include?(project["category"])
       errors += SitePage.link_errors(project["links"]) + SitePage.section_errors(project["sections"])
       errors.map { |error| "#{name}: #{error}" }
+    end
+
+    # Tags are optional; each one must be a chip in StackRegistry.
+    def tag_errors(tags)
+      return [] if tags.nil?
+      return [ "tags must be a list of words" ] unless tags.is_a?(Array) && tags.all? { |tag| tag.is_a?(String) && tag.present? }
+
+      tags.reject { |tag| StackRegistry.find(tag) }.map { |tag| "tag #{tag} is not in StackRegistry" }
     end
   end
 end

@@ -8,7 +8,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 
 | Route | Controller | Content | Shows |
 |---|---|---|---|
-| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then a heading per category in `Portfolio::CATEGORIES` order, each over its projects in file order: name (mono) linking to its page, and summary. An empty category is left out |
+| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then a heading per category in `Portfolio::CATEGORIES` order, each over its projects in file order: name (mono) linking to its page, summary, and its tags as chips (`ChipComponent`), to the right from 900 px. An empty category is left out |
 | `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
 | `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |
@@ -41,6 +41,7 @@ first paragraph, and the Workflow page.
 | `projects[].name` | yes | As the project is written, e.g. `kraM` |
 | `projects[].summary` | yes | One line: the list's text, the page's lede, its meta description |
 | `projects[].category` | yes | The `/work` heading it sits under: one of `Portfolio::CATEGORIES` (`AI and Tooling`, `Applications`, `Languages and Compilers`) |
+| `projects[].tags` | no | The project's language and stack, as chips on `/work`, in order. Each must be a chip in `StackRegistry` (`app/lib/stack_registry.rb`) |
 | `projects[].links` | no | A list of `label` and `url` |
 | `projects[].sections` | no | A list of sections, as a page's |
 
@@ -76,6 +77,9 @@ a flow list, `[a, b]`, as a placeholder.
    entry with a `category`, and it appears on `/work` under that heading, gets
    its page and joins the sitemap with no other change. A new category is a
    code change: add it to `Portfolio::CATEGORIES`, in the order `/work` shows it.
+   A new chip is too: add its name under its kind in `StackRegistry::ITEMS`.
+   A language chip is ink on a strong rule, every other kind quiet on a faint
+   one, and no kind gets a role color (`docs/rules/color-means-role.md`).
 2. `bin/rails content:schema` checks the file. `bin/test test/integration/other_pages_test.rb`
    reads the copy back.
 3. `bin/rails content:placeholders` lists what is still in brackets. It must be
