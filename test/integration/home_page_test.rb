@@ -156,6 +156,19 @@ class HomePageTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "fonts.gstatic.com"
   end
 
+  test "the icons are digested, so a changed icon gets a new URL and no browser keeps the old one" do
+    get root_url
+
+    hrefs = css_select("link[rel=icon], link[rel=apple-touch-icon]").map { |link| link["href"] }
+    assert_equal 3, hrefs.size
+
+    hrefs.each do |href|
+      assert_match %r{\A/assets/icon-\h+\.(png|svg)\z}, href
+      get href
+      assert_response :success
+    end
+  end
+
   test "none of the portfolio page is left" do
     get root_url
 
