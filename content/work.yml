@@ -30,7 +30,7 @@ projects:
                 v: Released and maintained
       - heading: How it was built
         paragraphs:
-          - "The template was carved out of an existing Rails app in January 2026: the stack, the service and registry patterns, and a CLAUDE.md. The conventions, gates and commands were built here from August, tested against the apps the template generates, and adopted back into the project repos: DailyDrop in August, IDLEmpire in October. When it was mature enough, the template began running its own workflow on itself: since October 2026 the workflow layer is tracked in the repo, and its features go through it, with a design doc, slices on a feature branch, and gates in CI. What came of it: four releases, and the codebase this site was generated from."
+          - "The workflow started at work. From March 2026, uCollect's team repo carried a set of agent slash commands for planning, submitting and reviewing pull requests, with teammates adding to them; in July they were reshaped into the chain on /workflow: /pick, /feature_plan, /task_plan and /implement. The template itself was carved out of an existing Rails app in January 2026: the stack, the service and registry patterns, and a CLAUDE.md. From August the workflow, conventions and gates were extracted into it, tested against the apps the template generates, and adopted back into the project repos: DailyDrop and uCollect in August, IDLEmpire in October. When it was mature enough, the template began running its own workflow on itself: since October 2026 its features go through it, with a design doc, slices on a feature branch, and gates in CI. What came of it: four releases, and the codebase this site was generated from."
 
   - key: idlempire
     name: IDLEmpire
@@ -50,7 +50,7 @@ projects:
               - k: Role
                 v: Creator and maintainer
               - k: Stack
-                v: Rails 8, ActionCable, Kamal, Docker
+                v: Rails 8, ActionCable, Godot, Kamal, Docker
               - k: Status
                 v: Live at idlempire.com
       - heading: How it was built
@@ -79,7 +79,7 @@ projects:
               - k: Stack
                 v: Python, MLX on Apple Silicon, SQLite
               - k: Status
-                v: "[Status]"
+                v: In development
       - heading: How it was built
         paragraphs:
           - "[How it moved through the delivery chain, and what came of it]"
