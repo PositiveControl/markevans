@@ -3,7 +3,7 @@
 # how to re-cut it when the resume changes is docs/sop/update-the-cv.md.
 title: Background
 description: "Mark Evans, senior software engineer in Phoenix, AZ: ships complete systems and leads the teams that build them."
-intro: "Senior engineer who ships complete systems (payments, auth, search, fulfillment, real-time messaging) and leads the teams that build them. Twelve years across Rails and distributed vehicle telemetry; currently day-to-day technical lead of an eight-person team, holding merge authority and running production for a marketplace heading to public launch. Phoenix, AZ."
+intro: "Senior engineer who ships complete systems (payments, auth, search, fulfillment, real-time messaging) and leads the teams that build them. Twelve years across web and distributed vehicle telemetry; currently day-to-day technical lead of an eight-person team, holding merge authority and running production for a marketplace heading to public launch. Phoenix, AZ."
 links:
   - label: Email
     url: mailto:msteven.evans@gmail.com
