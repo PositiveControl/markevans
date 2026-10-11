@@ -6,10 +6,12 @@ import { Controller } from "@hotwired/stimulus"
  * The key names a data attribute both the options and the rows carry: lane on
  * the home thread (all, human, agent or ci), kind on a project's findings
  * (all, learning, surprise or takeaway). It is set in the markup, so a page
- * says what it filters on. The controller holds one value, the one picked.
- * render() writes aria-pressed on each option and data-dim on every row whose
- * value does not match, and the templates' in-data-dim variants drop those
- * rows back. A row is never hidden. No class name lives here.
+ * says what it filters on. It is read through dataset, so it is one lowercase
+ * word: data-due-date would be dueDate there, not due-date. The controller
+ * holds one value, the one picked. render() writes aria-pressed on each option
+ * and data-dim on every row whose value does not match, and the templates'
+ * data-dim variants drop those rows back. A row is never hidden. No class name
+ * lives here.
  *
  * Not playback state (docs/rules/one-playback-state.md): picking a lane leaves
  * the step, playing and reopened strips as they are.
