@@ -15,10 +15,13 @@ change a step, and what checks the change before it ships.
 id: home                  # must match the filename
 title: "…"
 headline: "…"             # optional: the page's h1, above the thread
+headline_link:            # optional: links one phrase of the headline, in a new tab
+  text: "…"               #   must appear in the headline, word for word
+  url: "https://…"        #   https only
 intro: "…"                # optional: the paragraph under the headline
 steps:
   - key: task_plan        # unique and stable: code and links refer to it
-    name: "/task_plan"    # shown on the strip, in mono
+    name: "/task_plan"    # shown on the strip, in mono. On /workflow each /command in it links to rails-rocket-sheep's .claude/commands/<command>.md, so name only commands that file has. Each /command in it links to .claude/commands/<command>.md in rails-rocket-sheep, so name only commands that file has
     kind: command         # command | human | machine | optional
     lane: agent           # human | agent | ci — who acts
     bay: "In Progress"    # Todo | In Progress | Up for Review | Done
@@ -37,7 +40,7 @@ steps:
     artifact:             # optional
       source: "…"
       body: "…"
-      url: "https://…"    # optional: links the source line; https only. Other keys are rejected
+      url: "https://…"    # optional: links the source line, in a new tab; https only. Other keys are rejected
     note: "…"             # optional, italic, in Mark's voice
     seconds: 8            # optional; a step plays for 6 s otherwise
 ```

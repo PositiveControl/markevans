@@ -114,6 +114,9 @@ steps the home page plays, so the two pages cannot disagree. Each step shows:
 - its name in mono, linking to `/#<key>`
 - its kind in words (`LegendComponent::SYMBOLS`), its lane and its bay
 - its outcome in serif
+- for each slash command in its name (`Step#commands`), a link to the file
+  that defines it in rails-rocket-sheep, `.claude/commands/<name>.md`, opening
+  in a new tab
 
 ## SEO
 
@@ -164,7 +167,7 @@ the PDF's pages. It is what says the CV still fits.
 |---|---|
 | `test/lib/portfolio_test.rb`, `test/lib/site_page_test.rb` | The loaders and their schemas |
 | `test/tasks/content_tasks_test.rb` | `content:schema` over the work list and pages |
-| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread; the current section; the footer |
+| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread, and its command links; the current section; the footer |
 | `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the sitemap |
 | `test/components/{site_header,site_footer,page_sections,detail_group,link_list}_component_test.rb` | Each component, including the print scale on a row and a link |
 | `test/system/other_pages_test.rb` | axe on every page at 1400 and 390 px, no sideways scroll at 390 px, the one-page print |

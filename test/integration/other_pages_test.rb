@@ -86,12 +86,23 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", SitePage.fetch(:workflow).title
-    assert_equal thread.steps.map(&:name), css_select("ol[aria-label=Steps] li a").map(&:text)
-    assert_equal thread.steps.map { |step| root_path(anchor: step.key) }, css_select("ol[aria-label=Steps] li a").map { |a| a["href"] }
+    assert_equal thread.steps.map(&:name), css_select("ol[aria-label=Steps] li a[href^='/']").map(&:text)
+    assert_equal thread.steps.map { |step| root_path(anchor: step.key) }, css_select("ol[aria-label=Steps] li a[href^='/']").map { |a| a["href"] }
     assert_select "ol[aria-label=Steps] li[data-kind=human]", count: thread.steps.count { |step| step.kind == "human" }
     assert_select "ol[aria-label=Steps] li[data-kind=human]", text: /human gate/
     assert_select "ol[aria-label=Steps] li[data-kind=machine]", text: /automated gate/
     assert_equal SitePage.fetch(:workflow).sections.map(&:heading), css_select("main section > h2").map(&:text) - [ "The chain" ]
+  end
+
+  test "/workflow links each command a step names to its file in rails-rocket-sheep, in a new tab" do
+    commands = DeliveryThread.fetch(:home).steps.flat_map(&:commands)
+    get workflow_url
+
+    links = css_select("ol[aria-label=Steps] li a[href^=https]")
+    assert_equal commands.map(&:url), links.map { |a| a["href"] }
+    assert_equal commands.map(&:path), links.map(&:text)
+    assert_includes links.map(&:text), ".claude/commands/segue_merge.md"
+    links.each { |a| assert_equal [ "_blank", "noopener noreferrer" ], [ a["target"], a["rel"] ] }
   end
 
   test "/background shows the CV's sections and its groups of rows" do

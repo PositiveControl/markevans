@@ -35,6 +35,7 @@ class StepBodyComponentTest < ViewComponent::TestCase
     render_inline(StepBodyComponent.new(step: step(artifact:)))
 
     assert_link "PR #23", href: "https://github.com/PositiveControl/markevans/pull/23"
+    assert_selector "a[target=_blank][rel='noopener noreferrer']", text: "PR #23"
   end
 
   test "an artifact without a url has no link" do

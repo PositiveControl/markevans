@@ -21,7 +21,14 @@ div data-controller="playback filter" data-action="visibilitychange@document->pl
         = render ControllerFilterComponent.new
         = render LegendComponent.new
       section class="min-w-0 flex-1 chart:pt-6"
-        h1 class="text-headline" = @thread.headline
+        h1 class="text-headline"
+          - if (link = @thread.headline_link)
+            - before, text, after = @thread.headline.partition(link.text)
+            = before
+            = external_link_to text, link.url, class: "underline underline-offset-4"
+            = after
+          - else
+            = @thread.headline
         p class="mt-4 max-w-measure" = @thread.intro
         div class="mt-6"
           = render LogComponent.new(steps: @thread.steps)

@@ -28,6 +28,7 @@ Every word on the page except the site name comes from
 | Key | Shown as |
 |---|---|
 | `headline` | The page's `h1`, and its meta description |
+| `headline_link` | One phrase of the headline (`text`) linked to an `https` `url`. The meta description stays plain text |
 | `intro` | The paragraph under the headline |
 | `steps[]` | One row each, in file order |
 
@@ -58,7 +59,7 @@ list is in their reach:
 | `FixMarkComponent` | One fix triangle by step kind: filled for a gate, open for a command, open and dashed for an optional step. Drawn by the legend and the chart |
 | `ChartCellComponent` | One row of the git graph from the step's `git` block and its `DeliveryThread::Cell`: main, the branches running through, the fork or merge elbow, the loop bracket, the fix, the branch label, and the sector band, with a dashed edge and label where the bay changes. While playing, an upcoming row's graph dims and the active fix wears a ring |
 | `StripComponent` | An `h3` holding the strip as a button: number, command name, Ctl (lane), Bay, the status cell, the Rmk line with the outcome, and the remaining-time line. Ground by kind; dashed border for an optional step. Disabled until playback connects; pending, active and done looks come from the row's `data-state` |
-| `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value (`DetailGroupComponent`), then the optional artifact (source line and `pre` on `bg-card`) and the optional italic note. Rolls up when its row's `data-open` is false |
+| `StepBodyComponent` | The serif body, then each group as a mono label over a `dl` of mono key and serif value (`DetailGroupComponent`), then the optional artifact (source line, a link when it has a `url`, and `pre` on `bg-card`) and the optional italic note. Rolls up when its row's `data-open` is false |
 | `ScopeComponent` | The radar scope: route ring, crosshair, one target per step on a 270 degree arc (a link to the step), the leader, the centre block, the sweep. All but the ring, crosshair and targets render hidden until playback connects |
 | `ControlsComponent` | Restart, step back, play or pause, step forward: 44 px round icon buttons, hidden until playback connects |
 | `StripBayComponent` | Todo, In Progress, Up for Review, Done (`DeliveryThread::BAYS`) in four equal cells; the active step's bay fills ink. Hidden until playback connects |
@@ -161,7 +162,7 @@ needs Rails.
 
 | File | Covers |
 |---|---|
-| `test/integration/home_page_test.rb` | Headline and intro from the file, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, bay, filter, log and docked bar, targets as links), each row's seconds, bay and lane, the log's gate total, the footer and its key list, self-hosted fonts, nothing of the old page |
+| `test/integration/home_page_test.rb` | Headline and intro from the file, the headline's link, every off-site link opening in a new tab, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, bay, filter, log and docked bar, targets as links), each row's seconds, bay and lane, the log's gate total, the footer and its key list, self-hosted fonts, nothing of the old page |
 | `test/integration/page_budget_test.rb`, `test/system/page_requests_test.rb` | The budget (above) |
 | `test/system/home_playback_test.rb` | Playback, the bay, the filter, the log, follow, yield, the docked bar, the hash and the keyboard in a browser, and axe while playing, paused, filtered, docked and without scripts (`bin/rails test:system`; see `home-thread-playback.md`) |
 | `test/components/{strip,step_body,legend,fix_mark,controls,strip_bay,controller_filter,log}_component_test.rb` | Each component from inline steps |

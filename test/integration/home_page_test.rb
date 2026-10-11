@@ -16,6 +16,20 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=description][content=?]", @thread.headline
   end
 
+  test "the headline links positive control to the GitHub org, in a new tab" do
+    get root_url
+
+    assert_select "h1 a[href=?][target=_blank][rel=?]", "https://github.com/PositiveControl", "noopener noreferrer", text: "positive control"
+  end
+
+  test "every link off the site opens in a new tab" do
+    get root_url
+
+    external = css_select("a[href^=http]")
+    assert_operator external.size, :>=, 4
+    external.each { |link| assert_equal [ "_blank", "noopener noreferrer" ], [ link["target"], link["rel"] ], link["href"] }
+  end
+
   test "a long headline is cut to a search snippet's length in the meta description" do
     long = @thread.with(headline: "word " * 60)
     # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.

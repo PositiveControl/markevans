@@ -159,6 +159,40 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/intro must be text/) { |data| data["intro"] = { "a" => "b" } }
   end
 
+  test "the home headline links its phrase positive control to the GitHub org" do
+    link = DeliveryThread.fetch(:home).headline_link
+
+    assert_equal "positive control", link.text
+    assert_equal "https://github.com/PositiveControl", link.url
+  end
+
+  test "a headline link is optional" do
+    assert_nil load_thread(minimal).headline_link
+  end
+
+  test "a headline link needs text from the headline and an https url" do
+    assert_invalid(/headline_link needs a text and a url/) { |data| data["headline_link"] = { "text" => "x" } }
+    assert_invalid(/headline_link.url must start with https/) do |data|
+      data["headline"] = "Under positive control."
+      data["headline_link"] = { "text" => "positive control", "url" => "http://example.com" }
+    end
+    assert_invalid(/headline_link.text must appear in the headline/) do |data|
+      data["headline"] = "Under control."
+      data["headline_link"] = { "text" => "positive control", "url" => "https://example.com" }
+    end
+  end
+
+  test "a step names the slash commands in its name, each with its file in rails-rocket-sheep" do
+    steps = DeliveryThread.fetch(:home).steps.index_by(&:key)
+    base = "https://github.com/PositiveControl/rails-rocket-sheep/blob/main/.claude/commands"
+
+    assert_equal [ "pick" ], steps.fetch("pick").commands.map(&:name)
+    assert_equal "#{base}/pick.md", steps.fetch("pick").commands.first.url
+    assert_equal %w[segue segue_merge], steps.fetch("segue").commands.map(&:name)
+    assert_equal [ "pr_review" ], steps.values.find { |step| step.name.start_with?("/pr_review") }.commands.map(&:name)
+    assert_empty steps.values.find { |step| step.name == "Merge" }.commands
+  end
+
   test "an unknown top-level key is rejected" do
     assert_invalid(/unknown top-level key subtitle/) { |data| data["subtitle"] = "x" }
   end

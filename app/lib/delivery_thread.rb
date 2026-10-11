@@ -36,12 +36,16 @@ module DeliveryThread
   GIT_KEYS = %w[on event from label].freeze
   ARTIFACT_KEYS = %w[source body url].freeze
   # headline and intro are the page copy around the thread: the h1 and the
-  # paragraph beneath it.
-  TOP_KEYS = %w[id title headline intro steps].freeze
+  # paragraph beneath it. headline_link links one phrase of the headline off
+  # the site; the headline itself stays plain text for the meta description.
+  TOP_KEYS = %w[id title headline headline_link intro steps].freeze
+  LINK_KEYS = %w[text url].freeze
 
   Invalid = Class.new(StandardError)
 
-  Sequence = Data.define(:id, :title, :headline, :intro, :steps) do
+  Link = Data.define(:text, :url)
+
+  Sequence = Data.define(:id, :title, :headline, :headline_link, :intro, :steps) do
     # Each step with what its own git block cannot say about its row in the
     # chart, so the chart is drawn from data and never from a row's position
     # (docs/rules/topology-from-data.md).
@@ -66,10 +70,24 @@ module DeliveryThread
   # Seconds a step plays for when it sets none (design doc, section 6).
   SECONDS = 6
 
+  # Where each slash command a step names is defined: the template this
+  # workflow ships in.
+  COMMANDS_URL = "https://github.com/PositiveControl/rails-rocket-sheep/blob/main/.claude/commands"
+
+  Command = Data.define(:name) do
+    def path = ".claude/commands/#{name}.md"
+
+    def url = "#{COMMANDS_URL}/#{name}.md"
+  end
+
   Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds) do
     def duration = seconds || SECONDS
 
     def gate? = GATES.include?(kind)
+
+    # The slash commands in the name, in order: "/segue → /segue_merge" names
+    # two, "/pr_review --local" one, "Merge" none.
+    def commands = name.scan(%r{(?<!\S)/(\w+)}).flatten.map { |command| Command.new(name: command) }
   end
 
   Git = Data.define(:on, :event, :from, :label)
@@ -122,7 +140,8 @@ module DeliveryThread
           note: step["note"], seconds: step["seconds"]
         )
       end
-      Sequence.new(id: data["id"], title: data["title"], headline: data["headline"], intro: data["intro"], steps: steps.freeze)
+      link = (Link.new(text: data["headline_link"]["text"], url: data["headline_link"]["url"]) if data["headline_link"])
+      Sequence.new(id: data["id"], title: data["title"], headline: data["headline"], headline_link: link, intro: data["intro"], steps: steps.freeze)
     end
   end
 
@@ -152,9 +171,19 @@ module DeliveryThread
       errors = @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
       errors << "missing title" if missing?(@data["title"])
       errors += (@data.keys - TOP_KEYS).map { |key| "unknown top-level key #{key}" }
-      errors + %w[headline intro].filter_map do |key|
+      errors += %w[headline intro].filter_map do |key|
         "#{key} must be text" if @data.key?(key) && !@data[key].is_a?(String)
       end
+      @data.key?("headline_link") ? errors + headline_link_errors(@data["headline_link"]) : errors
+    end
+
+    def headline_link_errors(link)
+      return [ "headline_link needs a text and a url" ] unless pair?(link, "text", "url")
+
+      errors = (link.keys - LINK_KEYS).map { |key| "unknown headline_link key #{key}" }
+      errors << "headline_link.url must start with https://" unless link["url"].to_s.start_with?("https://")
+      errors << "headline_link.text must appear in the headline" unless @data["headline"].to_s.include?(link["text"].to_s)
+      errors
     end
 
     def duplicate_key_errors(steps)

@@ -11,7 +11,7 @@ div id=body_id class="grid grid-rows-[1fr] transition-[grid-template-rows,visibi
           / A linked source fills the row, so it is a 44 px target (docs/rules/real-controls.md).
           div class="border-b border-rule px-2 text-label text-quiet wrap-anywhere"
             - if step.artifact.url
-              a class="flex min-h-target items-center underline underline-offset-4" href=step.artifact.url = step.artifact.source
+              = helpers.external_link_to step.artifact.source, step.artifact.url, class: "flex min-h-target items-center underline underline-offset-4"
             - else
               div class="flex min-h-target items-center" = step.artifact.source
           pre class="overflow-x-auto p-2 font-mono whitespace-pre-wrap" = step.artifact.body
