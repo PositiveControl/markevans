@@ -82,7 +82,7 @@ projects:
                 v: In development
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "Built in phases from April 2026, with most changes tracked as a bd issue from the second day. There is no hosted CI, so ruff, mypy --strict and the test suite are the gates, run in pre-commit and pre-push. In September the /pick chain was ported in and remapped onto bd: issues became beads, and the local gates stand in for CI. The same discipline runs inside the harness: its driver works a planned workplan one issue per turn behind an operator approval gate, and an observed failure becomes a deterministic guard rather than a prompt tweak."
 
   - key: kram
     name: kraM
