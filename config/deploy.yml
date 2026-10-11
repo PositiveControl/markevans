@@ -1,10 +1,13 @@
 # Kamal 2 Deployment Configuration
 #
+# Shares a server with dopeempire (idlempire.com). The two apps sit
+# behind the one kamal-proxy on that host, routed by `proxy.host`; each runs
+# its own Postgres accessory, so this one takes host port 5433.
+#
 # Setup:
-# 1. Fill in .kamal/secrets with your deployment secrets
-# 2. Update the server IP/hostname below
-# 3. Configure your Docker registry credentials
-# 4. Run: kamal setup
+# 1. Fill in .kamal/secrets (see .kamal/secrets.example)
+# 2. Point markevans.io's DNS A record at the server below
+# 3. Run: kamal setup
 #
 # Deploy: kamal deploy
 # Console: kamal console
@@ -12,37 +15,31 @@
 
 service: markevans
 
-# Container image - update with your registry
-image: your-username/markevans
+# Container image on GitHub Container Registry
+image: positivecontrol/markevans
 
 # Deploy to these servers
 servers:
   web:
     hosts:
-      - YOUR_SERVER_IP
+      - 95.217.152.24 # lint-docs:ignore
     options:
       memory: 2g
 
 # Proxy configuration (Kamal 2 uses kamal-proxy)
 proxy:
   ssl: true
-  host: your-domain.com
+  host: markevans.io
   app_port: 3000
   healthcheck:
     path: /up
     interval: 3
     timeout: 3
 
-# Docker registry credentials
-# For GitHub Container Registry (ghcr.io):
-#   server: ghcr.io
-#   username: your-github-username
-# For Docker Hub:
-#   server: docker.io (or omit)
-#   username: your-dockerhub-username
+# GitHub Container Registry credentials
 registry:
   server: ghcr.io
-  username: your-username
+  username: positivecontrol
   password:
     - KAMAL_REGISTRY_PASSWORD
 
@@ -50,6 +47,9 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
+    # Four databases in the one markevans-db container. Pointing all four
+    # roles at one database breaks bin/docker-entrypoint: loading the Solid
+    # schemas into the migrated primary trips ProtectedEnvironmentError.
     - DATABASE_URL
     - QUEUE_DATABASE_URL
     - CABLE_DATABASE_URL
@@ -80,15 +80,16 @@ asset_path: /rails/public/assets
 # See: https://github.com/rails/tailwindcss-rails/discussions/499
 builder:
   arch: amd64
-  # Uncomment to use remote builder (recommended for Apple Silicon Macs):
-  # remote: ssh://root@YOUR_SERVER_IP
+  remote: ssh://root@95.217.152.24 # lint-docs:ignore
 
 # PostgreSQL database accessory
+# The app reaches it as markevans-db:5432 on the kamal Docker network; the
+# host binding is only for SSH tunnels, and 5432 there is dopeempire-db's.
 accessories:
   db:
     image: postgres:16
-    host: YOUR_SERVER_IP
-    port: "127.0.0.1:5432:5432"
+    host: 95.217.152.24 # lint-docs:ignore
+    port: "127.0.0.1:5433:5432"
     env:
       clear:
         POSTGRES_USER: markevans
