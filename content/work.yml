@@ -153,3 +153,31 @@ projects:
                 v: Rails 8
               - k: Status
                 v: Live at spamsandwich.com
+      - heading: How it was built
+        paragraphs:
+          - "The first app generated from the rails-rocket-sheep template, on the day the template was started, in January 2026. It was built in two days."
+
+  - key: slowpoke-rb
+    name: slowpoke-rb
+    summary: "A Ruby gem that finds slow tests, across Minitest and RSpec, with zero runtime dependencies."
+    links:
+      - label: Repository
+        url: https://github.com/PositiveControl/slowpoke-rb
+      - label: RubyGems
+        url: https://rubygems.org/gems/slowpoke-rb
+    sections:
+      - heading: The project
+        paragraphs:
+          - "Flags every test slower than a threshold, 500 ms by default, and prints a sorted report at the end of the run, with each test's file and line. Integrations for Minitest and RSpec, a CI exit code, and a JSON history of slow tests. Zero runtime dependencies by design."
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: Creator and maintainer
+              - k: Stack
+                v: Ruby, Minitest, RSpec
+              - k: Status
+                v: Published on RubyGems, MIT
+      - heading: How it was built
+        paragraphs:
+          - "Built in two days of direct commits in April 2026, without the chain: a core of configuration, tracker and reporter, then the Minitest and RSpec integrations, then its own test suite. It ships in every app the rails-rocket-sheep template generates, this site included, which reports any test over 500 ms after each run."
