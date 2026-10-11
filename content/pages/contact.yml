@@ -1,9 +1,9 @@
 # /contact: the ways to reach Mark. Read by app/lib/site_page.rb
-# (docs/system/site-pages.md). A link whose url is a [placeholder] renders as
+# (docs/system/site-pages.md). A link whose url is still a placeholder renders as
 # text until the address is supplied.
 title: Contact
 description: "How to reach Mark Evans, senior software engineer in Phoenix, AZ: email, LinkedIn or GitHub."
-intro: "[A line in your voice: what you are open to, and the best way to ask]"
+intro: "I am looking for full-time senior, lead, or staff roles, remote or in Phoenix. Email is the best way to reach me."
 links:
   - label: Email
     url: mailto:msteven.evans@gmail.com

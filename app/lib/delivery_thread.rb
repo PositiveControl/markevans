@@ -34,13 +34,18 @@ module DeliveryThread
   REQUIRED = %w[key name kind lane bay outcome body git groups].freeze
   OPTIONAL = %w[artifact note seconds].freeze
   GIT_KEYS = %w[on event from label].freeze
+  ARTIFACT_KEYS = %w[source body url].freeze
   # headline and intro are the page copy around the thread: the h1 and the
-  # paragraph beneath it.
-  TOP_KEYS = %w[id title headline intro steps].freeze
+  # paragraph beneath it. headline_link links one phrase of the headline off
+  # the site; the headline itself stays plain text for the meta description.
+  TOP_KEYS = %w[id title headline headline_link intro steps].freeze
+  LINK_KEYS = %w[text url].freeze
 
   Invalid = Class.new(StandardError)
 
-  Sequence = Data.define(:id, :title, :headline, :intro, :steps) do
+  Link = Data.define(:text, :url)
+
+  Sequence = Data.define(:id, :title, :headline, :headline_link, :intro, :steps) do
     # Each step with what its own git block cannot say about its row in the
     # chart, so the chart is drawn from data and never from a row's position
     # (docs/rules/topology-from-data.md).
@@ -65,16 +70,32 @@ module DeliveryThread
   # Seconds a step plays for when it sets none (design doc, section 6).
   SECONDS = 6
 
+  # Where each slash command a step names is defined: the template this
+  # workflow ships in.
+  COMMANDS_URL = "https://github.com/PositiveControl/rails-rocket-sheep/blob/main/.claude/commands"
+
+  Command = Data.define(:name) do
+    def path = ".claude/commands/#{name}.md"
+
+    def url = "#{COMMANDS_URL}/#{name}.md"
+  end
+
   Step = Data.define(:key, :name, :kind, :lane, :bay, :outcome, :body, :git, :groups, :artifact, :note, :seconds) do
     def duration = seconds || SECONDS
 
     def gate? = GATES.include?(kind)
+
+    # The slash commands in the name, in order: "/segue → /segue_merge" names
+    # two, "/pr_review --local" one, "Merge" none.
+    def commands = name.scan(%r{(?<!\S)/(\w+)}).flatten.map { |command| Command.new(name: command) }
   end
 
   Git = Data.define(:on, :event, :from, :label)
   Group = Data.define(:title, :rows)
   Row = Data.define(:key, :value)
-  Artifact = Data.define(:source, :body)
+  Artifact = Data.define(:source, :body, :url) do
+    def initialize(source:, body:, url: nil) = super
+  end
 
   class << self
     # @raise [KeyError] when no content/threads/<id>.yml exists
@@ -115,11 +136,12 @@ module DeliveryThread
           outcome: step["outcome"], body: step["body"],
           git: Git.new(on: git_on(step["git"]), event: step["git"]["event"], from: step["git"]["from"], label: step["git"]["label"]),
           groups: step["groups"].map { |group| Group.new(title: group["title"], rows: group["rows"].map { |row| Row.new(key: row["k"], value: row["v"]) }.freeze) }.freeze,
-          artifact: (Artifact.new(source: step["artifact"]["source"], body: step["artifact"]["body"]) if step["artifact"]),
+          artifact: (Artifact.new(source: step["artifact"]["source"], body: step["artifact"]["body"], url: step["artifact"]["url"]) if step["artifact"]),
           note: step["note"], seconds: step["seconds"]
         )
       end
-      Sequence.new(id: data["id"], title: data["title"], headline: data["headline"], intro: data["intro"], steps: steps.freeze)
+      link = (Link.new(text: data["headline_link"]["text"], url: data["headline_link"]["url"]) if data["headline_link"])
+      Sequence.new(id: data["id"], title: data["title"], headline: data["headline"], headline_link: link, intro: data["intro"], steps: steps.freeze)
     end
   end
 
@@ -149,9 +171,19 @@ module DeliveryThread
       errors = @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
       errors << "missing title" if missing?(@data["title"])
       errors += (@data.keys - TOP_KEYS).map { |key| "unknown top-level key #{key}" }
-      errors + %w[headline intro].filter_map do |key|
+      errors += %w[headline intro].filter_map do |key|
         "#{key} must be text" if @data.key?(key) && !@data[key].is_a?(String)
       end
+      @data.key?("headline_link") ? errors + headline_link_errors(@data["headline_link"]) : errors
+    end
+
+    def headline_link_errors(link)
+      return [ "headline_link needs a text and a url" ] unless pair?(link, "text", "url")
+
+      errors = (link.keys - LINK_KEYS).map { |key| "unknown headline_link key #{key}" }
+      errors << "headline_link.url must start with https://" unless link["url"].to_s.start_with?("https://")
+      errors << "headline_link.text must appear in the headline" unless @data["headline"].to_s.include?(link["text"].to_s)
+      errors
     end
 
     def duplicate_key_errors(steps)
@@ -169,7 +201,7 @@ module DeliveryThread
       errors << allowed("lane", step["lane"], LANES)
       errors << allowed("bay", step["bay"], BAYS)
       errors += git_errors(step["git"]) + group_errors(step["groups"])
-      errors << "artifact needs a source and a body" if step.key?("artifact") && !pair?(step["artifact"], "source", "body")
+      errors += artifact_errors(step["artifact"]) if step.key?("artifact")
       errors << "seconds must be a positive whole number" if step.key?("seconds") && !(step["seconds"].is_a?(Integer) && step["seconds"].positive?)
       errors.compact.map { |error| "#{name}: #{error}" }
     end
@@ -178,6 +210,16 @@ module DeliveryThread
     def missing?(value) = value.nil? || (value.is_a?(String) && value.strip.empty?)
 
     def pair?(hash, *keys) = hash.is_a?(Hash) && keys.none? { |key| missing?(hash[key]) }
+
+    # A url is optional and must be https, so a content edit cannot put a
+    # javascript: or http: link on the page.
+    def artifact_errors(artifact)
+      return [ "artifact needs a source and a body" ] unless pair?(artifact, "source", "body")
+
+      errors = (artifact.keys - ARTIFACT_KEYS).map { |key| "unknown artifact key #{key}" }
+      errors << "artifact.url must start with https://" if artifact.key?("url") && !artifact["url"].to_s.start_with?("https://")
+      errors
+    end
 
     def git_errors(git)
       return [] if git.nil? # reported as missing

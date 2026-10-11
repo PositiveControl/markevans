@@ -2,12 +2,12 @@
 # content/threads/home.yml; this file is the copy around it. Read by
 # app/lib/site_page.rb (docs/system/site-pages.md).
 title: Workflow
-description: "[One line for search results: how every change is planned, gated, reviewed and shipped]"
-intro: "[A paragraph in your voice: what the delivery chain is, and why every change goes through it]"
+description: "The delivery chain behind Mark Evans's work: every change planned, gated, reviewed and shipped the same way."
+intro: "Every change I ship goes through the same chain of commands. Coding agents run most of the steps: they write the design doc, plan the issue, build it test-first and review it with a new context. I approve the design and the plan before any code exists, and I invoke anything that has an audience: opening the PR, merging it, deploying it. Positive control is an air traffic term. No aircraft moves without explicit clearance. Here, no change ships without one."
 sections:
   - heading: The gates
     paragraphs:
-      - "[What each gate checks, and why a human holds two of them]"
+      - "Four gates stand between an idea and main. At G1 I read the design doc and approve it, send it back, or cut it down; nothing becomes an issue until I do, because the doc is a proposal and issues are a commitment. At G2 I read the implementation plan before any code exists. G3 is the machine's: an agent will eventually miss a rule, so the rules a machine can check are checked, from banned patterns and foreign-key indexes to the security scans and the test suite, and none of them depend on the agent cooperating. At G4 nothing merges with an open conversation; the reviewer and I clear it together. I hold the first two alone because they come before the work is committed: a wrong design or plan costs a reread there, and much more after the code is written."
   - heading: Working with coding agents
     paragraphs:
-      - "[How the agents are kept under positive control: plans before code, small slices, fresh-eyes review]"
+      - "An agent's work is held to a plan, a size and a second reader. Before it writes code, the plan is approved and the rules that apply are routed to it by the files it will touch, each rule showing the right version beside the wrong one. Every slice is small: an issue fits in five testable bullets, a pull request in 1,500 added lines and 25 files, and when the forecast passes that, the agent stops, splits off a sub-issue and lands what it has clean. While it writes, hooks run RuboCop on every Ruby edit and refuse force-pushes, hard resets and reads of secrets. Before any PR exists, another agent reviews the branch in a new context; it has not seen the implementation conversation, so it reads the diff cold. Two rounds at most, every fix lands with a test that failed first, and I rule on disputes."

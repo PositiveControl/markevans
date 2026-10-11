@@ -49,12 +49,20 @@ class SeoTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "/work's JSON-LD lists each project, in order" do
+  test "/work's JSON-LD lists each project, in the page's order" do
     get projects_url
 
     list = json_ld("CollectionPage").dig("mainEntity", "itemListElement")
-    assert_equal Portfolio.all.map { |project| project_url(project.key) }, list.map { |item| item["url"] }
+    assert_equal Portfolio.grouped.flat_map(&:last).map { |project| project_url(project.key) }, list.map { |item| item["url"] }
     assert_equal (1..Portfolio.all.size).to_a, list.map { |item| item["position"] }
+  end
+
+  test "/work's JSON-LD lists every project even when the page is filtered, as its canonical URL does" do
+    get projects_url(tag: "Swift")
+
+    list = json_ld("CollectionPage").dig("mainEntity", "itemListElement")
+    assert_equal Portfolio.all.size, list.size
+    assert_select "link[rel=canonical][href=?]", projects_url
   end
 
   test "/background's JSON-LD is a Person with the profiles the page links to, and no placeholder" do

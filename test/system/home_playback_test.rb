@@ -129,6 +129,27 @@ class HomePlaybackTest < ApplicationSystemTestCase
     assert_selector "##{@steps[1].key}-body", visible: :hidden
   end
 
+  test "the active strip selected: closes or opens its body, playback unchanged; the next step opens" do
+    open_thread
+    target(2).click
+    click_control "Play"
+
+    strip(2).click
+    assert_row 2, state: "active", open: "false"
+    assert_selector "##{@steps[2].key} h3 button[aria-expanded=false]"
+    assert_selector "##{@steps[2].key}-body", visible: :hidden
+    assert playing?
+
+    strip(2).click
+    assert_row 2, state: "active", open: "true"
+    assert_selector "##{@steps[2].key} h3 button[aria-expanded=true]"
+
+    strip(2).click
+    hold(3)
+    pace FAST
+    assert_row 3, state: "active", open: "true"
+  end
+
   test "restart: step 1, reopened strips cleared, paused" do
     open_thread
     target(4).click
@@ -644,6 +665,19 @@ class HomePlaybackTest < ApplicationSystemTestCase
       assert name.present?, "a control has no name"
       assert_operator [ width, height ].min, :>=, 44, "#{name} is #{width}×#{height}"
     end
+  end
+
+  test "an artifact's source link is a target of at least 44 px" do
+    open_thread
+    click_control "Pause"
+
+    sizes = evaluate_script(<<~JS)
+      [...document.querySelectorAll("main pre")].map(pre => pre.previousElementSibling.querySelector("a"))
+        .filter(Boolean)
+        .map(a => [a.textContent.trim(), a.getBoundingClientRect().height])
+    JS
+    assert_operator sizes.size, :>=, 1, "no artifact links on the home thread"
+    sizes.each { |name, height| assert_operator height, :>=, 44, "#{name} is #{height} px tall" }
   end
 
   test "axe passes while playing, while paused, and with a filter on" do

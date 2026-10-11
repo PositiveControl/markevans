@@ -1,10 +1,13 @@
 # The projects, from content/work.yml (docs/system/site-pages.md).
 class ProjectsController < ApplicationController
-  # Not paginated: six entries from a content file, which grow by an edit to
+  # Not paginated: eight entries from a content file, which grow by an edit to
   # that file and never with usage (docs/rules/pagination.md).
   def index
     @page = SitePage.fetch(:work)
-    @projects = Portfolio.all
+    # A tag no project carries is ignored, so a stale link shows the whole list.
+    @tags = Portfolio.tags
+    @tag = params[:tag].presence_in(@tags)
+    @groups = Portfolio.grouped(tag: @tag)
   end
 
   # An unknown key raises Portfolio::NotFound, which Rails answers with a 404.

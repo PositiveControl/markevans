@@ -30,6 +30,21 @@ class StepBodyComponentTest < ViewComponent::TestCase
     assert_selector ".bg-card pre", text: "# Design\nline two"
   end
 
+  test "an artifact with a url links its source" do
+    artifact = DeliveryThread::Artifact.new(source: "PR #23", body: "+1,040", url: "https://github.com/PositiveControl/markevans/pull/23")
+    render_inline(StepBodyComponent.new(step: step(artifact:)))
+
+    assert_link "PR #23", href: "https://github.com/PositiveControl/markevans/pull/23"
+    assert_selector "a[target=_blank][rel='noopener noreferrer']", text: "PR #23"
+  end
+
+  test "an artifact without a url has no link" do
+    artifact = DeliveryThread::Artifact.new(source: "docs/plans/x.md", body: "b")
+    render_inline(StepBodyComponent.new(step: step(artifact:)))
+
+    assert_no_selector ".bg-card a"
+  end
+
   test "a note is italic serif" do
     render_inline(StepBodyComponent.new(step: step(note: "I read every one.")))
 

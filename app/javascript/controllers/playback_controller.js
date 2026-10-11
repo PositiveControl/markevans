@@ -4,8 +4,9 @@ import { Controller } from "@hotwired/stimulus"
  * Playback — plays the home thread, one step at a time.
  *
  * The one owner of playback state (docs/rules/one-playback-state.md): the
- * step index, whether it is playing, and which done strips the reader has
- * reopened. Every view renders from these three values. render() writes them
+ * step index, whether it is playing, which done strips the reader has
+ * reopened, and whether the reader has closed the active one. Every view
+ * renders from these four values. render() writes them
  * onto the page as data-playing and data-ended on this element, data-state and data-open on
  * each row, data-state on each scope target, and ARIA state and words, and
  * the templates' in-data-* variants do the styling. No class name lives here.
@@ -38,6 +39,8 @@ export default class extends Controller {
     step: Number,
     playing: Boolean,
     open: Array,
+    // The reader closed the active strip. A new step opens again.
+    shut: Boolean,
     // Milliseconds per second of step time. Only system tests change it.
     pace: { type: Number, default: 1000 }
   }
@@ -114,13 +117,17 @@ export default class extends Controller {
     this.follow()
   }
 
-  // A strip: a done one opens or closes and playback carries on; any other
-  // is a jump.
+  // A strip: a done one or the active one opens or closes and playback
+  // carries on; a pending one is a jump.
   select(event) {
     const index = this.stripTargets.indexOf(event.currentTarget)
-    if (index >= this.stepValue) return this.jumpTo(index)
+    if (index > this.stepValue) return this.jumpTo(index)
 
     this.touched = true
+    if (index === this.stepValue) {
+      this.shutValue = !this.shutValue
+      return
+    }
     const open = new Set(this.openValue)
     open.has(index) ? open.delete(index) : open.add(index)
     this.openValue = [...open]
@@ -232,6 +239,7 @@ export default class extends Controller {
 
   stepValueChanged() {
     if (!this.connected) return
+    this.shutValue = false
     this.resetClock()
     this.render()
     this.writeHash()
@@ -244,6 +252,10 @@ export default class extends Controller {
   }
 
   openValueChanged() {
+    if (this.connected) this.render()
+  }
+
+  shutValueChanged() {
     if (this.connected) this.render()
   }
 
@@ -394,7 +406,7 @@ export default class extends Controller {
 
     this.rowTargets.forEach((row, index) => {
       const state = index < step ? "done" : index === step ? "active" : "pending"
-      const expanded = state === "active" || (state === "done" && open.has(index))
+      const expanded = state === "active" ? !this.shutValue : state === "done" && open.has(index)
       row.dataset.state = state
       row.dataset.open = expanded
       this.stripTargets[index].setAttribute("aria-expanded", expanded)

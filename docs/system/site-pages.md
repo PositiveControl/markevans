@@ -8,7 +8,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 
 | Route | Controller | Content | Shows |
 |---|---|---|---|
-| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then every project in file order: its name (mono) linking to its page, and its summary |
+| `GET /work` | `ProjectsController#index` | `content/pages/work.yml`, `content/work.yml` | Title and intro, then the stack filter (`StackFilterComponent`: All and a link per tag in use; `?tag=` keeps only the projects carrying it, and a tag no project carries is ignored), then a heading per category in `Portfolio::CATEGORIES` order, each over its projects in file order: name (mono) linking to its page, summary, and its tags as chips (`ChipComponent`), to the right from 900 px. An empty category is left out |
 | `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
 | `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |
@@ -40,6 +40,8 @@ first paragraph, and the Workflow page.
 | `projects[].key` | yes | The URL segment: lowercase letters, digits and single hyphens; unique |
 | `projects[].name` | yes | As the project is written, e.g. `kraM` |
 | `projects[].summary` | yes | One line: the list's text, the page's lede, its meta description |
+| `projects[].category` | yes | The `/work` heading it sits under: one of `Portfolio::CATEGORIES` (`AI and Tooling`, `Applications`, `Languages and Compilers`) |
+| `projects[].tags` | no | The project's language and stack, as chips on `/work`, in order. Each must be a chip in `StackRegistry` (`app/lib/stack_registry.rb`) |
 | `projects[].links` | no | A list of `label` and `url` |
 | `projects[].sections` | no | A list of sections, as a page's |
 
@@ -72,8 +74,12 @@ a flow list, `[a, b]`, as a placeholder.
 ### Change a project or a page
 
 1. Edit `content/work.yml` or `content/pages/<key>.yml`. A new project is a new
-   entry, and it appears on `/work`, gets its page and joins the sitemap with
-   no other change.
+   entry with a `category`, and it appears on `/work` under that heading, gets
+   its page and joins the sitemap with no other change. A new category is a
+   code change: add it to `Portfolio::CATEGORIES`, in the order `/work` shows it.
+   A new chip is too: add its name under its kind in `StackRegistry::ITEMS`.
+   A language chip is ink on a strong rule, every other kind quiet on a
+   hairline rule, and no kind gets a role color (`docs/rules/color-means-role.md`).
 2. `bin/rails content:schema` checks the file. `bin/test test/integration/other_pages_test.rb`
    reads the copy back.
 3. `bin/rails content:placeholders` lists what is still in brackets. It must be
@@ -108,6 +114,9 @@ steps the home page plays, so the two pages cannot disagree. Each step shows:
 - its name in mono, linking to `/#<key>`
 - its kind in words (`LegendComponent::SYMBOLS`), its lane and its bay
 - its outcome in serif
+- for each slash command in its name (`Step#commands`), a link to the file
+  that defines it in rails-rocket-sheep, `.claude/commands/<name>.md`, opening
+  in a new tab
 
 ## SEO
 
@@ -117,7 +126,7 @@ Each view sets `content_for` `:title` ("<title> · Mark Evans"),
 
 | Page | JSON-LD |
 |---|---|
-| `/work` | `CollectionPage` whose `mainEntity` is an `ItemList` of the projects, in order (`project_list_jsonld`) |
+| `/work` | `CollectionPage` whose `mainEntity` is an `ItemList` of the projects, in the page's order (`project_list_jsonld`) |
 | `/work/:id`, `/workflow` | `WebPage` (`web_page_jsonld`) |
 | `/background` | `ProfilePage` whose `mainEntity` is the `Person`, `sameAs` the page's `https` links, placeholders left out (`profile_jsonld`) |
 | `/contact` | `ContactPage` |
@@ -158,7 +167,7 @@ the PDF's pages. It is what says the CV still fits.
 |---|---|
 | `test/lib/portfolio_test.rb`, `test/lib/site_page_test.rb` | The loaders and their schemas |
 | `test/tasks/content_tasks_test.rb` | `content:schema` over the work list and pages |
-| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread; the current section; the footer |
+| `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread, and its command links; the current section; the footer |
 | `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the sitemap |
 | `test/components/{site_header,site_footer,page_sections,detail_group,link_list}_component_test.rb` | Each component, including the print scale on a row and a link |
 | `test/system/other_pages_test.rb` | axe on every page at 1400 and 390 px, no sideways scroll at 390 px, the one-page print |

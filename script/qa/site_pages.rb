@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # Work, Workflow, Background and Contact (#20): the header nav on every page,
-# the six projects from content/work.yml, a project page, the Workflow chain
+# the projects from content/work.yml under their categories, the stack
+# filter, a project page, the Workflow chain
 # drawn from the home thread, the CV and the contact routes, and the phone
 # width. Since #38 the copy is cut from Mark's CV: a project's summary and
 # At a glance rows, the Work intro, the CV with its print scale, and the
@@ -26,6 +27,9 @@ first = projects.first
 unwritten = projects.find { |project| project.summary.start_with?("[") }
 written = (projects - [ first ]).find { |project| !project.summary.start_with?("[") && project.links.none?(&:placeholder?) }
 work = SitePage.fetch(:work)
+# The tag carried by the fewest projects, so filtering visibly narrows the list.
+filter_tag = Portfolio.tags.min_by { |tag| projects.count { |project| project.tags.include?(tag) } }
+filtered = projects.select { |project| project.tags.include?(filter_tag) }
 thread = DeliveryThread.fetch(:home)
 gate = thread.steps.find { |step| step.kind == "human" }
 background = SitePage.fetch(:background)
@@ -39,11 +43,20 @@ QaWalkthrough.run("site_pages") do
     spotlight NAV, note: "Work, Workflow, Background, Contact; none is current on the home page"
   end
 
-  step "Work lists the #{projects.size} projects in the file's order, and Work is current" do
+  step "Work lists the #{projects.size} projects under their categories, and Work is current" do
     click_on "Work"
     spotlight "#{NAV} [aria-current=page]", note: "underlined, not only colored"
     spotlight text: work.intro, note: "the intro, from the CV's note on how the projects were built"
-    spotlight "[aria-label=Projects]", note: "#{projects.map(&:name).join(', ')}: content/work.yml"
+    Portfolio.grouped.each do |category, members|
+      spotlight "ul[aria-label='#{category}']", note: "#{category}: #{members.map(&:name).join(', ')}, each with its stack chips"
+    end
+  end
+
+  step "A stack chip filters the list: #{filter_tag} keeps #{filtered.map(&:name).join(', ')}" do
+    within("nav[aria-label='Filter by stack']") { click_on filter_tag }
+    spotlight "nav[aria-label='Filter by stack'] [aria-current=page]", note: "the picked chip is ink; clicking it again shows every project"
+    spotlight "main section", note: "categories with no #{filter_tag} project drop out"
+    visit projects_path
   end
 
   step "A project page: #{first.name}, its links and its sections" do
@@ -56,7 +69,7 @@ QaWalkthrough.run("site_pages") do
     step "A project cut from the CV: #{written.name}, its summary and what it is at a glance" do
       visit project_path(written.key)
       spotlight text: written.summary, note: "the summary is also the page's meta description"
-      spotlight text: "At a glance", note: "Role is still a placeholder; Stack and Status come from the CV"
+      spotlight text: "At a glance", note: "Role, Stack and Status"
     end
   end
 

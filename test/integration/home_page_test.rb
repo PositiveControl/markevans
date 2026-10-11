@@ -16,6 +16,20 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=description][content=?]", @thread.headline
   end
 
+  test "the headline links positive control to the GitHub org, in a new tab" do
+    get root_url
+
+    assert_select "h1 a[href=?][target=_blank][rel=?]", "https://github.com/PositiveControl", "noopener noreferrer", text: "positive control"
+  end
+
+  test "every link off the site opens in a new tab" do
+    get root_url
+
+    external = css_select("a[href^=http]")
+    assert_operator external.size, :>=, 4
+    external.each { |link| assert_equal [ "_blank", "noopener noreferrer" ], [ link["target"], link["rel"] ], link["href"] }
+  end
+
   test "a long headline is cut to a search snippet's length in the meta description" do
     long = @thread.with(headline: "word " * 60)
     # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
@@ -140,6 +154,19 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=preload][as=font]", 3
     refute_includes response.body, "fonts.googleapis.com"
     refute_includes response.body, "fonts.gstatic.com"
+  end
+
+  test "the icons are digested, so a changed icon gets a new URL and no browser keeps the old one" do
+    get root_url
+
+    hrefs = css_select("link[rel=icon], link[rel=apple-touch-icon]").map { |link| link["href"] }
+    assert_equal 3, hrefs.size
+
+    hrefs.each do |href|
+      assert_match %r{\A/assets/icon-\h+\.(png|svg)\z}, href
+      get href
+      assert_response :success
+    end
   end
 
   test "none of the portfolio page is left" do

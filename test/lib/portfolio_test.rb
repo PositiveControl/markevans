@@ -1,8 +1,44 @@
 require "test_helper"
 
 class PortfolioTest < ActiveSupport::TestCase
-  test "all lists the six projects in the file's order" do
-    assert_equal %w[rails-rocket-sheep idlempire harness kram dailydrop spamsandwich], Portfolio.all.map(&:key)
+  test "all lists the eight projects in the file's order" do
+    assert_equal %w[rails-rocket-sheep idlempire harness kram dailydrop spamsandwich slowpoke-rb myrelay], Portfolio.all.map(&:key)
+  end
+
+  test "grouped lists each category in its fixed order, its projects in the file's order" do
+    groups = Portfolio.grouped
+
+    assert_equal Portfolio::CATEGORIES, groups.map(&:first)
+    assert_equal %w[rails-rocket-sheep harness slowpoke-rb myrelay], groups.first.last.map(&:key)
+    assert_equal Portfolio.all.sort_by(&:key), groups.flat_map(&:last).sort_by(&:key)
+  end
+
+  test "grouped with a tag keeps only the projects carrying it, and drops empty categories" do
+    groups = Portfolio.grouped(tag: "Swift")
+
+    assert_equal [ [ "Applications", %w[dailydrop] ] ], groups.map { |category, projects| [ category, projects.map(&:key) ] }
+  end
+
+  test "tags lists every tag in use once, languages first, in registry order" do
+    tags = Portfolio.tags
+
+    assert_equal tags.uniq, tags
+    assert_equal Portfolio.all.flat_map(&:tags).uniq.sort, tags.sort
+    assert_equal StackRegistry.all.map(&:name) & tags, tags
+  end
+
+  test "a category outside the fixed set, or none, is reported" do
+    assert_invalid(/one: category must be one of AI and Tooling, Applications, Languages and Compilers/) { |data| data["projects"].first["category"] = "Hobbies" }
+    assert_invalid(/one: missing category/) { |data| data["projects"].first.delete("category") }
+  end
+
+  test "tags are an optional list of short words, in the file's order" do
+    assert_equal %w[Ruby Rails Swift iOS], Portfolio.fetch("dailydrop").tags.first(4)
+    assert_equal [], load_projects(minimal).first.tags
+    assert_invalid(/one: tags must be a list of words/) { |data| data["projects"].first["tags"] = "Ruby" }
+    assert_invalid(/one: tags must be a list of words/) { |data| data["projects"].first["tags"] = [ "Ruby", "" ] }
+    assert_invalid(/one: tag COBOL is not in StackRegistry/) { |data| data["projects"].first["tags"] = [ "COBOL" ] }
+    assert_invalid(/one: tag Ruby is listed twice/) { |data| data["projects"].first["tags"] = %w[Ruby Ruby] }
   end
 
   test "fetch finds a project by its key, with sections and links as values" do
@@ -41,7 +77,7 @@ class PortfolioTest < ActiveSupport::TestCase
   end
 
   test "an unknown key on a project or at the top is reported" do
-    assert_invalid(/one: unknown key tags/) { |data| data["projects"].first["tags"] = "x" }
+    assert_invalid(/one: unknown key labels/) { |data| data["projects"].first["labels"] = "x" }
     assert_invalid(/unknown top-level key title/) { |data| data["title"] = "x" }
   end
 
@@ -58,7 +94,7 @@ class PortfolioTest < ActiveSupport::TestCase
   private
 
   def minimal
-    { "projects" => [ { "key" => "one", "name" => "One", "summary" => "The first." } ] }
+    { "projects" => [ { "key" => "one", "name" => "One", "summary" => "The first.", "category" => "Applications" } ] }
   end
 
   def load_projects(data)

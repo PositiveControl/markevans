@@ -8,7 +8,12 @@ div id=body_id class="grid grid-rows-[1fr] transition-[grid-template-rows,visibi
         = render DetailGroupComponent.new(group:)
       - if step.artifact
         div class="max-w-artifact rounded-box border border-rule bg-card font-mono text-artifact"
-          div class="border-b border-rule px-2 py-1 text-label text-quiet wrap-anywhere" = step.artifact.source
+          / A linked source fills the row, so it is a 44 px target (docs/rules/real-controls.md).
+          div class="border-b border-rule px-2 text-label text-quiet wrap-anywhere"
+            - if step.artifact.url
+              = helpers.external_link_to step.artifact.source, step.artifact.url, class: "flex min-h-target items-center underline underline-offset-4"
+            - else
+              div class="flex min-h-target items-center" = step.artifact.source
           pre class="overflow-x-auto p-2 font-mono whitespace-pre-wrap" = step.artifact.body
       - if step.note
         p class="max-w-measure font-serif italic" = step.note

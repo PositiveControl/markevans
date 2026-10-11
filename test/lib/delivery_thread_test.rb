@@ -115,6 +115,19 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_invalid(/two: seconds must be a positive whole number/) { |data| data["steps"][1]["seconds"] = "8" }
   end
 
+  test "an artifact url is optional and must be https" do
+    assert_invalid(/two: artifact.url must start with https:\/\//) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "url" => "javascript:alert(1)" } }
+    assert_invalid(/two: artifact.url must start with https:\/\//) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "url" => "http://x" } }
+    assert_invalid(/two: unknown artifact key link/) { |data| data["steps"][1]["artifact"] = { "source" => "s", "body" => "b", "link" => "https://x" } }
+  end
+
+  test "an https artifact url loads onto the artifact" do
+    data = minimal
+    data["steps"][0]["artifact"] = { "source" => "s", "body" => "b", "url" => "https://example.com/pr/1" }
+
+    assert_equal "https://example.com/pr/1", load_thread(data).steps.first.artifact.url
+  end
+
   test "a git block needs on" do
     assert_invalid(/two: git.on is required/) { |data| data["steps"][1]["git"] = { "event" => "loop", "from" => "main" } }
   end
@@ -144,6 +157,40 @@ class DeliveryThreadTest < ActiveSupport::TestCase
   test "headline and intro must be text" do
     assert_invalid(/headline must be text/) { |data| data["headline"] = [ "a" ] }
     assert_invalid(/intro must be text/) { |data| data["intro"] = { "a" => "b" } }
+  end
+
+  test "the home headline links its phrase positive control to the GitHub org" do
+    link = DeliveryThread.fetch(:home).headline_link
+
+    assert_equal "positive control", link.text
+    assert_equal "https://github.com/PositiveControl", link.url
+  end
+
+  test "a headline link is optional" do
+    assert_nil load_thread(minimal).headline_link
+  end
+
+  test "a headline link needs text from the headline and an https url" do
+    assert_invalid(/headline_link needs a text and a url/) { |data| data["headline_link"] = { "text" => "x" } }
+    assert_invalid(/headline_link.url must start with https/) do |data|
+      data["headline"] = "Under positive control."
+      data["headline_link"] = { "text" => "positive control", "url" => "http://example.com" }
+    end
+    assert_invalid(/headline_link.text must appear in the headline/) do |data|
+      data["headline"] = "Under control."
+      data["headline_link"] = { "text" => "positive control", "url" => "https://example.com" }
+    end
+  end
+
+  test "a step names the slash commands in its name, each with its file in rails-rocket-sheep" do
+    steps = DeliveryThread.fetch(:home).steps.index_by(&:key)
+    base = "https://github.com/PositiveControl/rails-rocket-sheep/blob/main/.claude/commands"
+
+    assert_equal [ "pick" ], steps.fetch("pick").commands.map(&:name)
+    assert_equal "#{base}/pick.md", steps.fetch("pick").commands.first.url
+    assert_equal %w[segue segue_merge], steps.fetch("segue").commands.map(&:name)
+    assert_equal [ "pr_review" ], steps.values.find { |step| step.name.start_with?("/pr_review") }.commands.map(&:name)
+    assert_empty steps.values.find { |step| step.name == "Merge" }.commands
   end
 
   test "an unknown top-level key is rejected" do

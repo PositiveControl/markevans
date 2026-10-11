@@ -6,18 +6,44 @@ require "test_helper"
 # is read back from content/, so a test fails if a template starts writing
 # copy of its own (docs/rules/content-is-files.md).
 class OtherPagesTest < ActionDispatch::IntegrationTest
-  test "/work lists every project in the file's order, each linking to its page with its summary" do
+  test "/work lists every project under its category, each linking to its page with its summary" do
     get projects_url
 
     assert_response :success
     assert_select "h1", SitePage.fetch(:work).title
-    links = css_select("ul[aria-label=Projects] a")
-    assert_equal Portfolio.all.map { |project| project_path(project.key) }, links.map { |a| a["href"] }
+    assert_equal Portfolio::CATEGORIES, css_select("main section > h2").map(&:text)
+    Portfolio.grouped.each do |category, projects|
+      links = css_select("ul[aria-label='#{category}'] a")
+      assert_equal projects.map { |project| project_path(project.key) }, links.map { |a| a["href"] }
+    end
+    assert_equal Portfolio.fetch("rails-rocket-sheep").tags, css_select("li[data-project=rails-rocket-sheep] ul[aria-label=Stack] li").map(&:text)
     Portfolio.all.each do |project|
       assert_select "a[href=?]", project_path(project.key) do
         assert_select "span.font-mono", project.name
         assert_select "span.font-serif", project.summary
       end
+    end
+  end
+
+  test "/work filters by a tag, with a link per tag in use and the picked one current" do
+    get projects_url(tag: "Swift")
+
+    assert_response :success
+    assert_equal [ project_path("dailydrop") ], css_select("main section ul a").map { |a| a["href"] }
+    assert_select "nav[aria-label='Filter by stack'] a", count: Portfolio.tags.size + 1
+    assert_select "nav[aria-label='Filter by stack'] a[aria-current=page]", text: "Swift, show all" do |links|
+      assert_equal projects_path, links.first["href"], "the picked tag links back to the whole list"
+    end
+    assert_select "nav[aria-label='Filter by stack'] a[href=?]", projects_path(tag: "Ruby"), text: "Ruby"
+  end
+
+  test "/work with no tag, or one not in use, lists everything and marks All current" do
+    [ projects_url, projects_url(tag: "COBOL"), "#{projects_url}?tag[]=Ruby" ].each do |url|
+      get url
+
+      assert_response :success
+      assert_equal Portfolio.all.size, css_select("main section ul a").size
+      assert_select "nav[aria-label='Filter by stack'] a[aria-current=page]", text: "All"
     end
   end
 
@@ -60,12 +86,23 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", SitePage.fetch(:workflow).title
-    assert_equal thread.steps.map(&:name), css_select("ol[aria-label=Steps] li a").map(&:text)
-    assert_equal thread.steps.map { |step| root_path(anchor: step.key) }, css_select("ol[aria-label=Steps] li a").map { |a| a["href"] }
+    assert_equal thread.steps.map(&:name), css_select("ol[aria-label=Steps] li a[href^='/']").map(&:text)
+    assert_equal thread.steps.map { |step| root_path(anchor: step.key) }, css_select("ol[aria-label=Steps] li a[href^='/']").map { |a| a["href"] }
     assert_select "ol[aria-label=Steps] li[data-kind=human]", count: thread.steps.count { |step| step.kind == "human" }
     assert_select "ol[aria-label=Steps] li[data-kind=human]", text: /human gate/
     assert_select "ol[aria-label=Steps] li[data-kind=machine]", text: /automated gate/
     assert_equal SitePage.fetch(:workflow).sections.map(&:heading), css_select("main section > h2").map(&:text) - [ "The chain" ]
+  end
+
+  test "/workflow links each command a step names to its file in rails-rocket-sheep, in a new tab" do
+    commands = DeliveryThread.fetch(:home).steps.flat_map(&:commands)
+    get workflow_url
+
+    links = css_select("ol[aria-label=Steps] li a[href^=https]")
+    assert_equal commands.map(&:url), links.map { |a| a["href"] }
+    assert_equal commands.map(&:path), links.map(&:text)
+    assert_includes links.map(&:text), ".claude/commands/segue_merge.md"
+    links.each { |a| assert_equal [ "_blank", "noopener noreferrer" ], [ a["target"], a["rel"] ] }
   end
 
   test "/background shows the CV's sections and its groups of rows" do

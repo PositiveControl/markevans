@@ -1,8 +1,11 @@
 # Home thread. Copy moved unchanged from the decided mock (docs/design/home-mock.dc.html).
 # Square brackets mark content still to be supplied; the placeholder gate fails a production build on them.
 id: home
-title: "[example TBD]"
-headline: "I build web products with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
+title: "Home thread"
+headline: "I build software with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
+headline_link:
+  text: "positive control"
+  url: "https://github.com/PositiveControl"
 intro: "Positive control is an air traffic term. No aircraft moves without explicit clearance. Here, no change ships without one. One feature is on the scope now, flying the whole route. Pause it and step through at your own pace."
 steps:
   - key: pick
@@ -58,8 +61,19 @@ steps:
           - k: "/domain_model"
             v: "Settles a term doing two jobs. Writes the vocabulary and an ADR."
     artifact:
-      source: "docs/plans/[example]-design.md"
-      body: "[Design doc excerpt. Example TBD.]"
+      source: "docs/plans/2026-10-03-home-thread-design.md"
+      url: "https://github.com/PositiveControl/markevans/blob/main/docs/plans/2026-10-03-home-thread-design.md"
+      body: |
+        # Home thread — design
+
+        Status: Approved (G1, 2026-10-03)
+        Date: 2026-10-03
+        Slug: home-thread
+        **Feature branch:** feature/home-thread
+
+        The home page of markevans.io is one real feature moving through the delivery
+        chain, played as a self-running, steppable sequence of flight strips on a git
+        spine, with a radar scope as the console.
   - key: segue
     name: "/segue → /segue_merge"
     kind: optional
@@ -83,7 +97,7 @@ steps:
             v: "Returns the findings to the plan. The discussion itself stays out."
           - k: "/segue_kill"
             v: "A dead end. Records why it died and merges nothing."
-    note: "[Segue content TBD: the question, and what came back.]"
+    note: "While designing this page I set it aside for one question: what shows a change moving under control? I looked at the paper flight strips air traffic controllers pass between bays, and at how git draws a branch history. What came back: each step is a strip of ruled cells (Ctl, Bay, Rmk), the board's four states are the strip bay, and the sequence runs down a git graph that forks, merges and loops."
   - key: g1
     name: "G1 · Design approved"
     kind: human
@@ -102,7 +116,7 @@ steps:
             v: "Mark."
           - k: "then"
             v: "A parent issue and sized sub-issues land on the board as Todo."
-    note: "[Your note: what you changed or sent back before approving.]"
+    note: "We drew four designs and compared them side by side, then took elements from two of them to agree on the initial design."
   - key: task_plan
     name: "/task_plan"
     kind: command
@@ -143,8 +157,8 @@ steps:
           - k: "docs/rules/SYMPTOMS.md"
             v: "Read only when routing by path missed."
     artifact:
-      source: "rules selected for this task"
-      body: "[Rule files the plan loaded. Example TBD.]"
+      source: "rules routed for PR #23's files (rebuilt from docs/rules/INDEX.md)"
+      body: "registries · tailwind · tailwind-build · tokens-only · color-means-role · typeface-means-speaker · content-is-files · no-invented-content · testing"
   - key: g2
     name: "G2 · Plan approved"
     kind: human
@@ -161,7 +175,7 @@ steps:
             v: "Any code."
           - k: "cleared by"
             v: "Mark."
-    note: "[Your note: what you cut or reordered in the plan.]"
+    note: "The first slice forecast about 1,600 lines across 33 files, past the 25-file limit. I split it: tokens, loader and gates first (#14), the static page second (#21), so nothing user-facing changed until the foundation was in."
   - key: implement
     name: "/implement"
     kind: command
@@ -195,8 +209,9 @@ steps:
           - k: "scope escape"
             v: "Forecast passes 1,500 added lines or 25 files: stop, split a sub-issue, land this slice clean."
     artifact:
-      source: "[example PR] · diff summary"
-      body: "[Files changed and lines added. Example TBD.]"
+      source: "PR #23 · diff summary"
+      url: "https://github.com/PositiveControl/markevans/pull/23"
+      body: "19 files changed, 1,040 lines added, 35 removed"
   - key: pr_review_local
     name: "/pr_review --local"
     kind: command
@@ -293,8 +308,9 @@ steps:
           - k: "blocks"
             v: "The push, and the merge under branch protection."
     artifact:
-      source: "$ bin/gates"
-      body: "[Gate output. Example TBD.]"
+      source: "PR #22 · checks"
+      url: "https://github.com/PositiveControl/markevans/pull/22/checks"
+      body: "scan_ruby ✓ · scan_js ✓ · lint ✓ · gates ✓ · test ✓"
   - key: human_review
     name: "Human review"
     kind: command
@@ -313,7 +329,7 @@ steps:
             v: "A guided manual QA pass with a structured report. It starts from the walkthrough's screenshots, and the hands-on part begins where the walkthrough stops."
           - k: "/pr_fix_ci"
             v: "Reads a failed run and fixes it locally. Pushing the fix is mine."
-    note: "[Review comments from the example. TBD.]"
+    note: "The review shown here is slice #23's: eight comments from /pr_review, run by the agent in a fresh session. Each was answered with a fix commit. One added content:check, the gate that held this page until its content was filled."
   - key: pr_comment_resolver
     name: "/pr_comment_resolver"
     kind: command
@@ -374,10 +390,10 @@ steps:
   - key: deploy
     name: "Deploy"
     kind: command
-    lane: ci
+    lane: human
     bay: "Done"
     outcome: "Shipped."
-    body: "[One line on how the example reached production.]"
+    body: "Merged to main in #22 on 2026-10-04, then held: the production build runs `content:check`, and this page's own placeholders failed it until each one was filled. Then `kamal deploy` to markevans.io."
     git:
       on: main
       event: end

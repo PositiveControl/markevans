@@ -5,34 +5,53 @@
 # (docs/sop/update-the-cv.md). Copy the resume does not answer stays in
 # [brackets]: the placeholder gate fails a production build until it is
 # filled (docs/rules/no-invented-content.md).
-# Write lists one item per line; a flow list, [a, b], reads as a placeholder.
+# Write lists one item per line; a flow list, its items between square
+# brackets on one line, reads as a placeholder.
 projects:
   - key: rails-rocket-sheep
     name: rails-rocket-sheep
     summary: "A Rails 8 template for LLM-harnessed development."
+    category: AI and Tooling
+    tags:
+      - Ruby
+      - Rails
+      - Claude
+      - Cursor
+      - Kamal
     links:
       - label: Repository
         url: https://github.com/PositiveControl/rails-rocket-sheep
     sections:
       - heading: The project
         paragraphs:
-          - "[What it is, the problem it answers, and why it was built]"
+          - "A Rails 8 application template for building with AI coding agents. rails new gives you a framework; this gives you a codebase an agent can be productive in on the first prompt: the patterns are already there, the conventions are written down one rule per file, a generated CLAUDE.md routes the agent to the right rule before it touches anything, and the rules a machine can check are checked at push time and in CI. The result is that the tenth feature looks like the first one."
+          - "It was built because many side projects start from rails new. The template gets the boilerplate out of the way and gives each one the same foundation, ready to develop and deploy the same day. It is applied once and leaves behind ordinary Rails files: no gem, no runtime dependency, nothing to upgrade. MIT licensed. This site was generated from it."
         groups:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8
               - k: Status
-                v: "[Status]"
+                v: Released and maintained
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "The workflow started at work. From March 2026, uCollect's team repo carried a set of agent slash commands for planning, submitting and reviewing pull requests, with teammates adding to them; in July they were reshaped into the chain on /workflow: /pick, /feature_plan, /task_plan and /implement. The template itself was carved out of an existing Rails app in January 2026: the stack, the service and registry patterns, and a CLAUDE.md. From August the workflow, conventions and gates were extracted into it, tested against the apps the template generates, and adopted back into the project repos: DailyDrop and uCollect in August, IDLEmpire in October. When it was mature enough, the template began running its own workflow on itself: since October 2026 its features go through it, with a design doc, slices on a feature branch, and gates in CI. What came of it: four releases, and the codebase this site was generated from."
 
   - key: idlempire
     name: IDLEmpire
-    summary: "A multiplayer browser strategy game with crypto economics."
+    summary: "A multiplayer browser strategy game."
+    category: Applications
+    tags:
+      - Ruby
+      - Rails
+      - GDScript
+      - Godot
+      - ActionCable
+      - PostgreSQL
+      - Kamal
+      - Hetzner
     links:
       - label: Site
         url: https://idlempire.com
@@ -40,24 +59,30 @@ projects:
       - heading: The project
         paragraphs:
           - "Adversarial multiplayer systems: a combat engine and simulator, a balanced production economy with a fair-allocation model, alliance treasuries, diplomacy negotiation with escrow, bounties, and era transitions."
-          - "Autonomous bot agents, built as decision and action services, take part in the live economy. Real-time chat and a comm panel run over ActionCable, beside crypto wallet verification and staking."
+          - "Autonomous bot agents, built as decision and action services, take part in the live economy. Real-time chat and a comm panel run over ActionCable."
           - "Deployed with Kamal and Docker, with a written architecture review and an ActionCable performance analysis. Test code exceeds application code."
         groups:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
-                v: Rails 8, ActionCable, Kamal, Docker
+                v: Rails 8, ActionCable, Godot, Kamal, Docker
               - k: Status
                 v: Live at idlempire.com
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "Built fast from a scaffold in December 2025: a tick engine, the economy loop, combat and a leaderboard in its first days. In October 2026 it adopted the rails-rocket-sheep workflow, and since then work lands through the chain: each change an issue, planned and built as its own slice and pull request, across the Rails server and a Godot client."
 
   - key: harness
     name: harness
     summary: "A local-first agent harness that makes a local quantized 30B model reliable enough to run unattended."
+    category: AI and Tooling
+    tags:
+      - Python
+      - MLX
+      - SQLite
+      - Apple Silicon
     links:
       - label: Repository
         url: https://github.com/PositiveControl/harness
@@ -73,18 +98,23 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Python, MLX on Apple Silicon, SQLite
               - k: Status
-                v: "[Status]"
+                v: In development
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "Built in phases from April 2026, with most changes tracked as a bd issue from the second day. There is no hosted CI, so ruff, mypy --strict and the test suite are the gates, run in pre-commit and pre-push. In September the /pick chain was ported in and remapped onto bd: issues became beads, and the local gates stand in for CI. The same discipline runs inside the harness: its driver works a planned workplan one issue per turn behind an operator approval gate, and an observed failure becomes a deterministic guard rather than a prompt tweak."
 
   - key: kram
     name: kraM
     summary: "A reversible programming language and gate compiler, written in Go."
+    category: Languages and Compilers
+    tags:
+      - Go
+      - OpenQASM
+      - IBM Quantum
     links:
       - label: Repository
         url: https://github.com/PositiveControl/kraM
@@ -97,18 +127,28 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator
               - k: Stack
                 v: Go, OpenQASM, IBM Quantum
               - k: Status
-                v: "[Status]"
+                v: Built and validated on IBM Quantum hardware
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "It started with pry. Debugging Ruby means stepping through a program as it runs, and kraM began as a language where a REPL could do that in both directions: step forward like pry, and walk the program backward. Making every step reversible led to elementary gates and circuits, the same building blocks quantum programs are made of. That is how the compiler came to target OpenQASM, and why its circuits were validated on IBM Quantum hardware."
+          - "kraM did not go through the chain: it was built in four days of direct commits, one language feature at a time, from an expression evaluator and a reversible execution core with a time-travel REPL up to the gate compiler and the quantum algorithms. Each algorithm carries its own tests, and each hardware run was committed as a result, with its QASM sample kept."
 
   - key: dailydrop
     name: DailyDrop
     summary: "A music curation platform, Rails 8 and native iOS: songs are never hosted, but exported into the listener's own streaming account."
+    category: Applications
+    tags:
+      - Ruby
+      - Rails
+      - Swift
+      - iOS
+      - PostgreSQL
+      - Kamal
+      - Hetzner
     links:
       - label: Site
         url: https://dailydrop.fm
@@ -122,18 +162,25 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8, Solid Queue, Cache and Cable, Swift, Kamal 2
               - k: Status
                 v: Live at dailydrop.fm
       - heading: How it was built
         paragraphs:
-          - "[How it moved through the delivery chain, and what came of it]"
+          - "Generated from the rails-rocket-sheep template in February 2026, with the MVP built the next day: the selection engine, Apple Music integration and the public frontend. Design work is written down as it goes: over a hundred design docs and thirty decision records. In August it adopted the template's agent workflow, and production incidents are written up as postmortems in the repo; the last, a silent drop of library-scoped Apple Music IDs, ended in a fix and a rule to flag degraded rows instead of falling back silently."
 
   - key: spamsandwich
     name: spamsandwich
     summary: "A phishing and spam-awareness training tool."
+    category: Applications
+    tags:
+      - Ruby
+      - Rails
+      - PostgreSQL
+      - Kamal
+      - Hetzner
     links:
       - label: Site
         url: https://spamsandwich.com
@@ -145,8 +192,74 @@ projects:
           - title: At a glance
             rows:
               - k: Role
-                v: "[Your role]"
+                v: Creator and maintainer
               - k: Stack
                 v: Rails 8
               - k: Status
                 v: Live at spamsandwich.com
+      - heading: How it was built
+        paragraphs:
+          - "The first app generated from the rails-rocket-sheep template, on the day the template was started, in January 2026. It was built in two days."
+
+  - key: slowpoke-rb
+    name: slowpoke-rb
+    summary: "A Ruby gem that finds slow tests, across Minitest and RSpec, with zero runtime dependencies."
+    category: AI and Tooling
+    tags:
+      - Ruby
+      - Minitest
+      - RSpec
+      - RubyGems
+    links:
+      - label: Repository
+        url: https://github.com/PositiveControl/slowpoke-rb
+      - label: RubyGems
+        url: https://rubygems.org/gems/slowpoke-rb
+    sections:
+      - heading: The project
+        paragraphs:
+          - "Flags every test slower than a threshold, 500 ms by default, and prints a sorted report at the end of the run, with each test's file and line. Integrations for Minitest and RSpec, a CI exit code, and a JSON history of slow tests. Zero runtime dependencies by design."
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: Creator and maintainer
+              - k: Stack
+                v: Ruby, Minitest, RSpec
+              - k: Status
+                v: Published on RubyGems, MIT
+      - heading: How it was built
+        paragraphs:
+          - "Built in two days of direct commits in April 2026, without the chain: a core of configuration, tracker and reporter, then the Minitest and RSpec integrations, then its own test suite. It ships in every app the rails-rocket-sheep template generates, this site included, which reports any test over 500 ms after each run."
+
+  - key: myrelay
+    name: myrelay
+    summary: "A self-hosted WireGuard VPN toolkit, written in Go: no account system, no cloud dependency, no subscription."
+    category: AI and Tooling
+    tags:
+      - Go
+      - WireGuard
+      - SQLite
+      - Terraform
+    links:
+      - label: Site
+        url: https://myrelay.to
+      - label: Repository
+        url: https://github.com/PositiveControl/myrelay
+    sections:
+      - heading: The project
+        paragraphs:
+          - "Set up a private VPN server, add a peer with one command, and hand out a QR code. A CLI, vpnctl, writes the peer config; an agent watches it and syncs the WireGuard peers. It runs standalone on one server, or managed from a control plane API, and ships a Terraform example for Hetzner Cloud."
+        groups:
+          - title: At a glance
+            rows:
+              - k: Role
+                v: Creator and maintainer
+              - k: Stack
+                v: Go, WireGuard, SQLite, Terraform
+              - k: Status
+                v: In development
+      - heading: How it was built
+        paragraphs:
+          - "It started with Algo. Since 2016, personal VPNs had run on Algo, Trail of Bits' scripts for setting up a WireGuard and IPsec VPN in the cloud; myrelay was built as an updated replacement."
+          - "Built in March 2026 in direct commits, from the control plane and agent to the vpnctl CLI and SQLite persistence. In August it was hardened through four small pull requests, each tied to a bd issue: an idempotent stop that waits for teardown, a seam for injecting the WireGuard command runner, a fix so teardown never removes the node-wide NAT rule, and the tests that use the seam."
