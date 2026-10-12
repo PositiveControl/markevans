@@ -85,11 +85,28 @@ class SeoTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "robots.txt is accessible and references sitemap" do
+  test "robots.txt names the sitemap on the host it was asked for, so it cannot point at another" do
     get "/robots.txt"
+
     assert_response :success
-    assert_includes response.body, "Sitemap:"
-    assert_includes response.body, "Disallow: /admin/"
+    assert_includes response.content_type, "text/plain"
+    assert_includes response.body.lines.map(&:chomp), "Sitemap: http://www.example.com/sitemap.xml"
+
+    host! "markevans.io"
+    get "/robots.txt"
+    assert_includes response.body.lines.map(&:chomp), "Sitemap: http://markevans.io/sitemap.xml"
+  end
+
+  test "robots.txt allows the site and keeps the account and admin paths out" do
+    get "/robots.txt"
+
+    lines = response.body.lines.map(&:chomp)
+    [ "User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /api/", "Disallow: /users/sign_in", "Disallow: /users/sign_up" ]
+      .each { |line| assert_includes lines, line }
+  end
+
+  test "robots.txt comes from the route alone: no static file shadows it" do
+    assert_not Rails.public_path.join("robots.txt").exist?
   end
 
   private

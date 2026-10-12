@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   # SEO
   get "sitemap.xml", to: "home#sitemap", as: :sitemap, defaults: { format: "xml" }
+  get "robots.txt", to: "robots#show", as: :robots, defaults: { format: "text" }
 
   # Email preview in development
   if Rails.env.development?
