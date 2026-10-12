@@ -2,6 +2,9 @@
 # Square brackets mark content still to be supplied; the placeholder gate fails a production build on them.
 id: home
 title: "Home thread"
+# The page's <title> and meta description (docs/system/site-pages.md, SEO).
+page_title: "Mark Evans"
+description: "I build software with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
 headline: "I build software with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
 headline_link:
   text: "positive control"

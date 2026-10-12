@@ -37,15 +37,18 @@ module DeliveryThread
   ARTIFACT_KEYS = %w[source body url].freeze
   # headline and intro are the page copy around the thread: the h1 and the
   # paragraph beneath it. headline_link links one phrase of the headline off
-  # the site; the headline itself stays plain text for the meta description.
-  TOP_KEYS = %w[id title headline headline_link intro steps].freeze
+  # the site. page_title and description are the page's <title> and meta
+  # description; a routed thread must have both.
+  TOP_KEYS = %w[id title page_title description headline headline_link intro steps].freeze
+  PAGE_KEYS = %w[page_title description].freeze
+  TEXT_KEYS = %w[page_title description headline intro].freeze
   LINK_KEYS = %w[text url].freeze
 
   Invalid = Class.new(StandardError)
 
   Link = Data.define(:text, :url)
 
-  Sequence = Data.define(:id, :title, :headline, :headline_link, :intro, :steps) do
+  Sequence = Data.define(:id, :title, :page_title, :description, :headline, :headline_link, :intro, :steps) do
     # Each step with what its own git block cannot say about its row in the
     # chart, so the chart is drawn from data and never from a row's position
     # (docs/rules/topology-from-data.md).
@@ -141,7 +144,8 @@ module DeliveryThread
         )
       end
       link = (Link.new(text: data["headline_link"]["text"], url: data["headline_link"]["url"]) if data["headline_link"])
-      Sequence.new(id: data["id"], title: data["title"], headline: data["headline"], headline_link: link, intro: data["intro"], steps: steps.freeze)
+      Sequence.new(id: data["id"], title: data["title"], page_title: data["page_title"], description: data["description"],
+        headline: data["headline"], headline_link: link, intro: data["intro"], steps: steps.freeze)
     end
   end
 
@@ -171,7 +175,8 @@ module DeliveryThread
       errors = @data["id"] == @id ? [] : [ "id #{@data['id'].inspect} does not match the filename #{@id}.yml" ]
       errors << "missing title" if missing?(@data["title"])
       errors += (@data.keys - TOP_KEYS).map { |key| "unknown top-level key #{key}" }
-      errors += %w[headline intro].filter_map do |key|
+      errors += PAGE_KEYS.filter_map { |key| "missing #{key}" if ROUTED.include?(@id) && missing?(@data[key]) }
+      errors += TEXT_KEYS.filter_map do |key|
         "#{key} must be text" if @data.key?(key) && !@data[key].is_a?(String)
       end
       @data.key?("headline_link") ? errors + headline_link_errors(@data["headline_link"]) : errors

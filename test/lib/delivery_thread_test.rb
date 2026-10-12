@@ -147,6 +147,33 @@ class DeliveryThreadTest < ActiveSupport::TestCase
     assert_match(/air traffic term/, thread.intro)
   end
 
+  test "the home thread carries the page's title and meta description" do
+    thread = DeliveryThread.fetch(:home)
+
+    assert_equal "Mark Evans", thread.page_title
+    assert_equal thread.headline, thread.description
+  end
+
+  test "a page title and description are optional on a thread no route reads" do
+    thread = load_thread(minimal)
+
+    assert_nil thread.page_title
+    assert_nil thread.description
+  end
+
+  test "a routed thread needs its page title and description, so its page never renders without them" do
+    data = YAML.safe_load_file(DeliveryThread::ROOT.join("home.yml")).except("page_title", "description")
+
+    error = assert_raises(DeliveryThread::Invalid) { load_thread(data) }
+    assert_match(/missing page_title/, error.message)
+    assert_match(/missing description/, error.message)
+  end
+
+  test "a page title and description must be text" do
+    assert_invalid(/page_title must be text/) { |data| data["page_title"] = [ "a" ] }
+    assert_invalid(/description must be text/) { |data| data["description"] = 1 }
+  end
+
   test "headline and intro are optional" do
     thread = load_thread(minimal)
 
