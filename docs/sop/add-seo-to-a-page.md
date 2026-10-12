@@ -11,10 +11,14 @@ In your Slim view, add `content_for` blocks at the top. The copy comes from the
 page's content file (`docs/rules/content-is-files.md`):
 
 ```slim
-- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :title, @page.page_title || "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { your_page_url }
 ```
+
+To put search terms in the `<title>` without changing the `h1`, give the
+content file a `page_title`, 60 characters at most (`docs/system/site-pages.md`,
+*Where the content lives*).
 
 The layout falls back to defaults if these are not set (`PageMetaHelper`):
 - **Title and description:** "Mark Evans"
