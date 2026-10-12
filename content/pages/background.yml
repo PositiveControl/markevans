@@ -2,7 +2,10 @@
 # Read by app/lib/site_page.rb. A cut of Mark's master resume, never added to;
 # how to re-cut it when the resume changes is docs/sop/update-the-cv.md.
 title: Background
-description: "Mark Evans, senior software engineer in Phoenix, AZ: ships complete systems and leads the teams that build them."
+# The <title> and meta description carry the search terms; the intro stays
+# "web" (docs/plans/2026-10-12-recruiter-search-design.md, Approach 2).
+page_title: "Background · Mark Evans, Senior Rails & AI Engineer"
+description: "Mark Evans, senior software engineer in Phoenix, AZ. Strongest in Ruby on Rails, with LLM features in production. Ships complete systems and leads teams."
 intro: "Senior engineer who ships complete systems (payments, auth, search, fulfillment, real-time messaging) and leads the teams that build them. Twelve years across web and distributed vehicle telemetry; currently day-to-day technical lead of an eight-person team, holding merge authority and running production for a marketplace heading to public launch. Phoenix, AZ."
 links:
   - label: Email

@@ -4,7 +4,7 @@
 / step names its kind in words beside its mark (docs/rules/never-color-alone.md)
 / and links to its strip on the home page. A command step also links each
 / command it names to the file that defines it in rails-rocket-sheep.
-- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :title, @page.page_title || "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { workflow_url }
 - content_for(:head) { jsonld_tag(web_page_jsonld(name: @page.title, description: @page.description, url: workflow_url)) }

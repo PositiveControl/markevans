@@ -3,8 +3,8 @@
 id: home
 title: "Home thread"
 # The page's <title> and meta description (docs/system/site-pages.md, SEO).
-page_title: "Mark Evans"
-description: "I build software with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
+page_title: "Mark Evans · Senior Rails & AI Engineer"
+description: "Senior engineer in Phoenix, strongest in Ruby on Rails. Builds LLM features and ships with coding agents under positive control. Open to full-time roles."
 headline: "I build software with coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
 headline_link:
   text: "positive control"

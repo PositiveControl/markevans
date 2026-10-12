@@ -2,7 +2,8 @@
 # content/threads/home.yml; this file is the copy around it. Read by
 # app/lib/site_page.rb (docs/system/site-pages.md).
 title: Workflow
-description: "The delivery chain behind Mark Evans's work: every change planned, gated, reviewed and shipped the same way."
+page_title: "Workflow · Shipping with AI coding agents · Mark Evans"
+description: "How Mark Evans ships software with AI coding agents under positive control: every change planned, gated, reviewed and shipped the same way."
 intro: "Every change I ship goes through the same chain of commands. Coding agents run most of the steps: they write the design doc, plan the issue, build it test-first and review it with a new context. I approve the design and the plan before any code exists, and I invoke anything that has an audience: opening the PR, merging it, deploying it. Positive control is an air traffic term. No aircraft moves without explicit clearance. Here, no change ships without one."
 sections:
   - heading: The gates

@@ -136,6 +136,45 @@ class SeoTest < ActionDispatch::IntegrationTest
     end
   end
 
+  {
+    "/" => -> { DeliveryThread.fetch(:home).page_title },
+    "/background" => -> { SitePage.fetch(:background).page_title },
+    "/contact" => -> { SitePage.fetch(:contact).page_title },
+    "/workflow" => -> { SitePage.fetch(:workflow).page_title }
+  }.each do |path, page_title|
+    test "#{path}'s <title> is its page_title from content, not its heading" do
+      get path
+
+      expected = instance_exec(&page_title)
+      assert expected.present?, "#{path} has no page_title"
+      assert_equal expected, css_select("title").first.text
+    end
+  end
+
+  test "home, Background and Contact name the role in their title and description; Workflow names AI coding agents" do
+    home = DeliveryThread.fetch(:home)
+    pages = { home: home, background: SitePage.fetch(:background), contact: SitePage.fetch(:contact) }
+
+    pages.each do |key, page|
+      assert_match(/Rails/, page.page_title, "#{key}'s title")
+      assert_match(/\bAI\b/, page.page_title, "#{key}'s title")
+      assert_match(/Ruby on Rails/, page.description, "#{key}'s description")
+    end
+    assert_match(/AI Engineer, Ruby on Rails/, pages[:contact].page_title)
+    assert_match(/positive control/, home.description)
+    assert_match(/AI coding agents/, SitePage.fetch(:workflow).page_title)
+    assert_match(/AI coding agents/, SitePage.fetch(:workflow).description)
+  end
+
+  test "no page's <title> runs past 60 characters, where search results cut it" do
+    (PAGES + [ "/work/#{Portfolio.all.max_by { |project| project.name.length }.key}" ]).each do |path|
+      get path
+
+      title = css_select("title").first.text
+      assert_operator title.length, :<=, 60, "#{path}'s title is #{title.length} characters"
+    end
+  end
+
   test "robots.txt names the sitemap on the host it was asked for, so it cannot point at another" do
     get "/robots.txt"
 

@@ -2,7 +2,10 @@
 # (docs/system/site-pages.md). A link whose url is still a placeholder renders as
 # text until the address is supplied.
 title: Contact
-description: "How to reach Mark Evans, senior software engineer in Phoenix, AZ: email, LinkedIn or GitHub."
+# The page a recruiter lands on: its <title> and description carry the search
+# terms (docs/plans/2026-10-12-recruiter-search-design.md, Approach 2).
+page_title: "Contact Mark Evans · AI Engineer, Ruby on Rails"
+description: "Mark Evans, AI Engineer (Ruby on Rails) in Phoenix. Open to full-time senior, lead or staff roles: remote, hybrid or in Phoenix. US citizen."
 intro: "I am looking for full-time senior, lead, or staff roles, remote or in Phoenix. Email is the best way to reach me."
 links:
   - label: Email

@@ -1,7 +1,7 @@
 / /background: the CV, from content/pages/background.yml. It prints to one
 / page: the header and footer leave the print, and the page's own spacing
 / tightens (docs/system/site-pages.md, Print).
-- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :title, @page.page_title || "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { background_url }
 - content_for :og_type, "profile"

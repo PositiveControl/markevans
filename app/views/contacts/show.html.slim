@@ -1,7 +1,7 @@
 / /contact: the ways to reach Mark, from content/pages/contact.yml
 / (docs/system/site-pages.md). An address still to be supplied shows as its
 / [placeholder], not as a link.
-- content_for :title, "#{@page.title} · Mark Evans"
+- content_for :title, @page.page_title || "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { contact_url }
 - content_for(:head) { jsonld_tag(web_page_jsonld(type: "ContactPage", name: @page.title, description: @page.description, url: contact_url)) }
