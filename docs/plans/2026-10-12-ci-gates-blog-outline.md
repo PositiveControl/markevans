@@ -29,7 +29,7 @@ Today they live in two places:
 
 **Option B.**
 - On Oct 2, `bin/lint-docs` landed on master and went red on its own merge commit.
-- The cause was a doc line saying "the #3875 rules", which it read as a claim that 3,875 rules
+- The cause was a doc line saying "the #3875 rules", which it read as a claim that 3,875 rules <!-- lint-docs:ignore: quotes another repo -->
   exist.
 - It failed 15 runs in total (4 on master, 11 on PRs from four other people) before the fix
   (`0b0f08812`, #4047).
@@ -243,7 +243,7 @@ is worse than no prose, because the agent has no way to tell." Its checks cover:
 - Check 12, which looks for real hosts and IPs in a public repo, is skipped here. The repo is
   private and its SOPs name its own hosts on purpose.
 - `1975b06ee` made the whole-repo scans read only files git tracks, because `tmp/` holds autopilot
-  scratch like "the 10 commands".
+  scratch like "the 10 commands". <!-- lint-docs:ignore: quotes another repo -->
 
 **Check 13: one-line index entries** (#4123, Spencer).
 - `.llm/README.md` had grown to 193K characters.
