@@ -3,7 +3,7 @@
 Status: Approved (G1, 2026-10-12)
 Date: 2026-10-12
 Slug: recruiter-search
-Issue: #55 (slices #56–#60)
+Issue: #55 (slices #56–#60, voice seed #61)
 **Feature branch:** feature/recruiter-search
 
 When a recruiter looks for a Ruby on Rails engineer who wants a full-time
@@ -355,9 +355,20 @@ article, the loop works.
 no-invented-content and no-volume constraints, and any traits Mark states
 now. Copy already on the site is not used as evidence, because it was cut
 from the résumé or drafted with an agent, and is not known to be Mark's own
-prose. If Mark has writing of his own (a post, a long email, a design doc
-he wrote by hand), one sample would give the first draft a head start (open
-question 9).
+prose. Mark's school essays seed it instead (#61, open question 9), through
+a sample mode of `/voice_learn`:
+
+- Essays are a corpus, not edit pairs, so the sample mode proposes traits
+  from the prose itself, each shown with its excerpt, and marks them
+  `source: sample`.
+- Essays are academic writing. Thesis-statement framing, "this paper
+  will", citation style and padding to a word count are the assignment's
+  form, not Mark's voice, and are filtered out.
+- Edit pairs outrank samples. A `source: sample` trait changes or retires
+  when a `Voice: edit` contradicts it.
+- The repo is public. The essays stay in `.llm/voice-samples/`, which is
+  gitignored, and only traits Mark approves reach the rule, with a short
+  excerpt only if he agrees to it.
 
 ### 4. Answer engines: be in what they read, and be quotable
 
@@ -517,10 +528,8 @@ Still open. None of these blocks cutting issues:
    about 60 days after slice 1 deploys.
 8. ~~Training crawlers~~ **Settled 2026-10-12:** every AI crawler is
    allowed, training included.
-9. **A voice seed. Deferred, a to-do for Mark.** He will supply samples of
-   his own writing. Slice 5 ships the rule with the stated seed. A sample
-   that arrives later goes through `/voice_learn` like any edit pair, as
-   evidence for traits; it is not pasted into the rule.
+9. ~~A voice seed~~ **Settled 2026-10-12:** Mark's school essays, through
+   `/voice_learn --samples` (#61, after slice 5 and before the flay draft).
 10. ~~The harness-engineering article~~ **Settled 2026-10-12:** it is the
     fifth topic.
 
@@ -550,9 +559,13 @@ route, and the `/contact` content that `/llms.txt` and the facts test read).
 Slice 5 depends only on slice 3's path convention, `content/writing/`, and
 can start alongside it.
 
+#61 seeds the voice rule from Mark's essays. It comes after slice 5 and is
+not a numbered slice: it is mostly content, and its size depends on the
+essays.
+
 The flay article's outline (step 1) does not have to wait for any slice:
 it can be agreed as soon as this design is approved, and drafted once slice 5
-lands, so the first draft is also the voice loop's first data point.
+and #61 land, so the first draft is also the voice loop's first data point.
 
 ## Measuring it
 
