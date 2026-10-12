@@ -183,9 +183,10 @@ another. It keeps the template's `Disallow` lines. There is no
 `markevans.io` is the canonical host. `www.markevans.io` is in the Kamal
 proxy's `hosts`, so it has its own certificate. A host constraint at the top
 of `config/routes.rb` answers anything on it with a 301 to the apex, keeping
-the path and query. `http://www.markevans.io` takes two 301s: `force_ssl`
-moves it to `https://www…` before routing, and the route then moves it to the
-apex. That is expected, not a loop. The weekly Lighthouse workflow
+the path and query. `http://www.markevans.io` takes two 301s: kamal-proxy
+(`ssl: true`) moves it to `https://www…` before Rails sees it, and the route
+then moves it to the apex. Rails' `force_ssl` never fires behind the proxy,
+because `assume_ssl` marks every request https. That is expected, not a loop. The weekly Lighthouse workflow
 (`.github/workflows/lighthouse.yml`) audits `https://markevans.io`.
 
 Walk `robots.txt` and the card in a browser: `bin/qa-walkthrough crawl_baseline`.
