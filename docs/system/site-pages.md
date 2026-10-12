@@ -186,6 +186,8 @@ of `config/routes.rb` answers anything on it with a 301 to the apex, keeping
 the path and query. The weekly Lighthouse workflow
 (`.github/workflows/lighthouse.yml`) audits `https://markevans.io`.
 
+Walk `robots.txt` and the card in a browser: `bin/qa-walkthrough crawl_baseline`.
+
 ## Print
 
 `/background` prints to one A4 or Letter page. Header and footer are
