@@ -21,6 +21,7 @@ Design docs for features. Written before issues are created, approved at gate G1
 <!-- plans:start -->
 - [Home thread](../docs/plans/2026-10-03-home-thread-design.md) — the home page as one feature moving through the delivery chain: flight strips on a git spine, radar scope as console (approved G1)
 - [CV content](../docs/plans/2026-10-04-cv-content-design.md) — fill Background, Contact and Work from the master resume as a one-page cut (approved G1, #38)
+- [Recruiter search](../docs/plans/2026-10-12-recruiter-search-design.md) — rank for Rails and AI searches on Google and in AI answer engines: crawl baseline, positioning, writing, answer engines, the article voice loop (approved G1, #55)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`
@@ -44,6 +45,7 @@ How things currently work. Architecture state, not intentions.
 - [Home thread playback](../docs/system/home-thread-playback.md) — the playback controller, its three values, what it writes on the page (bay and log included), the filter controller, the step clock, follow and yield, the docked bar, the step hash, the keyboard and the event table
 - [Vocabulary](../docs/system/vocabulary.md) — what each workflow and doc term means here
 - [QA walkthroughs](../docs/system/qa_walkthrough.md) — the reviewer script per change, and how to run one
+- [Writing](../docs/system/writing.md) — `/writing`, articles from content/writing/, series, the Atom feed (Draft, #58)
 <!-- system:end -->
 
 ## ADRs — `docs/adr/`
@@ -78,6 +80,8 @@ Procedures somebody will need to repeat.
 - [Edit the home thread](../docs/sop/edit-the-home-thread.md) — change a step in content/threads/home.yml, the git block rules, and what the schema, placeholder and literal-color checks catch
 - [Serve the dev server over Tailscale](../docs/sop/serve-dev-over-tailscale.md) — `tailscale serve` route, allowed hosts, what breaks behind the proxy
 - [Update the CV](../docs/sop/update-the-cv.md) — re-cut Background, Contact and Work from the master resume; what never comes across, the one-page print (#38)
+- [Publish an article](../docs/sop/publish-an-article.md) — outline, draft, refine, learn the voice, ship, cross-post (Draft, #60)
+- [Keep recruiters finding the site](../docs/sop/recruiter-visibility.md) — LinkedIn, GitHub, where to post, the monthly Search Console, Bing and answer-engine review (Draft, #57)
 <!-- sop:end -->
 
 ## QA — `docs/qa/`
