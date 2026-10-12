@@ -4,7 +4,7 @@
 - content_for :title, "#{@project.name} · Mark Evans"
 - content_for :meta_description, @project.summary.truncate(155, separator: " ")
 - content_for(:canonical_url) { project_url(@project.key) }
-- content_for(:head) { jsonld_tag(web_page_jsonld(name: @project.name, description: @project.summary, url: project_url(@project.key))) }
+- content_for(:head) { jsonld_tag(project_jsonld(@project)) }
 
 main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8"
   h1 class="font-mono text-headline font-medium wrap-anywhere" = @project.name

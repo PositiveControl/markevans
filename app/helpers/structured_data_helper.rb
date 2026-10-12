@@ -54,6 +54,18 @@ module StructuredDataHelper
     web_page_jsonld(type: "ContactPage", name: page.title, description: page.description, url: contact_url, mainEntity: PERSON)
   end
 
+  # A project page. One with a repository is about its SoftwareSourceCode:
+  # programmingLanguage names only its language chips, and keywords its whole
+  # stack, so Rails reaches a machine without being called a language.
+  def project_jsonld(project)
+    code = if (repository = project.repository)
+      { "@type" => "SoftwareSourceCode", "name" => project.name, "codeRepository" => repository.url,
+        "programmingLanguage" => project.tags.select { |tag| StackRegistry[tag].language? },
+        "keywords" => project.tags, "author" => PERSON }
+    end
+    web_page_jsonld(name: project.name, description: project.summary, url: project_url(project.key), **{ mainEntity: code }.compact)
+  end
+
   # /background: a ProfilePage about Mark, the layout's Person.
   def profile_jsonld(page)
     web_page_jsonld(type: "ProfilePage", name: page.title, description: page.description, url: background_url, mainEntity: PERSON)

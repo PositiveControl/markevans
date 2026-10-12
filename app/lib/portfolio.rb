@@ -28,7 +28,10 @@ module Portfolio
   # No such project. config/application.rb answers it with a 404.
   NotFound = Class.new(StandardError)
 
-  Project = Data.define(:key, :name, :summary, :category, :tags, :links, :sections)
+  Project = Data.define(:key, :name, :summary, :category, :tags, :links, :sections) do
+    # The link labelled Repository, unless its address is still to be written.
+    def repository = links.find { |link| link.label == "Repository" && !link.placeholder? }
+  end
 
   class << self
     # Outside development the file is read once.

@@ -138,6 +138,33 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_equal PERSON, json_ld("ContactPage")["mainEntity"]
   end
 
+  test "a project page with a repository is about its SoftwareSourceCode: the repository, its languages and its stack" do
+    project = Portfolio.fetch("rails-rocket-sheep")
+    get project_url(project.key)
+
+    code = json_ld("WebPage")["mainEntity"]
+    assert_equal "SoftwareSourceCode", code["@type"]
+    assert_equal project.name, code["name"]
+    assert_equal project.repository.url, code["codeRepository"]
+    assert_equal [ "Ruby" ], code["programmingLanguage"]
+    assert_equal project.tags, code["keywords"]
+    assert_includes code["keywords"], "Rails"
+    assert_equal PERSON, code["author"]
+  end
+
+  test "programmingLanguage holds every language a project is written in, and only languages" do
+    get project_url("myrelay")
+
+    assert_equal [ "Go" ], json_ld("WebPage").dig("mainEntity", "programmingLanguage")
+  end
+
+  test "a project page with no repository is a plain WebPage with no SoftwareSourceCode" do
+    get project_url("idlempire")
+
+    assert_nil json_ld("WebPage")["mainEntity"]
+    assert_not_includes response.body, "SoftwareSourceCode"
+  end
+
   test "/background's main entity is the Person, by @id" do
     get background_url
 
