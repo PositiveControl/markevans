@@ -39,7 +39,7 @@ html lang="en" class="scroll-pt-16"
     - %w[newsreader-roman.woff2 plex-mono-400.woff2 plex-mono-500.woff2].each do |font|
       = tag.link rel: "preload", as: "font", type: "font/woff2", href: asset_path(font), crossorigin: "anonymous"
 
-    = jsonld_tag(site_jsonld(SitePage.fetch(:background)))
+    = jsonld_tag(site_jsonld)
     = stylesheet_link_tag :app, "data-turbo-track": "reload"
     = javascript_importmap_tags
 

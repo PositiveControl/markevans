@@ -22,7 +22,7 @@ module StructuredDataHelper
   # with the https profiles /background links to. A link still to be written
   # is left out. Pages refer to the Person by PERSON_ID and never describe
   # him again.
-  def site_jsonld(profile)
+  def site_jsonld(profile = SitePage.fetch(:background))
     same_as = profile.links.reject(&:placeholder?).map(&:url).select { |url| url.start_with?("https://") }
     { "@context" => "https://schema.org", "@graph" => [
       { "@type" => "WebSite", "name" => "Mark Evans", "url" => root_url, "publisher" => PERSON },
