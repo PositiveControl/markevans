@@ -23,6 +23,7 @@ Design docs for features. Written before issues are created, approved at gate G1
 - [CV content](../docs/plans/2026-10-04-cv-content-design.md) — fill Background, Contact and Work from the master resume as a one-page cut (approved G1, #38)
 - [Recruiter search](../docs/plans/2026-10-12-recruiter-search-design.md) — rank for Rails and AI searches on Google and in AI answer engines: crawl baseline, positioning, writing, answer engines, the article voice loop (approved G1, #55)
 - [CI tuning article outline](../docs/plans/2026-10-12-ci-tuning-blog-outline.md) — source outline for the *CI tuning* series, part 1: intuition (Apr–Aug) vs. measure-first (Oct), wall clock roughly halved (#55)
+- [CI gates article outline](../docs/plans/2026-10-12-ci-gates-blog-outline.md) — source outline for the *Deterministic gates* series: from the Rails CI defaults to `bin/gates`, the checks that ask "is it the shape we agreed to?" (#55)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`
