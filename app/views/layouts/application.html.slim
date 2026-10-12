@@ -1,10 +1,27 @@
 doctype html
 html lang="en" class="scroll-pt-16"
   head
-    title = content_for(:title) || "Markevans"
+    title = page_title
     meta name="viewport" content="width=device-width,initial-scale=1"
-    meta name="description" content=(content_for?(:meta_description) ? yield(:meta_description) : "Markevans — built with Rails.")
-    link rel="canonical" href=(content_for?(:canonical_url) ? yield(:canonical_url) : request.original_url.split("?").first)
+    meta name="description" content=page_description
+    link rel="canonical" href=page_canonical_url
+    / The link card a share shows on LinkedIn, Slack or an ATS: the page's own
+      title, description and URL, and the one site card (app/assets/images/card.svg).
+      A page overrides a value with content_for(:og_type) or content_for(:og_image)
+      (docs/sop/add-seo-to-a-page.md).
+    meta property="og:site_name" content=PageMetaHelper::SITE_NAME
+    meta property="og:type" content=(content_for(:og_type) || "website")
+    meta property="og:title" content=page_title
+    meta property="og:description" content=page_description
+    meta property="og:url" content=page_canonical_url
+    - if content_for?(:og_image)
+      meta property="og:image" content=content_for(:og_image)
+    - else
+      meta property="og:image" content=image_url("card.png")
+      meta property="og:image:width" content="1200"
+      meta property="og:image:height" content="630"
+      meta property="og:image:alt" content="A radar scope beside the name Mark Evans and markevans.io"
+    meta name="twitter:card" content="summary_large_image"
     meta name="apple-mobile-web-app-capable" content="yes"
     meta name="mobile-web-app-capable" content="yes"
     = csrf_meta_tags

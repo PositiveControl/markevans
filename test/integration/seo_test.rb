@@ -94,6 +94,32 @@ class SeoTest < ActionDispatch::IntegrationTest
     end
   end
 
+  PAGES.each do |path|
+    test "#{path} has a link card: its own title, description and canonical URL, and the site card image" do
+      get path
+
+      assert_equal css_select("title").first.text, og("og:title")
+      assert_equal css_select('meta[name="description"]').first["content"], og("og:description")
+      assert_equal css_select('link[rel="canonical"]').first["href"], og("og:url")
+      assert_equal "Mark Evans", og("og:site_name")
+      assert_match %r{\Ahttp://www\.example\.com/assets/card-\h+\.png\z}, og("og:image")
+      assert_equal %w[1200 630], [ og("og:image:width"), og("og:image:height") ]
+      assert og("og:image:alt").present?
+      assert_select 'meta[name="twitter:card"][content="summary_large_image"]'
+    end
+  end
+
+  test "a page is a website to a link card unless it says otherwise" do
+    get projects_url
+    assert_equal "website", og("og:type")
+  end
+
+  test "a page can override its link card: /background is a profile" do
+    get background_url
+    assert_equal "profile", og("og:type")
+    assert_select 'meta[property="og:type"]', count: 1
+  end
+
   test "/background's main entity is the Person, by @id" do
     get background_url
 
@@ -133,6 +159,8 @@ class SeoTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def og(property) = css_select("meta[property=\"#{property}\"]").first&.[]("content")
 
   def json_ld_scripts = css_select('script[type="application/ld+json"]').map { |script| JSON.parse(script.text) }
 
