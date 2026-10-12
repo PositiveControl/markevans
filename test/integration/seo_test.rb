@@ -127,7 +127,9 @@ class SeoTest < ActionDispatch::IntegrationTest
   end
 
   test "every written page and project description fits a search snippet whole, so none reads as cut off" do
-    descriptions = SitePage.all.map { |page| [ page.title, page.description ] } + Portfolio.all.map { |project| [ project.name, project.summary ] }
+    home = DeliveryThread.fetch(:home)
+    descriptions = [ [ home.page_title, home.description ] ] +
+      SitePage.all.map { |page| [ page.title, page.description ] } + Portfolio.all.map { |project| [ project.name, project.summary ] }
 
     descriptions.reject { |_, text| text.start_with?("[") }.each do |name, text|
       assert_operator text.length, :<=, 155, "#{name}'s description is #{text.length} characters; the meta tag cuts it at 155"
