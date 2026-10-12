@@ -125,6 +125,20 @@ class OtherPagesTest < ActionDispatch::IntegrationTest
     page.links.select(&:placeholder?).each { |link| assert_select "dl span", link.url }
   end
 
+  test "/contact shows what a recruiter screens for, at a glance, from the file" do
+    glance = SitePage.fetch(:contact).sections.find { |section| section.heading == "At a glance" }
+    rows = glance.groups.flat_map(&:rows)
+    get contact_url
+
+    assert_equal [ "Looking for", "Availability", "Work authorization", "Location", "Contract-to-hire", "Stack" ], rows.map(&:key)
+    assert_select "main h2", "At a glance"
+    rows.each do |row|
+      assert_select "main dt", row.key
+      assert_select "main dd", row.value
+    end
+    assert_match(/open to other stacks/, rows.last.value, "the stack row keeps Rails from reading as the only stack")
+  end
+
   test "each page marks its own section current in the header, and only that one" do
     { projects_url => "Work", project_url("kram") => "Work", workflow_url => "Workflow",
       background_url => "Background", contact_url => "Contact" }.each do |url, current|

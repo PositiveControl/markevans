@@ -120,6 +120,51 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_select 'meta[property="og:type"]', count: 1
   end
 
+  test "the Person's job title and what Mark knows about come from /contact's content" do
+    person = SitePage.fetch(:contact).person
+    get root_url
+
+    node = graph_node("Person")
+    assert_equal person.job_title, node["jobTitle"]
+    assert_equal person.knows_about, node["knowsAbout"]
+    assert_equal "Senior Software Engineer", node["jobTitle"]
+    [ "Ruby on Rails", "AI engineering", "LLM integration", "Agent harness engineering", "Deterministic guardrails" ]
+      .each { |term| assert_includes node["knowsAbout"], term }
+  end
+
+  test "/contact's main entity is the Person, by @id" do
+    get contact_url
+
+    assert_equal PERSON, json_ld("ContactPage")["mainEntity"]
+  end
+
+  test "a project page with a repository is about its SoftwareSourceCode: the repository, its languages and its stack" do
+    project = Portfolio.fetch("rails-rocket-sheep")
+    get project_url(project.key)
+
+    code = json_ld("WebPage")["mainEntity"]
+    assert_equal "SoftwareSourceCode", code["@type"]
+    assert_equal project.name, code["name"]
+    assert_equal project.repository.url, code["codeRepository"]
+    assert_equal [ "Ruby" ], code["programmingLanguage"]
+    assert_equal project.tags, code["keywords"]
+    assert_includes code["keywords"], "Rails"
+    assert_equal PERSON, code["author"]
+  end
+
+  test "programmingLanguage holds every language a project is written in, and only languages" do
+    get project_url("kram")
+
+    assert_equal %w[Go OpenQASM], json_ld("WebPage").dig("mainEntity", "programmingLanguage")
+  end
+
+  test "a project page with no repository is a plain WebPage with no SoftwareSourceCode" do
+    get project_url("idlempire")
+
+    assert_nil json_ld("WebPage")["mainEntity"]
+    assert_not_includes response.body, "SoftwareSourceCode"
+  end
+
   test "/background's main entity is the Person, by @id" do
     get background_url
 
@@ -133,6 +178,45 @@ class SeoTest < ActionDispatch::IntegrationTest
 
     descriptions.reject { |_, text| text.start_with?("[") }.each do |name, text|
       assert_operator text.length, :<=, 155, "#{name}'s description is #{text.length} characters; the meta tag cuts it at 155"
+    end
+  end
+
+  {
+    "/" => -> { DeliveryThread.fetch(:home).page_title },
+    "/background" => -> { SitePage.fetch(:background).page_title },
+    "/contact" => -> { SitePage.fetch(:contact).page_title },
+    "/workflow" => -> { SitePage.fetch(:workflow).page_title }
+  }.each do |path, page_title|
+    test "#{path}'s <title> is its page_title from content, not its heading" do
+      get path
+
+      expected = instance_exec(&page_title)
+      assert expected.present?, "#{path} has no page_title"
+      assert_equal expected, css_select("title").first.text
+    end
+  end
+
+  test "home, Background and Contact name the role in their title and description; Workflow names AI coding agents" do
+    home = DeliveryThread.fetch(:home)
+    pages = { home: home, background: SitePage.fetch(:background), contact: SitePage.fetch(:contact) }
+
+    pages.each do |key, page|
+      assert_match(/Rails/, page.page_title, "#{key}'s title")
+      assert_match(/\bAI\b/, page.page_title, "#{key}'s title")
+      assert_match(/Ruby on Rails/, page.description, "#{key}'s description")
+    end
+    assert_match(/AI Engineer, Ruby on Rails/, pages[:contact].page_title)
+    assert_match(/positive control/, home.description)
+    assert_match(/AI coding agents/, SitePage.fetch(:workflow).page_title)
+    assert_match(/AI coding agents/, SitePage.fetch(:workflow).description)
+  end
+
+  test "no page's <title> runs past 60 characters, where search results cut it" do
+    (PAGES + [ "/work/#{Portfolio.all.max_by { |project| project.name.length }.key}" ]).each do |path|
+      get path
+
+      title = css_select("title").first.text
+      assert_operator title.length, :<=, 60, "#{path}'s title is #{title.length} characters"
     end
   end
 

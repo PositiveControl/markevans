@@ -1,6 +1,6 @@
 # Site pages — Work, Workflow, Background, Contact
 
-**Status:** Current through #38.
+**Status:** Current through #57.
 
 The pages beside the home thread (design doc,
 `docs/plans/2026-10-03-home-thread-design.md`, section 2). They are built from
@@ -12,7 +12,7 @@ the same tokens and components as `/`, which is `docs/system/home-page.md`.
 | `GET /work/:id` | `ProjectsController#show` | one project in `content/work.yml` | Name (mono `h1`: it is the repository's), summary, links, sections. An unknown key is a 404 |
 | `GET /workflow` | `WorkflowsController#show` | `content/pages/workflow.yml`, `content/threads/home.yml` | Title and intro, the chain, the legend, then the page's sections |
 | `GET /background` | `BackgroundsController#show` | `content/pages/background.yml` | The CV, a cut of Mark's master resume: title, intro, links, sections. Prints to one page |
-| `GET /contact` | `ContactsController#show` | `content/pages/contact.yml` | Title, intro, the contact routes, any sections |
+| `GET /contact` | `ContactsController#show` | `content/pages/contact.yml` | Title, intro, the contact routes, then *At a glance*: what a recruiter screens for (looking for, availability, work authorization, location, contract-to-hire, stack). The page a recruiter lands on (`docs/plans/2026-10-12-recruiter-search-design.md`, *Approach* §2) |
 
 `/work` is not paginated. It lists the projects in a content file, which
 change only when someone edits that file, never through use of the site
@@ -49,11 +49,13 @@ first paragraph, and the Workflow page.
 
 | Key | Required | Means |
 |---|---|---|
-| `title` | yes | The `h1`, and the start of the `<title>` |
+| `title` | yes | The `h1`, and the start of the `<title>` unless `page_title` is set |
+| `page_title` | no | The whole `<title>`, 60 characters at most. Lets the title carry the search terms without the `h1` saying them |
 | `description` | yes | The meta description, cut to 155 characters |
 | `intro` | yes | The paragraph under the `h1` |
 | `links` | no | A list of `label` and `url` |
 | `sections` | no | A list of `heading` with `paragraphs` (text) and/or `groups` (`title`, `rows` of `k` and `v`) |
+| `person` | no | `job_title` (text) and `knows_about` (a list of text): the layout's Person's `jobTitle` and `knowsAbout`. Only `contact.yml` carries it |
 
 A `url` is `https://…` or `mailto:…`, or a `[placeholder]` until the address
 is supplied. `LinkListComponent` shows a placeholder as text, never as a link
@@ -120,13 +122,21 @@ steps the home page plays, so the two pages cannot disagree. Each step shows:
 
 ## SEO
 
-Each view sets `content_for` `:title` ("<title> · Mark Evans"),
+Each view sets `content_for` `:title` (the page's `page_title`, or
+"<title> · Mark Evans" without one),
 `:meta_description` and `:canonical_url`, and puts JSON-LD in `:head` through
 `StructuredDataHelper`. The home page reads its title and description from
 `page_title` and `description` in `content/threads/home.yml`, which a routed
 thread must carry. `PageMetaHelper` gives the layout those three values, with
 fallbacks for a page that sets none: the site's name, and the request's URL
 without its query string.
+
+**Search terms go in the title and description; page copy stays broad**
+(`docs/plans/2026-10-12-recruiter-search-design.md`, *Search terms*). Home,
+Background and Contact name "Rails & AI Engineer" or "AI Engineer, Ruby on
+Rails" in their `<title>` and Ruby on Rails in their description; Workflow
+names AI coding agents. No `h1` or intro says Rails is the only stack. A test
+holds every `<title>` to 60 characters and every written description to 155.
 
 ### Link cards
 
@@ -160,7 +170,9 @@ The layout's JSON-LD, on every page, is one graph: a `WebSite` published by
 the `Person` whose `@id` is `https://markevans.io/#mark`
 (`StructuredDataHelper::PERSON_ID`). The `@id` is the same literal in every
 environment. The Person's `sameAs` is the `https` links `/background` lists,
-with placeholders left out (`site_jsonld`). Pages refer to the Person by
+with placeholders left out, and its `jobTitle` and `knowsAbout` are
+`contact.yml`'s `person` block (`site_jsonld`), so the structured data and
+the page a recruiter reads come from one file. Pages refer to the Person by
 `@id`. They never describe Mark again. Every page's JSON-LD names it as
 `author` (`web_page_jsonld`):
 
@@ -168,9 +180,10 @@ with placeholders left out (`site_jsonld`). Pages refer to the Person by
 |---|---|
 | `/` | The layout's graph only |
 | `/work` | `CollectionPage` whose `mainEntity` is an `ItemList` of the projects, in the page's order (`project_list_jsonld`) |
-| `/work/:id`, `/workflow` | `WebPage` (`web_page_jsonld`) |
+| `/work/:id` | `WebPage` (`project_jsonld`). A project with a `Repository` link (`Project#repository`) gets a `mainEntity` of `SoftwareSourceCode`: `codeRepository`, `programmingLanguage` (its language chips only, `StackRegistry` kind `:language`) and `keywords` (every tag, so Rails is there without being called a language) |
+| `/workflow` | `WebPage` (`web_page_jsonld`) |
 | `/background` | `ProfilePage` whose `mainEntity` is the Person, by `@id` (`profile_jsonld`) |
-| `/contact` | `ContactPage` |
+| `/contact` | `ContactPage` whose `mainEntity` is the Person, by `@id` (`contact_jsonld`) |
 
 ### Crawling
 
@@ -191,6 +204,9 @@ request https. The weekly Lighthouse workflow
 (`.github/workflows/lighthouse.yml`) audits `https://markevans.io`.
 
 Walk `robots.txt` and the card in a browser: `bin/qa-walkthrough crawl_baseline`.
+Walk `/contact`'s *At a glance* and a project with a repository:
+`bin/qa-walkthrough recruiter_positioning`. The work outside the app that
+search ranking depends on is `docs/sop/recruiter-visibility.md`.
 
 ## Print
 

@@ -2,7 +2,10 @@
 # (docs/system/site-pages.md). A link whose url is still a placeholder renders as
 # text until the address is supplied.
 title: Contact
-description: "How to reach Mark Evans, senior software engineer in Phoenix, AZ: email, LinkedIn or GitHub."
+# The page a recruiter lands on: its <title> and description carry the search
+# terms (docs/plans/2026-10-12-recruiter-search-design.md, Approach 2).
+page_title: "Contact Mark Evans · AI Engineer, Ruby on Rails"
+description: "Mark Evans, AI Engineer (Ruby on Rails) in Phoenix. Open to full-time senior, lead or staff roles: remote, hybrid or in Phoenix. US citizen."
 intro: "I am looking for full-time senior, lead, or staff roles, remote or in Phoenix. Email is the best way to reach me."
 links:
   - label: Email
@@ -11,3 +14,39 @@ links:
     url: https://www.linkedin.com/in/sudobangbang
   - label: GitHub
     url: https://github.com/PositiveControl
+# Mark as the layout's JSON-LD describes him on every page: jobTitle and
+# knowsAbout. knowsAbout is where breadth is cheap, so it names Rails beside the
+# AI work (docs/plans/2026-10-12-recruiter-search-design.md, Approach 2).
+person:
+  job_title: "Senior Software Engineer"
+  knows_about:
+    - "Ruby on Rails"
+    - "Ruby"
+    - "Hotwire"
+    - "PostgreSQL"
+    - "Kamal"
+    - "Large language models"
+    - "LLM integration"
+    - "LLM inference"
+    - "AI coding agents"
+    - "AI engineering"
+    - "Agent harness engineering"
+    - "Deterministic guardrails"
+# What a recruiter screens for, in their order. Mark's facts (2026-10-12).
+sections:
+  - heading: At a glance
+    groups:
+      - title: For recruiters
+        rows:
+          - k: Looking for
+            v: "Full-time senior, lead or staff roles"
+          - k: Availability
+            v: "Available; start pending notice at current role"
+          - k: Work authorization
+            v: "US citizen; no sponsorship needed"
+          - k: Location
+            v: "Remote, hybrid, or in-office in the Phoenix metro"
+          - k: Contract-to-hire
+            v: "Open to it; full-time preferred"
+          - k: Stack
+            v: "Strongest in Ruby on Rails; open to other stacks. LLM features and agent workflows"

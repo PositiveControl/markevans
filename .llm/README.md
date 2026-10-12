@@ -81,7 +81,7 @@ Procedures somebody will need to repeat.
 - [Serve the dev server over Tailscale](../docs/sop/serve-dev-over-tailscale.md) — `tailscale serve` route, allowed hosts, what breaks behind the proxy
 - [Update the CV](../docs/sop/update-the-cv.md) — re-cut Background, Contact and Work from the master resume; what never comes across, the one-page print (#38)
 - [Publish an article](../docs/sop/publish-an-article.md) — outline, draft, refine, learn the voice, ship, cross-post (Draft, #60)
-- [Keep recruiters finding the site](../docs/sop/recruiter-visibility.md) — LinkedIn, GitHub, where to post, the monthly Search Console, Bing and answer-engine review (Draft, #57)
+- [Keep recruiters finding the site](../docs/sop/recruiter-visibility.md) — LinkedIn, GitHub, where to post, the monthly Search Console, Bing and answer-engine review (#57; #59 adds the answer-engine half)
 <!-- sop:end -->
 
 ## QA — `docs/qa/`

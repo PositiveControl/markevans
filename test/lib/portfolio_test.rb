@@ -49,6 +49,19 @@ class PortfolioTest < ActiveSupport::TestCase
     assert_kind_of SitePage::Section, project.sections.first
   end
 
+  test "a project's repository is its link labelled Repository, or nil when it has none" do
+    assert_equal "https://github.com/PositiveControl/rails-rocket-sheep", Portfolio.fetch("rails-rocket-sheep").repository.url
+    assert_equal "https://github.com/PositiveControl/myrelay", Portfolio.fetch("myrelay").repository.url
+    assert_nil Portfolio.fetch("idlempire").repository
+  end
+
+  test "a Repository link still to be written is no repository" do
+    project = Portfolio::Project.new(key: "x", name: "x", summary: "x", category: "Applications", tags: [], sections: [],
+      links: [ SitePage::Link.new(label: "Repository", url: "[repository url]") ])
+
+    assert_nil project.repository
+  end
+
   test "an unknown key raises NotFound" do
     assert_raises(Portfolio::NotFound) { Portfolio.fetch("nope") }
   end

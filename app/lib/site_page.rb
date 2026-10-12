@@ -5,10 +5,15 @@
 #
 #   SitePage.fetch(:contact).links.first.label   # => "GitHub"
 #
-# A page is a title, a description (its meta description), an intro, links and
-# sections. A section is a heading over paragraphs and groups of key and value
-# rows, the same groups a step's body shows. Portfolio builds its projects from
-# the same sections and links, so both read and check them here.
+# A page is a title (its h1), a description (its meta description), an intro,
+# links and sections. A page_title, when given, is its <title> instead of
+# "<title> · Mark Evans", so a search title can name the role without the h1
+# saying it. A person block, on contact.yml alone, is Mark as the layout's
+# JSON-LD describes him: his job title and what he knows about
+# (docs/system/site-pages.md, SEO). A section is a heading over paragraphs and
+# groups of key and value rows, the same groups a step's body shows. Portfolio
+# builds its projects from the same sections and links, so both read and check
+# them here.
 #
 # Every word comes from the file (docs/rules/content-is-files.md); copy not yet
 # written stays in [brackets] (docs/rules/no-invented-content.md). Loading
@@ -20,7 +25,11 @@ module SitePage
   ROUTED = %w[work workflow background contact].freeze
 
   REQUIRED = %w[title description intro].freeze
-  OPTIONAL = %w[links sections].freeze
+  OPTIONAL = %w[page_title person links sections].freeze
+  PERSON_KEYS = %w[job_title knows_about].freeze
+  # The one page whose person block the layout reads; anywhere else it would
+  # be ignored, so it is refused.
+  PERSON_PAGE = "contact"
   SECTION_KEYS = %w[heading paragraphs groups].freeze
   # Where a link may go. A link still to be written is a [placeholder] and
   # renders as text, not as a link to nowhere.
@@ -28,7 +37,8 @@ module SitePage
 
   Invalid = Class.new(StandardError)
 
-  Page = Data.define(:key, :title, :description, :intro, :links, :sections)
+  Page = Data.define(:key, :title, :page_title, :description, :intro, :person, :links, :sections)
+  Person = Data.define(:job_title, :knows_about)
   Section = Data.define(:heading, :paragraphs, :groups)
   # Named as DeliveryThread names them, so DetailGroupComponent draws either.
   Group = Data.define(:title, :rows)
@@ -57,12 +67,15 @@ module SitePage
     # @raise [Invalid] naming the file and every problem found
     def load(path)
       data = YAML.safe_load_file(path, freeze: true)
-      errors = page_errors(data)
+      errors = page_errors(data, page_key: File.basename(path, ".yml"))
       raise Invalid, errors.map { |error| "#{File.basename(path)}: #{error}" }.join("\n") if errors.any?
 
-      Page.new(key: File.basename(path, ".yml"), title: data["title"], description: data["description"],
-        intro: data["intro"], links: links(data["links"]), sections: sections(data["sections"]))
+      Page.new(key: File.basename(path, ".yml"), title: data["title"], page_title: data["page_title"],
+        description: data["description"], intro: data["intro"], person: person(data["person"]),
+        links: links(data["links"]), sections: sections(data["sections"]))
     end
+
+    def person(data) = (Person.new(job_title: data["job_title"], knows_about: data["knows_about"]) if data)
 
     def links(list) = Array(list).map { |link| Link.new(label: link["label"], url: link["url"]) }.freeze
 
@@ -79,12 +92,13 @@ module SitePage
     end
 
     # Every problem in one pass, so a broken file is fixed in one edit.
-    def page_errors(data)
+    def page_errors(data, page_key:)
       return [ "top level must be a mapping with #{REQUIRED.join(', ')}" ] unless data.is_a?(Hash)
 
       REQUIRED.select { |key| missing?(data[key]) }.map { |key| "missing #{key}" } +
         (data.keys - REQUIRED - OPTIONAL).map { |key| "unknown key #{key}" } +
-        link_errors(data["links"]) + section_errors(data["sections"])
+        (data.key?("page_title") && !text?(data["page_title"]) ? [ "page_title must be text" ] : []) +
+        person_errors(data, page_key:) + link_errors(data["links"]) + section_errors(data["sections"])
     end
 
     def link_errors(links, where: "links")
@@ -124,6 +138,21 @@ module SitePage
     private
 
     def cache = @cache ||= {}
+
+    def text?(value) = value.is_a?(String) && !missing?(value)
+
+    def person_errors(data, page_key:)
+      return [] unless data.key?("person")
+      return [ "person belongs in #{PERSON_PAGE}.yml alone: only its block reaches the JSON-LD" ] unless page_key == PERSON_PAGE
+
+      person = data["person"]
+      return [ "person needs a job_title and a list of knows_about" ] unless pair?(person, "job_title") && person["knows_about"].is_a?(Array) && person["knows_about"].any?
+
+      errors = (person.keys - PERSON_KEYS).map { |key| "person: unknown key #{key}" }
+      errors << "person.job_title must be text" unless text?(person["job_title"])
+      errors << "person.knows_about must be a list of text" unless person["knows_about"].all? { |item| text?(item) }
+      errors
+    end
 
     def pair?(hash, *keys) = hash.is_a?(Hash) && keys.none? { |key| missing?(hash[key]) }
 
