@@ -19,14 +19,16 @@ module StructuredDataHelper
   end
 
   # The layout's graph, on every page: the WebSite and the one Person, Mark,
-  # with the https profiles /background links to. A link still to be written
-  # is left out. Pages refer to the Person by PERSON_ID and never describe
-  # him again.
-  def site_jsonld(profile = SitePage.fetch(:background))
+  # with the https profiles /background links to, and the job title and
+  # knowsAbout /contact's person block gives. A link still to be written is
+  # left out. Pages refer to the Person by PERSON_ID and never describe him
+  # again.
+  def site_jsonld(profile = SitePage.fetch(:background), person = SitePage.fetch(:contact).person)
     same_as = profile.links.reject(&:placeholder?).map(&:url).select { |url| url.start_with?("https://") }
     { "@context" => "https://schema.org", "@graph" => [
       { "@type" => "WebSite", "name" => "Mark Evans", "url" => root_url, "publisher" => PERSON },
-      { "@type" => "Person", "@id" => PERSON_ID, "name" => "Mark Evans", "url" => root_url, "sameAs" => same_as }
+      { "@type" => "Person", "@id" => PERSON_ID, "name" => "Mark Evans", "url" => root_url, "sameAs" => same_as,
+        "jobTitle" => person&.job_title, "knowsAbout" => person&.knows_about }.compact
     ] }
   end
 
@@ -45,6 +47,11 @@ module StructuredDataHelper
     end
     web_page_jsonld(type: "CollectionPage", name: page.title, description: page.description, url: projects_url,
       mainEntity: { "@type" => "ItemList", "itemListElement" => items })
+  end
+
+  # /contact: the page a recruiter lands on, about the layout's Person.
+  def contact_jsonld(page)
+    web_page_jsonld(type: "ContactPage", name: page.title, description: page.description, url: contact_url, mainEntity: PERSON)
   end
 
   # /background: a ProfilePage about Mark, the layout's Person.

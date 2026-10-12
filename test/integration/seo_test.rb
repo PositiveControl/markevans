@@ -120,6 +120,24 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_select 'meta[property="og:type"]', count: 1
   end
 
+  test "the Person's job title and what Mark knows about come from /contact's content" do
+    person = SitePage.fetch(:contact).person
+    get root_url
+
+    node = graph_node("Person")
+    assert_equal person.job_title, node["jobTitle"]
+    assert_equal person.knows_about, node["knowsAbout"]
+    assert_equal "Senior Software Engineer", node["jobTitle"]
+    [ "Ruby on Rails", "AI engineering", "LLM integration", "Agent harness engineering", "Deterministic guardrails" ]
+      .each { |term| assert_includes node["knowsAbout"], term }
+  end
+
+  test "/contact's main entity is the Person, by @id" do
+    get contact_url
+
+    assert_equal PERSON, json_ld("ContactPage")["mainEntity"]
+  end
+
   test "/background's main entity is the Person, by @id" do
     get background_url
 
