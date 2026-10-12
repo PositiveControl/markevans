@@ -10,10 +10,9 @@ The story runs from April to October 2026. It has two phases. In the first, from
 
 **Headline numbers** (green master pushes, first job start to last job end):
 
-- **Before:** 645–1039s across six runs (research doc). On top of that, master runs could queue for 6–14 minutes, and some were cancelled without ever running.
-- **After:** 442–482s across the six most recent runs (2026-10-09 to 10-12, run 37996249520 onward).
-  - Unit shard test step: 292–329s.
-  - System shard test step: 176–231s.
+- **Before:** median 878s (14.6 min), range 631–1071s, across 19 green x64 runs (Oct 2–9). The queue wait reached 13.7 min.
+- **After:** median 469s (7.8 min), range 442–482s, across 8 green runs (Oct 9–12). The queue wait is 5s at most.
+- Full table under **Results** at the end.
 
 Primary sources: `docs/plans/2026-10-08-ci-runtime-research.md`, `docs/plans/2026-10-08-ci-runtime-followups-design.md`, `docs/plans/2026-10-08-timing-balanced-shards-design.md`, PRs #4128, #4130, #4150, #4153, #4161, #4162, #4163, #4166.
 
@@ -213,6 +212,65 @@ This could be its own section, since the problems are unusual.
 
 ---
 
+## Results: master CI, 2026-10-02 → 2026-10-12
+
+Source: the GitHub jobs API for the last 40 `push` runs of `ci.yml` on master, pulled 2026-10-12. Wall time runs from the first job's start to the last job's end. Test-step times are the "Run (system) tests" step, so they leave out setup. Spread is the slowest shard divided by the fastest shard in the same run.
+
+### Green runs, medians per era
+
+| | x64, 2-core, count split | ARM 4-core + balanced shards + `login_as` |
+|---|---|---|
+| Runs | 19 (Oct 2–9) | 8 (Oct 9–12) |
+| **Wall clock, median** | **878s (14.6 min)** | **469s (7.8 min)** |
+| Wall clock, range | 631–1071s | 442–482s |
+| Slowest unit test step, median | 610s | 316s |
+| Slowest system test step, median | 748s | 214s |
+| Unit shard spread, median | 1.41× | 1.13× |
+| System shard spread, median | 2.31× | 1.17× |
+| Setup per shard job | 101–181s | 126–169s |
+| Total job time per run, median | 75 min | 48.5 min |
+| Queue wait before first job, max | **823s (13.7 min)** | 5s |
+
+- **Wall clock: −47%**, from about 14.6 min to about 7.8 min.
+- **Variance is gone.** The x64 range spans 440s; the current range spans 40s. The predictability is as much of a story as the speed.
+- **The critical path moved.** Before, `system_test (1)` or `system_test (3)` was the slowest job in most runs. Now it's always a unit shard: `test (0)` or `test (1)`, at 442–480s. That's why #4159 (cheaper factories) and the fourth unit shard come next.
+- **Runner minutes fell by a third** (75 → 48.5 job-minutes per run), even though the ARM runners are larger. Per-minute pricing differs between the two runner types, so this isn't a cost figure.
+- **Setup got slightly slower on ARM**, roughly +20s, because of the Chromium snap install (~60s). #4156 targets it.
+
+### Intermediate data points (one run each)
+
+| Run | State | Wall | Slowest unit / system step |
+|---|---|---|---|
+| 37993765213 | ARM, count split, form sign-in | 569s | 344s / 420s (system 2.20× spread) |
+| 37995666366 | + balanced shards + `login_as` (first green run) | 462s | 300s / 209s |
+
+So ARM alone took the median wall from 878s to 569s. Balancing and `login_as` together took it from 569s to about 465s. There's no green master run with balancing but without `login_as`; run 37994670679 had that combination but failed in `system_test (0)`. The ARM-only balanced PR run 37977923797 (slowest job 525s, per the research doc) fills that gap.
+
+### Queueing and cancellation (before #4130)
+
+- In the x64 era, 7 of 26 runs waited more than 5 minutes for their first job: 344s, 785s, 608s, 463s, 823s, 658s, 372s, and 1041s on run 37837403227.
+- 37682120803 and 37682444319 (Oct 7) were cancelled without running.
+- Since #4130, every run has started within 36s, and nothing has been cancelled.
+
+### Reliability (be honest about it in the post)
+
+| Era | Runs | Failed | Cancelled |
+|---|---|---|---|
+| x64 | 28 | 7 | 2 |
+| ARM / current | 12 | 5 | 0 |
+
+The ARM-era failures, by first failing step:
+- **37992340042:** all jobs died in *Initialize containers*. Docker Hub returned 429, fixed by moving MySQL to the ECR mirror (#4163).
+- **37995693357:** *Install Chromium (ARM64)*, the snap retry case (#4165).
+- **37994670679, 38272704503, 38276750075:** test failures in `system_test (0)`, and one also in `test (2)`. Not investigated here. Worth checking whether they're the same flake before the post claims the flake fixes in #4166 worked: 38272704503 and 38276750075 came after #4166 merged.
+
+### Run IDs
+
+- **x64 green:** 37061776307, 37068399924, 37068556885, 37335216277, 37335846455, 37354506784, 37378199391, 37394482161, 37395824329, 37483008250, 37496540190, 37651684718, 37682039114, 37682857559, 37821904653, 37823479145, 37837330294, 37845845745, 37961674417
+- **Current green:** 37995666366, 37996249520, 38270071132, 38285091845, 38285579873, 38285795603, 38287304113, 38288723083
+- **Re-fetch:** `gh api "repos/<org>/<repo>/actions/workflows/ci.yml/runs?branch=master&event=push&per_page=40"`, then `gh api "repos/<org>/<repo>/actions/runs/<id>/jobs?per_page=50"`.
+
 ## Caveats
 
-- No post-#4162 timing is recorded in the research doc; its PR test plan has that box unchecked. The "after" figures come from the jobs API for the six latest master runs (38287304113, 38285795603, 38285579873, 38285091845, 38270071132, 37996249520) and weren't saved to a file. Record them in the doc before citing.
+- None of these post-#4162 numbers are in `docs/plans/2026-10-08-ci-runtime-research.md` yet; #4162's test plan has that box unchecked. Record them there before the post cites the doc.
+- The "wall" figure here includes every job (lint, scans, db_drifts), but the shard jobs set it in every run.
