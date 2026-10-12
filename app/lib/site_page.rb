@@ -11,8 +11,9 @@
 # saying it. A person block, on contact.yml alone, is Mark as the layout's
 # JSON-LD describes him: his job title and what he knows about
 # (docs/system/site-pages.md, SEO). A section is a heading over paragraphs and
-# groups of key and value rows, the same groups a step's body shows. Portfolio builds its projects from
-# the same sections and links, so both read and check them here.
+# groups of key and value rows, the same groups a step's body shows. Portfolio
+# builds its projects from the same sections and links, so both read and check
+# them here.
 #
 # Every word comes from the file (docs/rules/content-is-files.md); copy not yet
 # written stays in [brackets] (docs/rules/no-invented-content.md). Loading
@@ -66,7 +67,7 @@ module SitePage
     # @raise [Invalid] naming the file and every problem found
     def load(path)
       data = YAML.safe_load_file(path, freeze: true)
-      errors = page_errors(data, key: File.basename(path, ".yml"))
+      errors = page_errors(data, page_key: File.basename(path, ".yml"))
       raise Invalid, errors.map { |error| "#{File.basename(path)}: #{error}" }.join("\n") if errors.any?
 
       Page.new(key: File.basename(path, ".yml"), title: data["title"], page_title: data["page_title"],
@@ -91,13 +92,13 @@ module SitePage
     end
 
     # Every problem in one pass, so a broken file is fixed in one edit.
-    def page_errors(data, key:)
+    def page_errors(data, page_key:)
       return [ "top level must be a mapping with #{REQUIRED.join(', ')}" ] unless data.is_a?(Hash)
 
       REQUIRED.select { |key| missing?(data[key]) }.map { |key| "missing #{key}" } +
         (data.keys - REQUIRED - OPTIONAL).map { |key| "unknown key #{key}" } +
         (data.key?("page_title") && !text?(data["page_title"]) ? [ "page_title must be text" ] : []) +
-        person_errors(data, key:) + link_errors(data["links"]) + section_errors(data["sections"])
+        person_errors(data, page_key:) + link_errors(data["links"]) + section_errors(data["sections"])
     end
 
     def link_errors(links, where: "links")
@@ -140,9 +141,9 @@ module SitePage
 
     def text?(value) = value.is_a?(String) && !missing?(value)
 
-    def person_errors(data, key:)
+    def person_errors(data, page_key:)
       return [] unless data.key?("person")
-      return [ "person belongs in #{PERSON_PAGE}.yml alone: only its block reaches the JSON-LD" ] unless key == PERSON_PAGE
+      return [ "person belongs in #{PERSON_PAGE}.yml alone: only its block reaches the JSON-LD" ] unless page_key == PERSON_PAGE
 
       person = data["person"]
       return [ "person needs a job_title and a list of knows_about" ] unless pair?(person, "job_title") && person["knows_about"].is_a?(Array) && person["knows_about"].any?
