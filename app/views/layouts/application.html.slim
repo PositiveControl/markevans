@@ -1,0 +1,33 @@
+doctype html
+html lang="en" class="scroll-pt-16"
+  head
+    title = content_for(:title) || "Markevans"
+    meta name="viewport" content="width=device-width,initial-scale=1"
+    meta name="description" content=(content_for?(:meta_description) ? yield(:meta_description) : "Markevans — built with Rails.")
+    link rel="canonical" href=(content_for?(:canonical_url) ? yield(:canonical_url) : request.original_url.split("?").first)
+    meta name="apple-mobile-web-app-capable" content="yes"
+    meta name="mobile-web-app-capable" content="yes"
+    = csrf_meta_tags
+    = csp_meta_tag
+
+    = yield :head
+
+    / Digested, so a new icon gets a new URL: browsers cache a favicon by its URL.
+    = tag.link rel: "icon", href: asset_path("icon.png"), type: "image/png"
+    = tag.link rel: "icon", href: asset_path("icon.svg"), type: "image/svg+xml"
+    = tag.link rel: "apple-touch-icon", href: asset_path("icon.png")
+
+    / The three faces above the fold: the serif prose and the two mono
+      weights on the strips. Newsreader italic loads with the stylesheet.
+    - %w[newsreader-roman.woff2 plex-mono-400.woff2 plex-mono-500.woff2].each do |font|
+      = tag.link rel: "preload", as: "font", type: "font/woff2", href: asset_path(font), crossorigin: "anonymous"
+
+    script type="application/ld+json"
+      | {"@context":"https://schema.org","@type":"WebSite","name":"Mark Evans","url":"#{root_url}"}
+    = stylesheet_link_tag :app, "data-turbo-track": "reload"
+    = javascript_importmap_tags
+
+  body class="bg-paper text-ink font-serif text-prose antialiased"
+    = render SiteHeaderComponent.new(current_path: request.path)
+    = render FlashComponent.new(flash: flash)
+    = yield
