@@ -23,7 +23,7 @@ module StructuredDataHelper
   # knowsAbout /contact's person block gives. A link still to be written is
   # left out. Pages refer to the Person by PERSON_ID and never describe him
   # again.
-  def site_jsonld(profile = SitePage.fetch(:background), person = SitePage.fetch(:contact).person)
+  def site_jsonld(profile = SitePage.fetch(:background), person = SitePage.fetch(SitePage::PERSON_PAGE).person)
     same_as = profile.links.reject(&:placeholder?).map(&:url).select { |url| url.start_with?("https://") }
     { "@context" => "https://schema.org", "@graph" => [
       { "@type" => "WebSite", "name" => "Mark Evans", "url" => root_url, "publisher" => PERSON },

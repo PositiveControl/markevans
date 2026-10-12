@@ -48,7 +48,7 @@ class SitePageTest < ActiveSupport::TestCase
 
   test "a person block carries the job title and what Mark knows about" do
     data = minimal.merge("person" => { "job_title" => "Engineer", "knows_about" => [ "Ruby on Rails", "LLM integration" ] })
-    person = load_page(data).person
+    person = load_page(data, key: "contact").person
 
     assert_equal "Engineer", person.job_title
     assert_equal [ "Ruby on Rails", "LLM integration" ], person.knows_about
@@ -62,11 +62,17 @@ class SitePageTest < ActiveSupport::TestCase
   end
 
   test "a person needs a job title and a list of what Mark knows about, and nothing else" do
-    assert_invalid(/person needs a job_title and a list of knows_about/) { |data| data["person"] = "Engineer" }
-    assert_invalid(/person needs a job_title and a list of knows_about/) { |data| data["person"] = { "knows_about" => [ "Ruby" ] } }
-    assert_invalid(/person needs a job_title and a list of knows_about/) { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [] } }
-    assert_invalid(/person.knows_about must be a list of text/) { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby", "" ] } }
-    assert_invalid(/person: unknown key name/) { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby" ], "name" => "Mark" } }
+    assert_invalid(/person needs a job_title and a list of knows_about/, key: "contact") { |data| data["person"] = "Engineer" }
+    assert_invalid(/person needs a job_title and a list of knows_about/, key: "contact") { |data| data["person"] = { "knows_about" => [ "Ruby" ] } }
+    assert_invalid(/person needs a job_title and a list of knows_about/, key: "contact") { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [] } }
+    assert_invalid(/person.knows_about must be a list of text/, key: "contact") { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby", "" ] } }
+    assert_invalid(/person: unknown key name/, key: "contact") { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby" ], "name" => "Mark" } }
+  end
+
+  test "only contact.yml may carry a person, since only its block reaches the JSON-LD" do
+    assert_invalid(/person belongs in contact.yml alone/, key: "background") do |data|
+      data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby" ] }
+    end
   end
 
   test "a link to a [placeholder] is a placeholder; an https or mailto link is not" do
@@ -116,18 +122,18 @@ class SitePageTest < ActiveSupport::TestCase
         "groups" => [ { "title" => "Years", "rows" => [ { "k" => "Role", "v" => "Company" } ] } ] } ] }
   end
 
-  def load_page(data)
+  def load_page(data, key: "broken")
     Dir.mktmpdir do |dir|
-      path = File.join(dir, "broken.yml")
+      path = File.join(dir, "#{key}.yml")
       File.write(path, data.to_yaml)
       SitePage.load(path)
     end
   end
 
-  def assert_invalid(pattern)
+  def assert_invalid(pattern, key: "broken")
     data = minimal.deep_dup
     yield data
-    error = assert_raises(SitePage::Invalid) { load_page(data) }
+    error = assert_raises(SitePage::Invalid) { load_page(data, key:) }
     assert_match pattern, error.message
     error
   end
