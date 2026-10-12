@@ -14,6 +14,8 @@ change a step, and what checks the change before it ships.
 ```yaml
 id: home                  # must match the filename
 title: "…"
+page_title: "…"           # the page's <title>; a routed thread (home) must have it
+description: "…"          # the meta description and link-card text, 155 characters at most; required on home too
 headline: "…"             # optional: the page's h1, above the thread
 headline_link:            # optional: links one phrase of the headline, in a new tab
   text: "…"               #   must appear in the headline, word for word
