@@ -41,6 +41,34 @@ class SitePageTest < ActiveSupport::TestCase
     assert_equal [], load_page(data).sections
   end
 
+  test "a page_title, when given, is the page's <title>; without one it is nil" do
+    assert_equal "Background · Mark Evans, Engineer", load_page(minimal.merge("page_title" => "Background · Mark Evans, Engineer")).page_title
+    assert_nil load_page(minimal).page_title
+  end
+
+  test "a person block carries the job title and what Mark knows about" do
+    data = minimal.merge("person" => { "job_title" => "Engineer", "knows_about" => [ "Ruby on Rails", "LLM integration" ] })
+    person = load_page(data).person
+
+    assert_equal "Engineer", person.job_title
+    assert_equal [ "Ruby on Rails", "LLM integration" ], person.knows_about
+    assert person.knows_about.frozen?
+    assert_nil load_page(minimal).person
+  end
+
+  test "page_title must be text" do
+    assert_invalid(/page_title must be text/) { |data| data["page_title"] = [ "x" ] }
+    assert_invalid(/page_title must be text/) { |data| data["page_title"] = " " }
+  end
+
+  test "a person needs a job title and a list of what Mark knows about, and nothing else" do
+    assert_invalid(/person needs a job_title and a list of knows_about/) { |data| data["person"] = "Engineer" }
+    assert_invalid(/person needs a job_title and a list of knows_about/) { |data| data["person"] = { "knows_about" => [ "Ruby" ] } }
+    assert_invalid(/person needs a job_title and a list of knows_about/) { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [] } }
+    assert_invalid(/person.knows_about must be a list of text/) { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby", "" ] } }
+    assert_invalid(/person: unknown key name/) { |data| data["person"] = { "job_title" => "Engineer", "knows_about" => [ "Ruby" ], "name" => "Mark" } }
+  end
+
   test "a link to a [placeholder] is a placeholder; an https or mailto link is not" do
     assert SitePage::Link.new(label: "Email", url: "[mailto:address]").placeholder?
     assert_not SitePage::Link.new(label: "Email", url: "mailto:a@example.com").placeholder?
