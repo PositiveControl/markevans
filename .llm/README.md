@@ -22,6 +22,7 @@ Design docs for features. Written before issues are created, approved at gate G1
 - [Home thread](../docs/plans/2026-10-03-home-thread-design.md) — the home page as one feature moving through the delivery chain: flight strips on a git spine, radar scope as console (approved G1)
 - [CV content](../docs/plans/2026-10-04-cv-content-design.md) — fill Background, Contact and Work from the master resume as a one-page cut (approved G1, #38)
 - [Recruiter search](../docs/plans/2026-10-12-recruiter-search-design.md) — rank for Rails and AI searches on Google and in AI answer engines: crawl baseline, positioning, writing, answer engines, the article voice loop (approved G1, #55)
+- [CI tuning article outline](../docs/plans/2026-10-12-ci-tuning-blog-outline.md) — source outline for the *CI tuning* series, part 1: intuition (Apr–Aug) vs. measure-first (Oct), wall clock roughly halved (#55)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`

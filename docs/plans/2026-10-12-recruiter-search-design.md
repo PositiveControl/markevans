@@ -281,7 +281,7 @@ claims, and each figure comes from a repo or from Mark
 | Topic | Shape | Search target | Source of truth |
 |---|---|---|---|
 | Deterministic gates: using flay to catch duplicated code | Series *Deterministic gates*, part 1. Later parts: the other mechanical gates (lint, brakeman, the placeholder and schema gates, the query ledger) | Rails, and AI: gates are how agent-written code is held to a standard | `bin/flay`, rails-rocket-sheep |
-| CI tuning: sharding tests | Series *CI tuning*, part 1 | Rails | A real CI run's timings, before and after |
+| CI tuning: sharding tests | Series *CI tuning*, part 1 | Rails | A real CI run's timings, before and after; [outline](2026-10-12-ci-tuning-blog-outline.md) |
 | Building an AI workflow | Single article | AI/LLM | `WORKFLOW.md`, `.claude/commands/`, rails-rocket-sheep's history |
 | Database and query tuning | Single article | Rails, Postgres | The card-labeler fix (20–25 s → ~1 s, un-indexed 570k-row scans), in the detail Mark can share |
 | Harness engineering: making a local model reliable unattended | Single article | AI/LLM, tier B "harness engineering" | The harness repository: its turn state machine, guards, eval suites and router bake-off |
