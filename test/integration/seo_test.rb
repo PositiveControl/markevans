@@ -153,9 +153,9 @@ class SeoTest < ActionDispatch::IntegrationTest
   end
 
   test "programmingLanguage holds every language a project is written in, and only languages" do
-    get project_url("myrelay")
+    get project_url("kram")
 
-    assert_equal [ "Go" ], json_ld("WebPage").dig("mainEntity", "programmingLanguage")
+    assert_equal %w[Go OpenQASM], json_ld("WebPage").dig("mainEntity", "programmingLanguage")
   end
 
   test "a project page with no repository is a plain WebPage with no SoftwareSourceCode" do
