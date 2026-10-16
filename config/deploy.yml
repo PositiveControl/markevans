@@ -27,9 +27,13 @@ servers:
       memory: 2g
 
 # Proxy configuration (Kamal 2 uses kamal-proxy)
+# Both names get a Let's Encrypt certificate. The app answers www with a 301
+# to the apex (config/routes.rb), so www needs one to redirect without a TLS error.
 proxy:
   ssl: true
-  host: markevans.io
+  hosts:
+    - markevans.io
+    - www.markevans.io
   app_port: 3000
   healthcheck:
     path: /up

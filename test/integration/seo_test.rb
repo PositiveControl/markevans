@@ -15,7 +15,7 @@ class SeoTest < ActionDispatch::IntegrationTest
 
   test "homepage includes WebSite JSON-LD" do
     get root_url
-    assert_json_ld("WebSite")
+    assert_equal root_url, graph_node("WebSite")["url"]
   end
 
   test "sitemap returns valid XML" do
@@ -65,37 +65,128 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=canonical][href=?]", projects_url
   end
 
-  test "/background's JSON-LD is a Person with the profiles the page links to, and no placeholder" do
+  PAGES = %w[/ /work /work/rails-rocket-sheep /workflow /background /contact].freeze
+  PERSON = { "@id" => "https://markevans.io/#mark" }.freeze
+
+  PAGES.each do |path|
+    test "#{path} carries the one Person, with the profiles /background links to and no placeholder" do
+      get path
+
+      person = graph_node("Person")
+      assert_equal PERSON["@id"], person["@id"]
+      assert_equal "Mark Evans", person["name"]
+      links = SitePage.fetch(:background).links.reject(&:placeholder?).map(&:url)
+      assert_equal links.select { |url| url.start_with?("https://") }, person["sameAs"]
+      assert_includes person["sameAs"], "https://github.com/PositiveControl"
+      assert person["sameAs"].any? { |url| url.start_with?("https://www.linkedin.com/") }
+      assert_equal PERSON, graph_node("WebSite")["publisher"]
+    end
+  end
+
+  PAGES.drop(1).each do |path|
+    test "#{path}'s own JSON-LD refers to the Person by @id and never describes Mark again" do
+      get path
+
+      page = page_json_ld
+      assert_equal PERSON, page["author"]
+      assert_equal [ PERSON["@id"] ], json_ld_scripts.flat_map { |data| people(data) }.map { |person| person["@id"] }.uniq
+      assert_equal 1, json_ld_scripts.sum { |data| people(data).count { |person| person.key?("name") } }
+    end
+  end
+
+  PAGES.each do |path|
+    test "#{path} has a link card: its own title, description and canonical URL, and the site card image" do
+      get path
+
+      assert_equal css_select("title").first.text, og("og:title")
+      assert_equal css_select('meta[name="description"]').first["content"], og("og:description")
+      assert_equal css_select('link[rel="canonical"]').first["href"], og("og:url")
+      assert_equal "Mark Evans", og("og:site_name")
+      assert_match %r{\Ahttp://www\.example\.com/assets/card-\h+\.png\z}, og("og:image")
+      assert_equal %w[1200 630], [ og("og:image:width"), og("og:image:height") ]
+      assert og("og:image:alt").present?
+      assert_select 'meta[name="twitter:card"][content="summary_large_image"]'
+    end
+  end
+
+  test "a page is a website to a link card unless it says otherwise" do
+    get projects_url
+    assert_equal "website", og("og:type")
+  end
+
+  test "a page can override its link card: /background is a profile" do
+    get background_url
+    assert_equal "profile", og("og:type")
+    assert_select 'meta[property="og:type"]', count: 1
+  end
+
+  test "/background's main entity is the Person, by @id" do
     get background_url
 
-    person = json_ld("ProfilePage")["mainEntity"]
-    assert_equal "Person", person["@type"]
-    assert_equal "Mark Evans", person["name"]
-    links = SitePage.fetch(:background).links.reject(&:placeholder?).map(&:url)
-    assert_equal links.select { |url| url.start_with?("https://") }, person["sameAs"]
-    assert_includes person["sameAs"], "https://github.com/PositiveControl"
-    assert person["sameAs"].none? { |url| url.start_with?("mailto:") }
+    assert_equal PERSON, json_ld("ProfilePage")["mainEntity"]
   end
 
   test "every written page and project description fits a search snippet whole, so none reads as cut off" do
-    descriptions = SitePage.all.map { |page| [ page.title, page.description ] } + Portfolio.all.map { |project| [ project.name, project.summary ] }
+    home = DeliveryThread.fetch(:home)
+    descriptions = [ [ home.page_title, home.description ] ] +
+      SitePage.all.map { |page| [ page.title, page.description ] } + Portfolio.all.map { |project| [ project.name, project.summary ] }
 
     descriptions.reject { |_, text| text.start_with?("[") }.each do |name, text|
       assert_operator text.length, :<=, 155, "#{name}'s description is #{text.length} characters; the meta tag cuts it at 155"
     end
   end
 
-  test "robots.txt is accessible and references sitemap" do
+  test "robots.txt names the sitemap on the host it was asked for, so it cannot point at another" do
     get "/robots.txt"
+
     assert_response :success
-    assert_includes response.body, "Sitemap:"
-    assert_includes response.body, "Disallow: /admin/"
+    assert_includes response.content_type, "text/plain"
+    assert_includes response.body.lines.map(&:chomp), "Sitemap: http://www.example.com/sitemap.xml"
+
+    host! "markevans.io"
+    get "/robots.txt"
+    assert_includes response.body.lines.map(&:chomp), "Sitemap: http://markevans.io/sitemap.xml"
+  end
+
+  test "robots.txt allows the site and keeps the account and admin paths out" do
+    get "/robots.txt"
+
+    lines = response.body.lines.map(&:chomp)
+    [ "User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /api/", "Disallow: /users/sign_in", "Disallow: /users/sign_up" ]
+      .each { |line| assert_includes lines, line }
+  end
+
+  test "robots.txt comes from the route alone: no static file shadows it" do
+    assert_not Rails.public_path.join("robots.txt").exist?
   end
 
   private
 
-  def json_ld(type)
-    css_select('script[type="application/ld+json"]').map { |script| JSON.parse(script.text) }.find { |data| data["@type"] == type }
+  def og(property) = css_select("meta[property=\"#{property}\"]").first&.[]("content")
+
+  def json_ld_scripts = css_select('script[type="application/ld+json"]').map { |script| JSON.parse(script.text) }
+
+  def json_ld(type) = json_ld_scripts.find { |data| data["@type"] == type }
+
+  # The layout's graph: the WebSite and the Person every page refers to.
+  def graph_node(type) = json_ld_scripts.flat_map { |data| Array(data["@graph"]) }.find { |node| node["@type"] == type }
+
+  # The page's own JSON-LD: the one script that is not the layout's graph.
+  def page_json_ld
+    pages = json_ld_scripts.reject { |data| data.key?("@graph") }
+    assert_equal 1, pages.size
+    pages.first
+  end
+
+  # Every node anywhere in the data that is, or refers to, a Person.
+  def people(data)
+    case data
+    when Hash
+      own = data["@type"] == "Person" || data == PERSON ? [ data ] : []
+      own + data.values.flat_map { |value| people(value) }
+    when Array then data.flat_map { |value| people(value) }
+    else []
+    end
   end
 
   def assert_json_ld(expected_type)

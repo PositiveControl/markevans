@@ -122,17 +122,75 @@ steps the home page plays, so the two pages cannot disagree. Each step shows:
 
 Each view sets `content_for` `:title` ("<title> · Mark Evans"),
 `:meta_description` and `:canonical_url`, and puts JSON-LD in `:head` through
-`StructuredDataHelper`:
+`StructuredDataHelper`. The home page reads its title and description from
+`page_title` and `description` in `content/threads/home.yml`, which a routed
+thread must carry. `PageMetaHelper` gives the layout those three values, with
+fallbacks for a page that sets none: the site's name, and the request's URL
+without its query string.
+
+### Link cards
+
+The layout renders `og:site_name`, `og:type`, `og:title`, `og:description`,
+`og:url`, `og:image` (with its width, height and alt) and `twitter:card`
+(`summary_large_image`). The title, description and URL are the page's own,
+read through `PageMetaHelper`, so a card always matches the search snippet.
+`og:type` is `website` unless the page sets `content_for(:og_type)`;
+`/background` sets `profile`. `og:image` is the site card unless the page sets
+`content_for(:og_image)`.
+
+### The card
+
+`app/assets/images/card.png`, 1200×630, is rendered from `card.svg`: the radar
+scope from `icon.svg`, the name in Newsreader and `markevans.io` in Plex Mono,
+in the tokens' colours. Most card readers take no SVG, so pages point at the
+PNG. After editing the SVG, render it again from `app/assets/images` and
+commit both files:
+
+```bash
+google-chrome --headless=new --hide-scrollbars --force-device-scale-factor=1 \
+  --window-size=1200,630 --virtual-time-budget=2000 \
+  --screenshot="$PWD/card.png" "file://$PWD/card.svg"
+```
+
+The SVG loads its fonts from `../fonts/`, so render it in place.
+
+### Structured data
+
+The layout's JSON-LD, on every page, is one graph: a `WebSite` published by
+the `Person` whose `@id` is `https://markevans.io/#mark`
+(`StructuredDataHelper::PERSON_ID`). The `@id` is the same literal in every
+environment. The Person's `sameAs` is the `https` links `/background` lists,
+with placeholders left out (`site_jsonld`). Pages refer to the Person by
+`@id`. They never describe Mark again. Every page's JSON-LD names it as
+`author` (`web_page_jsonld`):
 
 | Page | JSON-LD |
 |---|---|
+| `/` | The layout's graph only |
 | `/work` | `CollectionPage` whose `mainEntity` is an `ItemList` of the projects, in the page's order (`project_list_jsonld`) |
 | `/work/:id`, `/workflow` | `WebPage` (`web_page_jsonld`) |
-| `/background` | `ProfilePage` whose `mainEntity` is the `Person`, `sameAs` the page's `https` links, placeholders left out (`profile_jsonld`) |
+| `/background` | `ProfilePage` whose `mainEntity` is the Person, by `@id` (`profile_jsonld`) |
 | `/contact` | `ContactPage` |
 
+### Crawling
+
 `HomeController#sitemap` lists the four pages and then every project from
-`Portfolio.all`.
+`Portfolio.all`. `RobotsController#show` serves `/robots.txt`. Its `Sitemap:`
+line is `sitemap_url` for the host that was asked, so it can never name
+another. It keeps the template's `Disallow` lines. There is no
+`public/robots.txt`. A file there would be served before the route.
+
+`markevans.io` is the canonical host. `www.markevans.io` is in the Kamal
+proxy's `hosts`, so it has its own certificate. A host constraint at the top
+of `config/routes.rb` answers anything on it with a 301 to the apex, keeping
+the path and query. `http://www.markevans.io` takes two 301s, which is
+expected, not a loop: kamal-proxy (`ssl: true`) moves it to `https://www…`
+before Rails sees it, and the route then moves it to the apex. Rails'
+`force_ssl` never fires behind the proxy, because `assume_ssl` marks every
+request https. The weekly Lighthouse workflow
+(`.github/workflows/lighthouse.yml`) audits `https://markevans.io`.
+
+Walk `robots.txt` and the card in a browser: `bin/qa-walkthrough crawl_baseline`.
 
 ## Print
 
@@ -168,7 +226,9 @@ the PDF's pages. It is what says the CV still fits.
 | `test/lib/portfolio_test.rb`, `test/lib/site_page_test.rb` | The loaders and their schemas |
 | `test/tasks/content_tasks_test.rb` | `content:schema` over the work list and pages |
 | `test/integration/other_pages_test.rb` | Each page's copy read back from the file, in order; placeholders as written, from `test/fixtures/files/work/placeholder.yml`; the 404; the Workflow chain against the thread, and its command links; the current section; the footer |
-| `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the sitemap |
+| `test/integration/seo_test.rb` | Meta description, canonical URL and JSON-LD per page; the link card on every page and the `og:type` override; the Person on every page and each page's reference to it; the sitemap; `robots.txt` |
+| `test/integration/www_redirect_test.rb` | `www` moves permanently to the apex, with the path and query kept |
+| `test/helpers/page_meta_helper_test.rb` | The layout's title, description and canonical URL, with their fallbacks |
 | `test/components/{site_header,site_footer,page_sections,detail_group,link_list}_component_test.rb` | Each component, including the print scale on a row and a link |
 | `test/system/other_pages_test.rb` | axe on every page at 1400 and 390 px, no sideways scroll at 390 px, the one-page print |
 

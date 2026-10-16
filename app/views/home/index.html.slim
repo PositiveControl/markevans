@@ -5,8 +5,9 @@
 / Each row's chart cell draws its piece of the git graph from the step's git
 / block. The filter controller, beside it on the wrapper, marks data-dim on the rows
 / of every controller but the one picked.
-- content_for :title, "Mark Evans"
-- content_for :meta_description, @thread.headline.truncate(155, separator: " ")
+- content_for :title, @thread.page_title
+- content_for :meta_description, @thread.description.truncate(155, separator: " ")
+- content_for(:canonical_url) { root_url }
 
 / Playback hears the reader anywhere on the page: a wheel, a touch scroll, a
 / scroll key or a press on the scrollbar while it plays hands the page back (docs/rules/playback-yields.md).

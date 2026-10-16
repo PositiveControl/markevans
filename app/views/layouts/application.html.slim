@@ -1,0 +1,49 @@
+doctype html
+html lang="en" class="scroll-pt-16"
+  head
+    title = page_title
+    meta name="viewport" content="width=device-width,initial-scale=1"
+    meta name="description" content=page_description
+    link rel="canonical" href=page_canonical_url
+    / The link card a share shows on LinkedIn, Slack or an ATS: the page's own
+      title, description and URL, and the one site card (app/assets/images/card.svg).
+      A page overrides a value with content_for(:og_type) or content_for(:og_image)
+      (docs/sop/add-seo-to-a-page.md).
+    meta property="og:site_name" content=PageMetaHelper::SITE_NAME
+    meta property="og:type" content=(content_for(:og_type) || "website")
+    meta property="og:title" content=page_title
+    meta property="og:description" content=page_description
+    meta property="og:url" content=page_canonical_url
+    - if content_for?(:og_image)
+      meta property="og:image" content=content_for(:og_image)
+    - else
+      meta property="og:image" content=image_url("card.png")
+      meta property="og:image:width" content="1200"
+      meta property="og:image:height" content="630"
+      meta property="og:image:alt" content="A radar scope beside the name Mark Evans and markevans.io"
+    meta name="twitter:card" content="summary_large_image"
+    meta name="apple-mobile-web-app-capable" content="yes"
+    meta name="mobile-web-app-capable" content="yes"
+    = csrf_meta_tags
+    = csp_meta_tag
+
+    = yield :head
+
+    / Digested, so a new icon gets a new URL: browsers cache a favicon by its URL.
+    = tag.link rel: "icon", href: asset_path("icon.png"), type: "image/png"
+    = tag.link rel: "icon", href: asset_path("icon.svg"), type: "image/svg+xml"
+    = tag.link rel: "apple-touch-icon", href: asset_path("icon.png")
+
+    / The three faces above the fold: the serif prose and the two mono
+      weights on the strips. Newsreader italic loads with the stylesheet.
+    - %w[newsreader-roman.woff2 plex-mono-400.woff2 plex-mono-500.woff2].each do |font|
+      = tag.link rel: "preload", as: "font", type: "font/woff2", href: asset_path(font), crossorigin: "anonymous"
+
+    = jsonld_tag(site_jsonld)
+    = stylesheet_link_tag :app, "data-turbo-track": "reload"
+    = javascript_importmap_tags
+
+  body class="bg-paper text-ink font-serif text-prose antialiased"
+    = render SiteHeaderComponent.new(current_path: request.path)
+    = render FlashComponent.new(flash: flash)
+    = yield

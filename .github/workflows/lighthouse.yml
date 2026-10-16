@@ -16,13 +16,12 @@ jobs:
       - name: Run Lighthouse
         uses: treosh/lighthouse-ci-action@v12
         with:
-          # TODO: Replace with your production URL
-          urls: https://YOURAPP.com
+          urls: https://markevans.io
           temporaryPublicStorage: true
           uploadArtifacts: true
 
       - name: Check scores against budget
         uses: treosh/lighthouse-ci-action@v12
         with:
-          urls: https://YOURAPP.com
+          urls: https://markevans.io
           budgetPath: .github/lighthouse-budget.json

@@ -4,6 +4,7 @@
 - content_for :title, "#{@page.title} · Mark Evans"
 - content_for :meta_description, @page.description.truncate(155, separator: " ")
 - content_for(:canonical_url) { background_url }
+- content_for :og_type, "profile"
 - content_for(:head) { jsonld_tag(profile_jsonld(@page)) }
 
 main class="mx-auto max-w-page px-3 pt-6 pb-16 chart:px-8 print:max-w-none print:p-0"

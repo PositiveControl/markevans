@@ -27,8 +27,10 @@ Every word on the page except the site name comes from
 
 | Key | Shown as |
 |---|---|
-| `headline` | The page's `h1`, and its meta description |
-| `headline_link` | One phrase of the headline (`text`) linked to an `https` `url`. The meta description stays plain text |
+| `page_title` | The page's `<title>`, and its link card's title. Required, because a route reads this thread |
+| `description` | The page's meta description, and its link card's description, at most 155 characters. Required, because a route reads this thread |
+| `headline` | The page's `h1` |
+| `headline_link` | One phrase of the headline (`text`) linked to an `https` `url` |
 | `intro` | The paragraph under the headline |
 | `steps[]` | One row each, in file order |
 
@@ -162,14 +164,14 @@ needs Rails.
 
 | File | Covers |
 |---|---|
-| `test/integration/home_page_test.rb` | Headline and intro from the file, the headline's link, every off-site link opening in a new tab, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, bay, filter, log and docked bar, targets as links), each row's seconds, bay and lane, the log's gate total, the footer and its key list, self-hosted fonts, nothing of the old page |
+| `test/integration/home_page_test.rb` | Title, meta description, headline and intro from the file, a long description cut to snippet length, the headline's link, every off-site link opening in a new tab, steps in file order, a chart cell per row drawing the file's forks, merges, loops, sectors and labels, legend, the no-script page (disabled strips, hidden controls, bay, filter, log and docked bar, targets as links), each row's seconds, bay and lane, the log's gate total, the footer and its key list, self-hosted fonts, nothing of the old page |
 | `test/integration/page_budget_test.rb`, `test/system/page_requests_test.rb` | The budget (above) |
 | `test/system/home_playback_test.rb` | Playback, the bay, the filter, the log, follow, yield, the docked bar, the hash and the keyboard in a browser, and axe while playing, paused, filtered, docked and without scripts (`bin/rails test:system`; see `home-thread-playback.md`) |
 | `test/components/{strip,step_body,legend,fix_mark,controls,strip_bay,controller_filter,log}_component_test.rb` | Each component from inline steps |
 | `test/components/{scope,docked_bar}_component_test.rb` | Targets, arc and marks from a fixture thread |
 | `test/components/chart_cell_component_test.rb` | Fork, merge, loop, lines through, sectors and labels, from the fixture threads in `test/fixtures/files/threads/`; reordering one redraws the graph |
-| `test/lib/delivery_thread_test.rb` | The loader, the schema and `cells` |
+| `test/lib/delivery_thread_test.rb` | The loader, the schema (including the `page_title` and `description` a routed thread must carry) and `cells` |
 | `test/assets/tokens_test.rb` | The tokens match the design doc; fonts on disk match those declared |
-| `test/integration/seo_test.rb` | Meta description, canonical URL, WebSite JSON-LD |
+| `test/integration/seo_test.rb` | Canonical URL, the description's snippet length, the link card, and the layout's WebSite and Person JSON-LD (`docs/system/site-pages.md`, SEO) |
 
 Walk it in a browser: `bin/qa-walkthrough home_thread`.

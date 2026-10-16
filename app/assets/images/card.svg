@@ -1,0 +1,37 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- The link card every page shares (og:image, twitter:card). The source of
+       card.png, which is what pages point at: most card readers take no SVG.
+       Re-render with docs/system/site-pages.md, SEO, "The card".
+       Colours are the tokens' (app/assets/tailwind/tokens.css): paper ground,
+       ink and quiet text, a faint rule. The scope is icon.svg's, scaled.
+       The fonts load from app/assets/fonts when Chrome renders this file. -->
+  <style>
+    @font-face { font-family: "Newsreader"; font-weight: 400 500; src: url("../fonts/newsreader-roman.woff2") format("woff2"); }
+    @font-face { font-family: "IBM Plex Mono"; font-weight: 400; src: url("../fonts/plex-mono-400.woff2") format("woff2"); }
+    .name { font-family: "Newsreader", serif; font-size: 104px; font-weight: 500; fill: #1B2428; }
+    .site { font-family: "IBM Plex Mono", monospace; font-size: 34px; fill: #4A5763; letter-spacing: 1px; }
+  </style>
+  <defs>
+    <linearGradient id="trail" x1="256" y1="256" x2="436" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1B2428" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#1B2428" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#F7F6F0"/>
+  <g transform="translate(80 115) scale(0.78125)">
+    <circle cx="256" cy="256" r="236" fill="#EFEEE6"/>
+    <g stroke="#1B2428" stroke-opacity="0.3" stroke-width="10" fill="none">
+      <line x1="256" y1="32" x2="256" y2="480"/>
+      <line x1="32" y1="256" x2="480" y2="256"/>
+      <circle cx="256" cy="256" r="124"/>
+    </g>
+    <path d="M256 256 L256 28 A228 228 0 0 1 453.5 142 Z" fill="url(#trail)"/>
+    <line x1="256" y1="256" x2="453.5" y2="142" stroke="#1B2428" stroke-width="22" stroke-linecap="round"/>
+    <circle cx="256" cy="256" r="22" fill="#1B2428"/>
+    <circle cx="352" cy="146" r="30" fill="#0F7480"/>
+    <circle cx="256" cy="256" r="236" fill="none" stroke="#1B2428" stroke-width="32"/>
+  </g>
+  <text class="name" x="560" y="318">Mark Evans</text>
+  <line x1="564" y1="358" x2="1120" y2="358" stroke="#1B2428" stroke-opacity="0.3" stroke-width="2"/>
+  <text class="site" x="564" y="414">markevans.io</text>
+</svg>

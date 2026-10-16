@@ -13,7 +13,13 @@ class HomePageTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: @thread.headline
     assert_select "main p", text: @thread.intro
-    assert_select "meta[name=description][content=?]", @thread.headline
+  end
+
+  test "the title and meta description come from the thread file" do
+    get root_url
+
+    assert_select "title", text: @thread.page_title
+    assert_select "meta[name=description][content=?]", @thread.description
   end
 
   test "the headline links positive control to the GitHub org, in a new tab" do
@@ -30,8 +36,8 @@ class HomePageTest < ActionDispatch::IntegrationTest
     external.each { |link| assert_equal [ "_blank", "noopener noreferrer" ], [ link["target"], link["rel"] ], link["href"] }
   end
 
-  test "a long headline is cut to a search snippet's length in the meta description" do
-    long = @thread.with(headline: "word " * 60)
+  test "a long description is cut to a search snippet's length in the meta description" do
+    long = @thread.with(description: "word " * 60)
     # Minitest 6 no longer ships stub, so swap fetch by hand and put it back.
     original = DeliveryThread.method(:fetch)
     DeliveryThread.define_singleton_method(:fetch) { |*| long }
