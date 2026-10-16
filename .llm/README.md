@@ -25,6 +25,7 @@ Design docs for features. Written before issues are created, approved at gate G1
 - [CI tuning article outline](../docs/plans/2026-10-12-ci-tuning-blog-outline.md) — source outline for the *CI tuning* series, part 1: intuition (Apr–Aug) vs. measure-first (Oct), wall clock roughly halved (#55)
 - [CI gates article outline](../docs/plans/2026-10-12-ci-gates-blog-outline.md) — source outline for the *Deterministic gates* series: from the Rails CI defaults to `bin/gates`, the checks that ask "is it the shape we agreed to?" (#55)
 - [QA walkthrough article outline](../docs/plans/2026-10-12-qa-walkthrough-blog-outline.md) — source outline: a script that shows the reviewer, human or LLM, the feature running in a real browser (#55)
+- [Lighten the suite article outline](../docs/plans/2026-10-16-lighten-the-suite-blog-outline.md) — source outline for the *CI tuning* series, part 2: local runs OOM-killing mysqld, then memory and wall time cut by measuring each change (#55)
 <!-- plans:end -->
 
 ## Rules — `docs/rules/`
